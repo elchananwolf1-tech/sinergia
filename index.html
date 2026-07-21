@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מערכת ניהול בלוג - eWolf</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", "Heebo", "Arial", sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    color: #e0e0e0;
+  }
+  .hidden { display: none !important; }
+
+  /* Login */
+  #loginScreen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 20px;
+  }
+  .login-box {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    padding: 50px 40px;
+    width: 100%; max-width: 420px;
+    text-align: center;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+  }
+  .login-box h1 {
+    font-size: 28px; margin-bottom: 8px;
+    background: linear-gradient(90deg, #e94560, #ff6b6b);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .login-box p { color: #8892b0; margin-bottom: 30px; font-size: 14px; }
+  .login-box input {
+    width: 100%; padding: 16px 20px;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 14px; background: rgba(0,0,0,0.2);
+    color: #fff; font-size: 16px; margin-bottom: 20px;
+    transition: all 0.3s; text-align: center; letter-spacing: 2px;
+  }
+  .login-box input:focus {
+    outline: none; border-color: #e94560;
+    background: rgba(0,0,0,0.3);
+  }
+  .login-box button {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, #e94560, #c73e54);
+    border: none; border-radius: 14px;
+    color: #fff; font-size: 16px; font-weight: 600;
+    cursor: pointer; transition: all 0.3s;
+  }
+  .login-box button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(233,69,96,0.4);
+  }
+  .login-error {
+    color: #ff6b6b; font-size: 13px; margin-top: 12px;
+    min-height: 20px;
+  }
+
+  /* App Layout */
+  #appScreen { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 260px; background: rgba(0,0,0,0.3);
+    backdrop-filter: blur(20px);
+    border-left: 1px solid rgba(255,255,255,0.05);
+    padding: 25px 0;
+    display: flex; flex-direction: column;
+  }
+  .sidebar-logo {
+    text-align: center; padding: 0 20px 25px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .sidebar-logo h2 {
+    font-size: 20px;
+    background: linear-gradient(90deg, #e94560, #ff6b6b);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .sidebar-logo span { color: #8892b0; font-size: 12px; }
+  .sidebar-nav {
+    flex: 1; padding: 20px 15px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px; border-radius: 12px;
+    color: #a0aec0; cursor: pointer;
+    transition: all 0.2s; font-size: 14px;
+    border: none; background: none; width: 100%;
+    text-align: right; font-family: inherit;
+  }
+  .nav-item:hover, .nav-item.active {
+    background: rgba(233,69,96,0.15); color: #e94560;
+  }
+  .nav-item svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .sidebar-footer {
+    padding: 15px 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    text-align: center; color: #64748b; font-size: 11px;
+  }
+
+  .main-content {
+    flex: 1; padding: 30px 40px;
+    overflow-y: auto; max-height: 100vh;
+  }
+  .page-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 30px;
+  }
+  .page-header h2 { font-size: 26px; color: #fff; }
+  .btn-primary {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #e94560, #c73e54);
+    border: none; border-radius: 12px;
+    color: #fff; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.3s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(233,69,96,0.35);
+  }
+  .btn-secondary {
+    padding: 10px 20px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; color: #a0aec0;
+    cursor: pointer; transition: all 0.2s;
+    font-family: inherit; font-size: 13px;
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.15); color: #fff; }
+  .btn-danger {
+    padding: 10px 20px;
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px; color: #ef4444;
+    cursor: pointer; transition: all 0.2s;
+    font-family: inherit; font-size: 13px;
+  }
+  .btn-danger:hover { background: rgba(239,68,68,0.25); }
+
+  /* Posts List */
+  .posts-grid {
+    display: grid; gap: 16px;
+  }
+  .post-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px; padding: 22px 26px;
+    transition: all 0.3s; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .post-card:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(233,69,96,0.3);
+    transform: translateX(-4px);
+  }
+  .post-info h3 { color: #fff; font-size: 17px; margin-bottom: 6px; }
+  .post-meta { color: #64748b; font-size: 12px; display: flex; gap: 16px; }
+  .post-status {
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .status-publish { background: rgba(34,197,94,0.15); color: #22c55e; }
+  .status-draft { background: rgba(234,179,8,0.15); color: #eab308; }
+  .status-private { background: rgba(168,85,247,0.15); color: #a855f7; }
+  .post-actions { display: flex; gap: 8px; opacity: 0; transition: opacity 0.2s; }
+  .post-card:hover .post-actions { opacity: 1; }
+
+  /* Editor */
+  .editor-container {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px; overflow: hidden;
+  }
+  .editor-title-input {
+    width: 100%; padding: 24px 30px;
+    background: transparent; border: none;
+    color: #fff; font-size: 24px; font-weight: 700;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .editor-title-input:focus { outline: none; }
+  .editor-title-input::placeholder { color: #475569; }
+
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    padding: 12px 20px;
+    background: rgba(0,0,0,0.2);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    align-items: center;
+  }
+  .toolbar-group {
+    display: flex; gap: 3px;
+    padding: 0 8px;
+    border-left: 1px solid rgba(255,255,255,0.08);
+  }
+  .toolbar-group:last-child { border-left: none; }
+  .toolbar-btn {
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; color: #94a3b8;
+    cursor: pointer; transition: all 0.2s;
+    font-size: 14px; font-family: inherit;
+    min-width: 36px; text-align: center;
+  }
+  .toolbar-btn:hover {
+    background: rgba(233,69,96,0.2);
+    border-color: rgba(233,69,96,0.4);
+    color: #e94560;
+  }
+  .toolbar-btn.active {
+    background: rgba(233,69,96,0.25);
+    border-color: rgba(233,69,96,0.5);
+    color: #e94560;
+  }
+  .toolbar-select {
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; color: #94a3b8;
+    font-family: inherit; font-size: 13px;
+    cursor: pointer;
+  }
+  .toolbar-select option { background: #1a1a2e; color: #fff; }
+  .toolbar-color {
+    width: 32px; height: 32px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px; cursor: pointer;
+    background: transparent; padding: 2px;
+  }
+  .toolbar-color input {
+    width: 100%; height: 100%; border: none; border-radius: 6px;
+    cursor: pointer; background: none;
+  }
+
+  .editor-content {
+    min-height: 450px; padding: 30px;
+    color: #e2e8f0; font-size: 16px; line-height: 1.8;
+    outline: none;
+  }
+  .editor-content:empty:before {
+    content: "התחל לכתוב כאן...";
+    color: #475569;
+    pointer-events: none;
+  }
+  .editor-content h1 { font-size: 28px; margin: 20px 0 12px; color: #fff; }
+  .editor-content h2 { font-size: 24px; margin: 18px 0 10px; color: #fff; }
+  .editor-content h3 { font-size: 20px; margin: 16px 0 8px; color: #fff; }
+  .editor-content p { margin: 10px 0; }
+  .editor-content ul, .editor-content ol { margin: 10px 20px; padding-right: 20px; }
+  .editor-content blockquote {
+    border-right: 4px solid #e94560;
+    padding: 10px 20px; margin: 15px 0;
+    background: rgba(233,69,96,0.05);
+    border-radius: 0 8px 8px 0;
+  }
+  .editor-content a { color: #e94560; text-decoration: underline; }
+  .editor-content img { max-width: 100%; border-radius: 8px; }
+
+  .editor-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 30px;
+    background: rgba(0,0,0,0.15);
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .editor-actions { display: flex; gap: 12px; }
+
+  /* Status selector */
+  .status-selector {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .status-selector label { color: #94a3b8; font-size: 13px; }
+  .status-selector select {
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px; color: #e2e8f0;
+    font-family: inherit; font-size: 13px;
+    cursor: pointer;
+  }
+
+  /* Loading */
+  .loading-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10,10,20,0.85);
+    backdrop-filter: blur(10px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; flex-direction: column; gap: 20px;
+  }
+  .spinner {
+    width: 50px; height: 50px;
+    border: 3px solid rgba(233,69,96,0.2);
+    border-top-color: #e94560;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { color: #94a3b8; font-size: 14px; }
+
+  /* Toast */
+  .toast-container {
+    position: fixed; top: 24px; left: 24px;
+    z-index: 2000; display: flex; flex-direction: column; gap: 10px;
+  }
+  .toast {
+    padding: 16px 24px; border-radius: 14px;
+    color: #fff; font-size: 14px; font-weight: 500;
+    animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+    max-width: 400px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  }
+  .toast-success { background: linear-gradient(135deg, #16a34a, #22c55e); }
+  .toast-error { background: linear-gradient(135deg, #dc2626, #ef4444); }
+  .toast-info { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+  @keyframes slideIn {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center; padding: 80px 20px;
+    color: #64748b;
+  }
+  .empty-state h3 { color: #94a3b8; margin-bottom: 10px; font-size: 20px; }
+  .empty-state p { font-size: 14px; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1500;
+  }
+  .modal {
+    background: #1e1e3f;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px; padding: 30px;
+    max-width: 450px; width: 90%;
+    text-align: center;
+  }
+  .modal h3 { color: #fff; margin-bottom: 12px; font-size: 20px; }
+  .modal p { color: #94a3b8; margin-bottom: 24px; font-size: 14px; }
+  .modal-actions { display: flex; gap: 12px; justify-content: center; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .sidebar { width: 70px; }
+    .sidebar-logo h2, .nav-item span, .sidebar-footer { display: none; }
+    .nav-item { justify-content: center; padding: 14px; }
+    .main-content { padding: 20px; }
+  }
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay hidden" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">טוען...</div>
+</div>
+
+<!-- Login Screen -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h1>🐺 eWolf Blog Manager</h1>
+    <p>מערכת ניהול תוכן מתקדמת</p>
+    <input type="password" id="loginPassword" placeholder="הזן סיסמה" maxlength="20">
+    <button onclick="doLogin()">כניסה למערכת</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- App Screen -->
+<div id="appScreen" class="hidden">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h2>🐺 eWolf</h2>
+      <span>ניהול תוכן</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" onclick="showPage('posts')" id="navPosts">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+        <span>כל הפוסטים</span>
+      </button>
+      <button class="nav-item" onclick="showPage('editor')" id="navEditor">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        <span>פוסט חדש</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      מחובר כ-ewolf
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <!-- Posts Page -->
+    <div id="postsPage">
+      <div class="page-header">
+        <h2>📚 הפוסטים שלי</h2>
+        <button class="btn-primary" onclick="newPost()">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          פוסט חדש
+        </button>
+      </div>
+      <div class="posts-grid" id="postsList">
+        <div class="empty-state">
+          <h3>טוען פוסטים...</h3>
+          <p>אנא המתן</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Editor Page -->
+    <div id="editorPage" class="hidden">
+      <div class="page-header">
+        <h2 id="editorPageTitle">✏️ פוסט חדש</h2>
+        <div style="display:flex;gap:10px;">
+          <button class="btn-secondary" onclick="cancelEdit()">ביטול</button>
+          <button class="btn-primary" onclick="savePost()">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            פרסם
+          </button>
+        </div>
+      </div>
+
+      <div class="editor-container">
+        <input type="text" class="editor-title-input" id="postTitle" placeholder="כותרת הפוסט...">
+
+        <div class="toolbar">
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="execCmd('bold')" title="מודגש"><b>B</b></button>
+            <button class="toolbar-btn" onclick="execCmd('italic')" title="נטוי"><i>I</i></button>
+            <button class="toolbar-btn" onclick="execCmd('underline')" title="קו תחתון"><u>U</u></button>
+            <button class="toolbar-btn" onclick="execCmd('strikeThrough')" title="קו חוצה"><s>S</s></button>
+          </div>
+          <div class="toolbar-group">
+            <select class="toolbar-select" onchange="execCmd('formatBlock', this.value); this.value='';">
+              <option value="">כותרת</option>
+              <option value="H1">כותרת 1</option>
+              <option value="H2">כותרת 2</option>
+              <option value="H3">כותרת 3</option>
+              <option value="P">פסקה</option>
+            </select>
+          </div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="execCmd('justifyRight')" title="יישור לימין">➡️</button>
+            <button class="toolbar-btn" onclick="execCmd('justifyCenter')" title="יישור למרכז">↔️</button>
+            <button class="toolbar-btn" onclick="execCmd('justifyLeft')" title="יישור לשמאל">⬅️</button>
+          </div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="execCmd('insertUnorderedList')" title="רשימה">• רשימה</button>
+            <button class="toolbar-btn" onclick="execCmd('insertOrderedList')" title="רשימה ממוספרת">1. רשימה</button>
+          </div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="insertLink()" title="קישור">🔗</button>
+            <button class="toolbar-btn" onclick="execCmd('removeFormat')" title="נקה עיצוב">🧹</button>
+          </div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="execCmd('foreColor', '#e94560')" title="אדום" style="color:#e94560;">A</button>
+            <button class="toolbar-btn" onclick="execCmd('foreColor', '#3b82f6')" title="כחול" style="color:#3b82f6;">A</button>
+            <button class="toolbar-btn" onclick="execCmd('foreColor', '#22c55e')" title="ירוק" style="color:#22c55e;">A</button>
+            <button class="toolbar-btn" onclick="execCmd('foreColor', '#eab308')" title="צהוב" style="color:#eab308;">A</button>
+            <button class="toolbar-btn" onclick="execCmd('foreColor', '#ffffff')" title="לבן" style="color:#ffffff;">A</button>
+          </div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="execCmd('hiliteColor', '#e9456020')" title="הדגשה אדומה" style="background:rgba(233,69,96,0.2);">H</button>
+            <button class="toolbar-btn" onclick="execCmd('hiliteColor', '#3b82f620')" title="הדגשה כחולה" style="background:rgba(59,130,246,0.2);">H</button>
+            <button class="toolbar-btn" onclick="execCmd('hiliteColor', 'transparent')" title="ביטול הדגשה">✕</button>
+          </div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="execCmd('outdent')" title="הקטן כניסה">←←</button>
+            <button class="toolbar-btn" onclick="execCmd('indent')" title="הגדל כניסה">→→</button>
+          </div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="execCmd('undo')" title="בטל">↩️</button>
+            <button class="toolbar-btn" onclick="execCmd('redo')" title="בצע שוב">↪️</button>
+          </div>
+        </div>
+
+        <div class="editor-content" id="editor" contenteditable="true"></div>
+
+        <div class="editor-footer">
+          <div class="status-selector">
+            <label>סטטוס:</label>
+            <select id="postStatus">
+              <option value="publish">פורסם</option>
+              <option value="draft">טיוטה</option>
+              <option value="private">פרטי</option>
+            </select>
+          </div>
+          <div class="editor-actions">
+            <button class="btn-secondary" onclick="previewPost()">👁 תצוגה מקדימה</button>
+            <button class="btn-primary" onclick="savePost()">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              שמור ופרסם
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal-overlay hidden" id="deleteModal">
+  <div class="modal">
+    <h3>🗑️ למחוק את הפוסט?</h3>
+    <p>הפעולה לא ניתנת לביטול. הפוסט יימחק לצמיתות מהאתר.</p>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeDeleteModal()">ביטול</button>
+      <button class="btn-danger" onclick="confirmDelete()">מחק</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== CONFIG ==========
+const CONFIG = {
+  SITE_URL: 'https://ems.laviv.org.il/ewolf',
+  API_URL: 'https://ems.laviv.org.il/ewolf/wp-json/wp/v2',
+  USERNAME: 'ewolf',
+  APP_PASSWORD: '7CrNBVvw3wxs7hm9ZZec1qNy',
+  LOGIN_PASSWORD: 'WPGWTEDIT1'
+};
+
+// ========== STATE ==========
+let currentPostId = null;
+let posts = [];
+let deletePostId = null;
+let authHeader = 'Basic ' + btoa(CONFIG.USERNAME + ':' + CONFIG.APP_PASSWORD);
+
+// ========== AUTH ==========
+function doLogin() {
+  const input = document.getElementById('loginPassword').value.trim();
+  const error = document.getElementById('loginError');
+  if (input === CONFIG.LOGIN_PASSWORD) {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appScreen').classList.remove('hidden');
+    loadPosts();
+  } else {
+    error.textContent = '❌ סיסמה שגויה, נסה שוב';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginPassword').focus();
+  }
+}
+document.getElementById('loginPassword').addEventListener('keypress', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ========== API ==========
+async function apiGet(endpoint) {
+  const res = await fetch(CONFIG.API_URL + endpoint, {
+    headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' }
+  });
+  if (!res.ok) throw new Error('API Error: ' + res.status);
+  return res.json();
+}
+async function apiPost(endpoint, data) {
+  const res = await fetch(CONFIG.API_URL + endpoint, {
+    method: 'POST',
+    headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'API Error: ' + res.status);
+  }
+  return res.json();
+}
+async function apiPut(endpoint, data) {
+  const res = await fetch(CONFIG.API_URL + endpoint, {
+    method: 'PUT',
+    headers: { 'Authorization': authHeader, 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'API Error: ' + res.status);
+  }
+  return res.json();
+}
+async function apiDelete(endpoint) {
+  const res = await fetch(CONFIG.API_URL + endpoint, {
+    method: 'DELETE',
+    headers: { 'Authorization': authHeader }
+  });
+  if (!res.ok) throw new Error('API Error: ' + res.status);
+  return res.json();
+}
+
+// ========== POSTS ==========
+async function loadPosts() {
+  showLoading('טוען פוסטים...');
+  try {
+    posts = await apiGet('/posts?per_page=100&orderby=date&order=desc&status=any');
+    renderPosts();
+  } catch (e) {
+    showToast('שגיאה בטעינת פוסטים: ' + e.message, 'error');
+    renderPosts();
+  } finally {
+    hideLoading();
+  }
+}
+
+function renderPosts() {
+  const container = document.getElementById('postsList');
+  if (posts.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <h3>📭 אין פוסטים עדיין</h3>
+        <p>לחץ על "פוסט חדש" כדי ליצור את הפוסט הראשון שלך</p>
+        <button class="btn-primary" style="margin-top:20px;" onclick="newPost()">צור פוסט ראשון</button>
+      </div>`;
+    return;
+  }
+  container.innerHTML = posts.map(p => {
+    const date = new Date(p.date).toLocaleDateString('he-IL');
+    const statusClass = p.status === 'publish' ? 'status-publish' : p.status === 'draft' ? 'status-draft' : 'status-private';
+    const statusText = p.status === 'publish' ? 'פורסם' : p.status === 'draft' ? 'טיוטה' : 'פרטי';
+    return `
+      <div class="post-card" onclick="editPost(${p.id})">
+        <div class="post-info">
+          <h3>${escapeHtml(p.title.rendered || '(ללא כותרת)')}</h3>
+          <div class="post-meta">
+            <span>📅 ${date}</span>
+            <span class="post-status ${statusClass}">${statusText}</span>
+          </div>
+        </div>
+        <div class="post-actions" onclick="event.stopPropagation()">
+          <button class="btn-secondary" onclick="editPost(${p.id})">✏️ ערוך</button>
+          <button class="btn-danger" onclick="askDelete(${p.id})">🗑️ מחק</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ========== EDITOR ==========
+function newPost() {
+  currentPostId = null;
+  document.getElementById('postTitle').value = '';
+  document.getElementById('editor').innerHTML = '';
+  document.getElementById('postStatus').value = 'publish';
+  document.getElementById('editorPageTitle').textContent = '✏️ פוסט חדש';
+  showPage('editor');
+}
+
+async function editPost(id) {
+  showLoading('טוען פוסט...');
+  try {
+    const post = await apiGet('/posts/' + id);
+    currentPostId = id;
+    document.getElementById('postTitle').value = post.title.rendered || '';
+    document.getElementById('editor').innerHTML = post.content.rendered || '';
+    document.getElementById('postStatus').value = post.status || 'publish';
+    document.getElementById('editorPageTitle').textContent = '✏️ עריכת פוסט';
+    showPage('editor');
+  } catch (e) {
+    showToast('שגיאה בטעינת הפוסט: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+async function savePost() {
+  const title = document.getElementById('postTitle').value.trim();
+  const content = document.getElementById('editor').innerHTML;
+  const status = document.getElementById('postStatus').value;
+
+  if (!title) {
+    showToast('⚠️ יש להזין כותרת לפוסט', 'error');
+    document.getElementById('postTitle').focus();
+    return;
+  }
+
+  showLoading(currentPostId ? 'מעדכן פוסט...' : 'יוצר פוסט...');
+  try {
+    const data = { title, content, status };
+    let result;
+    if (currentPostId) {
+      result = await apiPut('/posts/' + currentPostId, data);
+      showToast('✅ הפוסט עודכן בהצלחה!', 'success');
+    } else {
+      result = await apiPost('/posts', data);
+      currentPostId = result.id;
+      showToast('✅ הפוסט פורסם בהצלחה!', 'success');
+    }
+    await loadPosts();
+    showPage('posts');
+  } catch (e) {
+    showToast('❌ שגיאה: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+  }
+}
+
+function cancelEdit() {
+  showPage('posts');
+}
+
+function previewPost() {
+  const title = document.getElementById('postTitle').value || '(ללא כותרת)';
+  const content = document.getElementById('editor').innerHTML;
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <!DOCTYPE html><html dir="rtl" lang="he"><head>
+    <meta charset="UTF-8"><title>תצוגה מקדימה - ${escapeHtml(title)}</title>
+    <style>
+      body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.8; direction: rtl; }
+      h1 { color: #e94560; }
+      blockquote { border-right: 4px solid #e94560; padding: 10px 20px; background: #f8f8f8; }
+      img { max-width: 100%; }
+    </style></head><body>
+    <h1>${escapeHtml(title)}</h1>
+    <hr>
+    ${content}
+    </body></html>
+  `);
+  win.document.close();
+}
+
+// ========== DELETE ==========
+function askDelete(id) {
+  deletePostId = id;
+  document.getElementById('deleteModal').classList.remove('hidden');
+}
+function closeDeleteModal() {
+  deletePostId = null;
+  document.getElementById('deleteModal').classList.add('hidden');
+}
+async function confirmDelete() {
+  if (!deletePostId) return;
+  showLoading('מוחק פוסט...');
+  try {
+    await apiDelete('/posts/' + deletePostId + '?force=true');
+    showToast('🗑️ הפוסט נמחק בהצלחה', 'info');
+    await loadPosts();
+  } catch (e) {
+    showToast('❌ שגיאה במחיקה: ' + e.message, 'error');
+  } finally {
+    hideLoading();
+    closeDeleteModal();
+  }
+}
+
+// ========== EDITOR TOOLS ==========
+function execCmd(cmd, val = null) {
+  document.execCommand(cmd, false, val);
+  document.getElementById('editor').focus();
+}
+function insertLink() {
+  const url = prompt('הזן כתובת קישור:', 'https://');
+  if (url) execCmd('createLink', url);
+}
+
+// ========== NAVIGATION ==========
+function showPage(page) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (page === 'posts') {
+    document.getElementById('postsPage').classList.remove('hidden');
+    document.getElementById('editorPage').classList.add('hidden');
+    document.getElementById('navPosts').classList.add('active');
+  } else {
+    document.getElementById('postsPage').classList.add('hidden');
+    document.getElementById('editorPage').classList.remove('hidden');
+    document.getElementById('navEditor').classList.add('active');
+  }
+}
+
+// ========== UI HELPERS ==========
+function showLoading(text) {
+  document.getElementById('loadingText').textContent = text;
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.add('hidden');
+}
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast toast-' + type;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+</script>
+</body>
+</html>

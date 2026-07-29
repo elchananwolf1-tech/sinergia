@@ -3,198 +3,389 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WordPress Blog Manager</title>
+<title>WordPress Studio — Advanced Blog Editor</title>
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=David+Libre:wght@400;500;700&family=Rubik:wght@300;400;500;600;700;800;900&family=Assistant:wght@300;400;500;600;700;800&family=Varela+Round&family=Miriam+Libre:wght@400;700&family=Suez+One&family=Secular+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Heebo:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --secondary: #ec4899;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --dark: #1e1b4b;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Heebo','Segoe UI',sans-serif; background:linear-gradient(135deg,#f5f7fa 0%,#e4e8ec 100%); direction:rtl; min-height:100vh; }
+body { font-family:'Inter','Heebo',sans-serif; background:var(--gray-50); direction:rtl; min-height:100vh; color:var(--gray-800); overflow-x:hidden; }
 
-/* Login */
-.login-screen { position:fixed; inset:0; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); display:flex; align-items:center; justify-content:center; z-index:9999; }
-.login-box { background:white; padding:50px 40px; border-radius:20px; box-shadow:0 25px 80px rgba(0,0,0,0.3); width:90%; max-width:420px; text-align:center; animation:slideUp 0.5s ease; }
-@keyframes slideUp { from { transform:translateY(30px); opacity:0; } to { transform:translateY(0); opacity:1; } }
-.login-box .logo { width:80px; height:80px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:20px; display:flex; align-items:center; justify-content:center; margin:0 auto 25px; font-size:36px; color:white; }
-.login-box h1 { margin-bottom:8px; color:#1f2937; font-size:26px; font-weight:700; }
-.login-box p { color:#6b7280; margin-bottom:30px; font-size:15px; }
-.login-box input { width:100%; padding:16px; margin-bottom:18px; border:2px solid #e5e7eb; border-radius:12px; font-size:16px; font-family:inherit; transition:all 0.3s; text-align:center; letter-spacing:2px; }
-.login-box input:focus { outline:none; border-color:#667eea; box-shadow:0 0 0 4px rgba(102,126,234,0.1); }
-.login-box button { width:100%; padding:16px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; border:none; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer; transition:all 0.3s; font-family:inherit; }
-.login-box button:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(102,126,234,0.4); }
-.error-msg { color:#ef4444; margin-top:12px; font-size:14px; display:none; font-weight:500; }
+/* ===== LOGIN ===== */
+.login-screen { position:fixed; inset:0; background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%); display:flex; align-items:center; justify-content:center; z-index:9999; }
+.login-box { background:white; padding:50px 40px; border-radius:var(--radius-xl); box-shadow:var(--shadow-xl); width:90%; max-width:440px; text-align:center; animation:slideUp 0.6s cubic-bezier(0.16,1,0.3,1); }
+@keyframes slideUp { from { transform:translateY(40px); opacity:0; } to { transform:translateY(0); opacity:1; } }
+.login-box .logo { width:90px; height:90px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:24px; display:flex; align-items:center; justify-content:center; margin:0 auto 28px; font-size:40px; color:white; box-shadow:0 10px 40px rgba(102,126,234,0.4); }
+.login-box h1 { margin-bottom:8px; color:var(--gray-900); font-size:28px; font-weight:800; }
+.login-box p { color:var(--gray-500); margin-bottom:32px; font-size:15px; }
+.login-box input { width:100%; padding:16px 20px; margin-bottom:16px; border:2px solid var(--gray-200); border-radius:var(--radius); font-size:16px; font-family:inherit; transition:all 0.3s; text-align:center; letter-spacing:3px; font-weight:600; }
+.login-box input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 4px rgba(99,102,241,0.1); }
+.login-box button { width:100%; padding:16px; background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%); color:white; border:none; border-radius:var(--radius); font-size:16px; font-weight:700; cursor:pointer; transition:all 0.3s; font-family:inherit; }
+.login-box button:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(99,102,241,0.4); }
+.error-msg { color:var(--danger); margin-top:12px; font-size:14px; display:none; font-weight:600; background:#fef2f2; padding:10px; border-radius:var(--radius-sm); }
 
-/* App */
+/* ===== PROFILE SETUP (First Time) ===== */
+.profile-setup { position:fixed; inset:0; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); display:none; align-items:center; justify-content:center; z-index:9998; }
+.profile-setup.active { display:flex; }
+.profile-box { background:white; padding:40px; border-radius:var(--radius-xl); box-shadow:var(--shadow-xl); width:90%; max-width:520px; text-align:center; animation:slideUp 0.5s ease; max-height:90vh; overflow-y:auto; }
+.profile-box h2 { margin-bottom:8px; color:var(--gray-900); font-size:24px; font-weight:700; }
+.profile-box p { color:var(--gray-500); margin-bottom:28px; font-size:14px; }
+.avatar-picker { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:24px; }
+.avatar-option { width:60px; height:60px; border-radius:50%; cursor:pointer; border:3px solid transparent; transition:all 0.3s; display:flex; align-items:center; justify-content:center; font-size:24px; overflow:hidden; }
+.avatar-option:hover { transform:scale(1.1); border-color:var(--primary); }
+.avatar-option.selected { border-color:var(--primary); box-shadow:0 0 0 4px rgba(99,102,241,0.2); }
+.avatar-option img { width:100%; height:100%; object-fit:cover; }
+.avatar-upload { grid-column:span 5; padding:16px; border:2px dashed var(--gray-300); border-radius:var(--radius); cursor:pointer; color:var(--gray-500); transition:all 0.3s; }
+.avatar-upload:hover { border-color:var(--primary); background:var(--gray-50); color:var(--primary); }
+.profile-box input { width:100%; padding:14px 18px; margin-bottom:16px; border:2px solid var(--gray-200); border-radius:var(--radius); font-size:15px; font-family:inherit; transition:all 0.3s; }
+.profile-box input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 4px rgba(99,102,241,0.1); }
+
+/* ===== APP LAYOUT ===== */
 .app-container { display:none; min-height:100vh; }
-.sidebar { position:fixed; right:0; top:0; bottom:0; width:280px; background:linear-gradient(180deg,#1a1a2e 0%,#16213e 100%); color:white; padding:0; overflow-y:auto; z-index:100; box-shadow:-5px 0 30px rgba(0,0,0,0.1); }
-.sidebar-header { padding:30px 25px; border-bottom:1px solid rgba(255,255,255,0.08); text-align:center; }
-.sidebar-header .logo-small { width:50px; height:50px; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); border-radius:14px; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:22px; }
-.sidebar-header h2 { font-size:18px; margin-bottom:4px; font-weight:600; }
-.sidebar-header p { font-size:12px; opacity:0.6; }
-.nav-menu { list-style:none; padding:15px 0; }
-.nav-menu li { padding:14px 25px; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; gap:12px; font-size:15px; margin:4px 12px; border-radius:10px; color:rgba(255,255,255,0.7); }
-.nav-menu li:hover { background:rgba(255,255,255,0.08); color:white; }
-.nav-menu li.active { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; box-shadow:0 4px 15px rgba(102,126,234,0.3); }
-.nav-menu li i { width:24px; text-align:center; font-size:16px; }
-.main-content { margin-right:280px; padding:30px; min-height:100vh; }
-.header-bar { background:white; padding:25px 30px; border-radius:16px; margin-bottom:25px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 20px rgba(0,0,0,0.04); border:1px solid rgba(0,0,0,0.04); }
-.header-bar h2 { font-size:22px; color:#1f2937; display:flex; align-items:center; gap:12px; }
-.header-bar h2 i { color:#667eea; }
+.sidebar { position:fixed; right:0; top:0; bottom:0; width:280px; background:var(--gray-900); color:white; padding:0; overflow-y:auto; z-index:100; box-shadow:-5px 0 40px rgba(0,0,0,0.15); }
+.sidebar-header { padding:24px 20px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.user-profile { display:flex; align-items:center; gap:12px; }
+.user-avatar { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--primary),var(--secondary)); display:flex; align-items:center; justify-content:center; font-size:18px; color:white; flex-shrink:0; overflow:hidden; }
+.user-avatar img { width:100%; height:100%; object-fit:cover; }
+.user-info h3 { font-size:15px; font-weight:600; margin-bottom:2px; }
+.user-info p { font-size:12px; color:var(--gray-400); }
+.nav-menu { list-style:none; padding:12px 0; }
+.nav-menu li { padding:12px 20px; cursor:pointer; transition:all 0.25s; display:flex; align-items:center; gap:12px; font-size:14px; margin:4px 12px; border-radius:var(--radius-sm); color:var(--gray-400); font-weight:500; }
+.nav-menu li:hover { background:rgba(255,255,255,0.06); color:white; }
+.nav-menu li.active { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white; box-shadow:0 4px 15px rgba(99,102,241,0.3); }
+.nav-menu li i { width:22px; text-align:center; font-size:15px; }
+.nav-badge { margin-right:auto; background:var(--danger); color:white; font-size:10px; padding:2px 8px; border-radius:20px; font-weight:700; }
 
-/* Buttons */
-.btn { padding:12px 24px; border:none; border-radius:10px; cursor:pointer; font-size:14px; font-weight:600; transition:all 0.3s; display:inline-flex; align-items:center; gap:8px; font-family:inherit; }
-.btn-primary { background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:white; box-shadow:0 4px 15px rgba(102,126,234,0.3); }
-.btn-primary:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(102,126,234,0.4); }
-.btn-success { background:linear-gradient(135deg,#10b981 0%,#059669 100%); color:white; box-shadow:0 4px 15px rgba(16,185,129,0.3); }
-.btn-success:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(16,185,129,0.4); }
-.btn-secondary { background:#f3f4f6; color:#4b5563; }
-.btn-secondary:hover { background:#e5e7eb; }
-.btn-danger { background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%); color:white; }
-.btn-danger:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(239,68,68,0.3); }
-.btn-sm { padding:8px 16px; font-size:13px; }
+.main-content { margin-right:280px; padding:24px; min-height:100vh; }
+.header-bar { background:white; padding:20px 28px; border-radius:var(--radius-lg); margin-bottom:24px; display:flex; justify-content:space-between; align-items:center; box-shadow:var(--shadow-sm); border:1px solid var(--gray-100); }
+.header-bar h2 { font-size:20px; color:var(--gray-900); display:flex; align-items:center; gap:12px; font-weight:700; }
+.header-bar h2 i { color:var(--primary); }
 
-/* Posts */
-.posts-grid { display:grid; gap:20px; }
-.post-card { background:white; border-radius:16px; padding:24px; box-shadow:0 4px 20px rgba(0,0,0,0.04); transition:all 0.3s; border:1px solid rgba(0,0,0,0.04); display:flex; gap:20px; align-items:flex-start; }
-.post-card:hover { transform:translateY(-3px); box-shadow:0 10px 40px rgba(0,0,0,0.08); border-color:rgba(102,126,234,0.2); }
-.post-image { width:100px; height:100px; border-radius:12px; object-fit:cover; flex-shrink:0; background:#f3f4f6; display:flex; align-items:center; justify-content:center; color:#d1d5db; font-size:32px; }
-.post-image img { width:100%; height:100%; object-fit:cover; border-radius:12px; }
+/* ===== BUTTONS ===== */
+.btn { padding:10px 20px; border:none; border-radius:var(--radius-sm); cursor:pointer; font-size:13px; font-weight:600; transition:all 0.25s; display:inline-flex; align-items:center; gap:8px; font-family:inherit; white-space:nowrap; }
+.btn-primary { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white; box-shadow:0 4px 12px rgba(99,102,241,0.3); }
+.btn-primary:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(99,102,241,0.4); }
+.btn-success { background:linear-gradient(135deg,var(--success),#059669); color:white; box-shadow:0 4px 12px rgba(16,185,129,0.3); }
+.btn-success:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(16,185,129,0.4); }
+.btn-secondary { background:var(--gray-100); color:var(--gray-600); }
+.btn-secondary:hover { background:var(--gray-200); }
+.btn-danger { background:linear-gradient(135deg,var(--danger),#dc2626); color:white; }
+.btn-danger:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(239,68,68,0.3); }
+.btn-ghost { background:transparent; color:var(--gray-500); }
+.btn-ghost:hover { background:var(--gray-100); color:var(--gray-700); }
+.btn-sm { padding:7px 14px; font-size:12px; }
+.btn-xs { padding:5px 10px; font-size:11px; }
+
+/* ===== POSTS ===== */
+.posts-grid { display:grid; gap:16px; }
+.post-card { background:white; border-radius:var(--radius-lg); padding:20px; box-shadow:var(--shadow-sm); transition:all 0.3s; border:1px solid var(--gray-100); display:flex; gap:18px; align-items:flex-start; cursor:pointer; }
+.post-card:hover { transform:translateY(-2px); box-shadow:var(--shadow-lg); border-color:var(--gray-200); }
+.post-image { width:90px; height:90px; border-radius:var(--radius); object-fit:cover; flex-shrink:0; background:var(--gray-100); display:flex; align-items:center; justify-content:center; color:var(--gray-300); font-size:28px; overflow:hidden; }
+.post-image img { width:100%; height:100%; object-fit:cover; }
 .post-content { flex:1; min-width:0; }
-.post-card h3 { color:#1f2937; margin-bottom:10px; font-size:18px; font-weight:600; line-height:1.4; }
-.post-excerpt { color:#6b7280; font-size:14px; line-height:1.6; margin-bottom:12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.post-meta { display:flex; align-items:center; gap:15px; flex-wrap:wrap; }
-.post-meta span { color:#9ca3af; font-size:13px; display:flex; align-items:center; gap:5px; }
-.post-status { display:inline-flex; align-items:center; gap:5px; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:600; }
+.post-card h3 { color:var(--gray-900); margin-bottom:6px; font-size:17px; font-weight:700; line-height:1.4; }
+.post-excerpt { color:var(--gray-500); font-size:13px; line-height:1.6; margin-bottom:10px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.post-meta { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.post-meta span { color:var(--gray-400); font-size:12px; display:flex; align-items:center; gap:4px; }
+.post-status { display:inline-flex; align-items:center; gap:4px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; }
 .status-publish { background:#d1fae5; color:#065f46; }
 .status-draft { background:#fef3c7; color:#92400e; }
-.post-actions { display:flex; gap:8px; margin-top:12px; }
+.status-shared { background:#dbeafe; color:#1e40af; }
+.post-actions { display:flex; gap:6px; margin-top:10px; }
+.post-author { display:flex; align-items:center; gap:6px; margin-top:8px; }
+.post-author img { width:20px; height:20px; border-radius:50%; }
+.post-author span { font-size:12px; color:var(--gray-500); }
 
-/* Editor */
-.editor-wrapper { background:white; border-radius:16px; padding:30px; box-shadow:0 4px 20px rgba(0,0,0,0.04); border:1px solid rgba(0,0,0,0.04); }
-.editor-header { margin-bottom:25px; }
-.editor-header input { width:100%; padding:18px; font-size:26px; font-weight:700; border:2px solid #e5e7eb; border-radius:12px; margin-bottom:20px; font-family:inherit; color:#1f2937; transition:all 0.3s; }
-.editor-header input:focus { outline:none; border-color:#667eea; box-shadow:0 0 0 4px rgba(102,126,234,0.1); }
+/* ===== EDITOR ===== */
+.editor-wrapper { background:white; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); border:1px solid var(--gray-100); overflow:hidden; }
+.editor-header { padding:24px 28px; border-bottom:1px solid var(--gray-100); }
+.editor-header input { width:100%; padding:16px 0; font-size:28px; font-weight:800; border:none; font-family:inherit; color:var(--gray-900); background:transparent; transition:all 0.3s; }
+.editor-header input:focus { outline:none; }
+.editor-header input::placeholder { color:var(--gray-300); }
+
+/* Post Style Panel */
+.style-panel { padding:16px 28px; background:var(--gray-50); border-bottom:1px solid var(--gray-100); display:flex; gap:20px; align-items:center; flex-wrap:wrap; }
+.style-group { display:flex; align-items:center; gap:8px; }
+.style-group label { font-size:12px; font-weight:600; color:var(--gray-500); white-space:nowrap; }
+.style-group input[type="color"] { width:36px; height:36px; border:none; border-radius:var(--radius-sm); cursor:pointer; padding:2px; }
+.style-group select { padding:8px 12px; border:1px solid var(--gray-200); border-radius:var(--radius-sm); font-size:13px; font-family:inherit; background:white; cursor:pointer; }
+.style-group button { padding:8px 14px; font-size:12px; }
 
 /* Featured Image */
-.featured-image-section { margin-bottom:25px; padding:30px; border:2px dashed #d1d5db; border-radius:16px; text-align:center; transition:all 0.3s; cursor:pointer; background:#fafafa; }
-.featured-image-section:hover { border-color:#667eea; background:#f5f7ff; }
-.featured-image-section.dragover { background:#eff6ff; border-color:#667eea; border-style:solid; transform:scale(1.01); }
-.featured-image-preview-wrapper { position:relative; display:inline-block; margin-top:15px; }
-.featured-image-preview { max-width:100%; max-height:300px; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.1); }
-.remove-image-btn { position:absolute; top:-10px; left:-10px; width:32px; height:32px; background:#ef4444; color:white; border:none; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 10px rgba(0,0,0,0.2); transition:all 0.3s; }
-.remove-image-btn:hover { transform:scale(1.1); background:#dc2626; }
+.featured-image-section { padding:28px; border:2px dashed var(--gray-200); border-radius:var(--radius-lg); text-align:center; transition:all 0.3s; cursor:pointer; background:var(--gray-50); margin:0 28px 20px; }
+.featured-image-section:hover { border-color:var(--primary); background:#eef2ff; }
+.featured-image-section.dragover { background:#e0e7ff; border-color:var(--primary); border-style:solid; }
+.featured-image-preview-wrapper { position:relative; display:inline-block; margin-top:12px; }
+.featured-image-preview { max-width:100%; max-height:260px; border-radius:var(--radius); box-shadow:var(--shadow); }
+.remove-image-btn { position:absolute; top:-10px; left:-10px; width:30px; height:30px; background:var(--danger); color:white; border:none; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow); transition:all 0.3s; }
+.remove-image-btn:hover { transform:scale(1.1); }
 
 /* Quill */
-.ql-toolbar { border-radius:12px 12px 0 0 !important; border-color:#e5e7eb !important; background:#fafafa; padding:12px !important; }
-.ql-toolbar button { width:32px !important; height:32px !important; border-radius:6px !important; transition:all 0.2s !important; }
-.ql-toolbar button:hover { background:#e5e7eb !important; }
-.ql-toolbar button.ql-active { background:#667eea !important; color:white !important; }
-.ql-container { border-radius:0 0 12px 12px !important; border-color:#e5e7eb !important; min-height:450px; font-size:16px; line-height:1.8; }
-.ql-editor { padding:24px !important; }
-.ql-editor p { margin-bottom:12px; }
-.ql-editor img { max-width:100%; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.1); margin:10px 0; cursor:pointer; }
-.ql-editor h1, .ql-editor h2, .ql-editor h3 { margin:20px 0 12px; font-weight:700; color:#1f2937; }
-.ql-editor blockquote { border-right:4px solid #667eea; padding:12px 20px; margin:16px 0; background:#f9fafb; border-radius:8px; font-style:italic; }
-.ql-editor ul, .ql-editor ol { padding-right:24px; margin:12px 0; }
-.ql-editor li { margin-bottom:6px; }
-.ql-snow .ql-picker-label { font-family:'Heebo',sans-serif; }
-.editor-actions { margin-top:30px; display:flex; gap:12px; justify-content:flex-end; padding-top:20px; border-top:1px solid #e5e7eb; }
+.ql-toolbar { border:none !important; border-bottom:1px solid var(--gray-100) !important; background:var(--gray-50); padding:12px 16px !important; }
+.ql-toolbar button { width:32px !important; height:32px !important; border-radius:var(--radius-sm) !important; transition:all 0.2s !important; }
+.ql-toolbar button:hover { background:var(--gray-200) !important; }
+.ql-toolbar button.ql-active { background:var(--primary) !important; color:white !important; }
+.ql-container { border:none !important; min-height:420px; font-size:15px; line-height:1.8; }
+.ql-editor { padding:24px 28px !important; }
+.ql-editor p { margin-bottom:10px; }
+.ql-editor img { max-width:100%; border-radius:var(--radius-sm); box-shadow:var(--shadow); margin:8px 0; cursor:move; }
+.ql-editor h1, .ql-editor h2, .ql-editor h3 { margin:18px 0 10px; font-weight:800; color:var(--gray-900); }
+.ql-editor blockquote { border-right:4px solid var(--primary); padding:12px 20px; margin:14px 0; background:var(--gray-50); border-radius:var(--radius-sm); font-style:italic; }
+.ql-editor ul, .ql-editor ol { padding-right:24px; margin:10px 0; }
+.ql-editor li { margin-bottom:4px; }
 
-/* Image resize handles */
-.resize-handle { position:absolute; width:12px; height:12px; background:#667eea; border:2px solid white; border-radius:50%; cursor:nwse-resize; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,0.3); }
-.resize-handle.se { bottom:-6px; left:-6px; }
-.resize-handle.sw { bottom:-6px; right:-6px; }
-.resize-handle.ne { top:-6px; left:-6px; }
-.resize-handle.nw { top:-6px; right:-6px; }
-.img-wrapper { position:relative; display:inline-block; }
-.img-wrapper:hover .resize-handle { opacity:1; }
+/* Image in editor - draggable */
+.ql-editor .draggable-img { position:relative; display:inline-block; }
+.ql-editor .draggable-img:hover::after { content:'\f0b2'; font-family:'Font Awesome 6 Free'; font-weight:900; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.6); color:white; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; pointer-events:none; }
 
-/* Settings */
-.settings-panel { background:white; border-radius:16px; padding:35px; max-width:600px; margin:0 auto; box-shadow:0 4px 20px rgba(0,0,0,0.04); border:1px solid rgba(0,0,0,0.04); }
-.form-group { margin-bottom:24px; }
-.form-group label { display:block; margin-bottom:10px; font-weight:600; color:#374151; font-size:14px; }
-.form-group input { width:100%; padding:14px; border:2px solid #e5e7eb; border-radius:10px; font-size:15px; font-family:inherit; transition:all 0.3s; }
-.form-group input:focus { outline:none; border-color:#667eea; box-shadow:0 0 0 4px rgba(102,126,234,0.1); }
-.form-group small { display:block; margin-top:6px; color:#9ca3af; font-size:12px; }
+.editor-actions { padding:20px 28px; display:flex; gap:10px; justify-content:flex-end; border-top:1px solid var(--gray-100); background:var(--gray-50); }
 
-/* Loading & Toast */
-.loading-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; z-index:10000; }
+/* ===== FONT SEARCH ===== */
+.font-search-container { position:relative; }
+.font-search { padding:8px 12px; border:1px solid var(--gray-200); border-radius:var(--radius-sm); font-size:13px; width:200px; font-family:inherit; }
+.font-search:focus { outline:none; border-color:var(--primary); }
+.font-dropdown { position:absolute; top:100%; right:0; left:auto; width:280px; max-height:300px; overflow-y:auto; background:white; border:1px solid var(--gray-200); border-radius:var(--radius); box-shadow:var(--shadow-xl); z-index:200; display:none; margin-top:4px; }
+.font-dropdown.active { display:block; }
+.font-item { padding:10px 14px; cursor:pointer; font-size:14px; transition:all 0.2s; border-bottom:1px solid var(--gray-50); }
+.font-item:hover { background:var(--gray-50); color:var(--primary); }
+.font-item small { color:var(--gray-400); font-size:11px; }
+
+/* ===== IMAGE MINI MENU ===== */
+.img-mini-menu { position:absolute; background:white; border-radius:var(--radius); box-shadow:var(--shadow-xl); padding:8px; display:none; gap:4px; z-index:500; border:1px solid var(--gray-100); }
+.img-mini-menu.active { display:flex; }
+.img-mini-menu button { padding:8px 12px; border:none; background:transparent; border-radius:var(--radius-sm); cursor:pointer; font-size:13px; color:var(--gray-600); transition:all 0.2s; white-space:nowrap; }
+.img-mini-menu button:hover { background:var(--gray-100); color:var(--primary); }
+.img-mini-menu button i { margin-left:6px; }
+
+/* Crop Modal */
+.crop-modal { position:fixed; inset:0; background:rgba(0,0,0,0.7); display:none; align-items:center; justify-content:center; z-index:10000; backdrop-filter:blur(4px); }
+.crop-modal.active { display:flex; }
+.crop-box { background:white; padding:24px; border-radius:var(--radius-xl); max-width:700px; width:90%; max-height:90vh; overflow:auto; }
+.crop-box h3 { margin-bottom:16px; font-size:18px; }
+.crop-area { max-height:500px; margin-bottom:16px; }
+.crop-area img { max-width:100%; display:block; }
+.crop-actions { display:flex; gap:8px; justify-content:flex-end; }
+
+/* ===== SHARED DRAFTS SIDEBAR ===== */
+.shared-sidebar { position:fixed; left:0; top:0; bottom:0; width:320px; background:white; border-right:1px solid var(--gray-100); z-index:90; transform:translateX(-100%); transition:transform 0.3s; display:flex; flex-direction:column; }
+.shared-sidebar.active { transform:translateX(0); }
+.shared-header { padding:16px 20px; border-bottom:1px solid var(--gray-100); display:flex; justify-content:space-between; align-items:center; }
+.shared-header h3 { font-size:15px; font-weight:700; }
+.shared-list { flex:1; overflow-y:auto; padding:12px; }
+.shared-item { padding:12px; border-radius:var(--radius); background:var(--gray-50); margin-bottom:8px; cursor:pointer; transition:all 0.2s; border:1px solid transparent; }
+.shared-item:hover { border-color:var(--primary); background:white; }
+.shared-item h4 { font-size:13px; font-weight:600; margin-bottom:4px; }
+.shared-item p { font-size:11px; color:var(--gray-500); }
+.shared-item .shared-authors { display:flex; gap:-4px; margin-top:6px; }
+.shared-item .shared-authors img { width:20px; height:20px; border-radius:50%; border:2px solid white; margin-left:-6px; }
+.shared-chat { border-top:1px solid var(--gray-100); padding:12px; height:200px; display:flex; flex-direction:column; }
+.chat-messages { flex:1; overflow-y:auto; margin-bottom:8px; }
+.chat-message { padding:8px 12px; border-radius:var(--radius-sm); margin-bottom:6px; font-size:12px; max-width:85%; }
+.chat-message.me { background:var(--primary); color:white; margin-right:auto; margin-left:0; }
+.chat-message.other { background:var(--gray-100); color:var(--gray-700); }
+.chat-message .msg-author { font-size:10px; opacity:0.7; margin-bottom:2px; }
+.chat-input { display:flex; gap:6px; }
+.chat-input input { flex:1; padding:8px 12px; border:1px solid var(--gray-200); border-radius:var(--radius-sm); font-size:12px; font-family:inherit; }
+.chat-input button { padding:8px 12px; }
+
+/* ===== SETTINGS ===== */
+.settings-panel { background:white; border-radius:var(--radius-lg); padding:32px; max-width:560px; margin:0 auto; box-shadow:var(--shadow-sm); border:1px solid var(--gray-100); }
+.form-group { margin-bottom:20px; }
+.form-group label { display:block; margin-bottom:8px; font-weight:600; color:var(--gray-700); font-size:13px; }
+.form-group input { width:100%; padding:12px 16px; border:2px solid var(--gray-200); border-radius:var(--radius-sm); font-size:14px; font-family:inherit; transition:all 0.3s; }
+.form-group input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(99,102,241,0.1); }
+.form-group small { display:block; margin-top:6px; color:var(--gray-400); font-size:11px; }
+
+/* ===== LOADING & TOAST ===== */
+.loading-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.5); backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center; z-index:10000; }
 .loading-overlay.active { display:flex; }
-.loading-box { background:white; padding:40px 50px; border-radius:20px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
-.spinner { width:50px; height:50px; border:4px solid #e5e7eb; border-top-color:#667eea; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 15px; }
+.loading-box { background:white; padding:36px 48px; border-radius:var(--radius-xl); text-align:center; box-shadow:var(--shadow-xl); }
+.spinner { width:44px; height:44px; border:3px solid var(--gray-200); border-top-color:var(--primary); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 12px; }
 @keyframes spin { to { transform:rotate(360deg); } }
-.toast-container { position:fixed; top:20px; left:20px; z-index:10001; }
-.toast { padding:16px 24px; border-radius:12px; margin-bottom:12px; animation:slideIn 0.4s ease; display:flex; align-items:center; gap:12px; font-weight:500; font-size:14px; box-shadow:0 10px 40px rgba(0,0,0,0.15); min-width:280px; }
-.toast.success { background:linear-gradient(135deg,#10b981 0%,#059669 100%); color:white; }
-.toast.error { background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%); color:white; }
-.toast.info { background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%); color:white; }
+.toast-container { position:fixed; top:16px; left:16px; z-index:10001; }
+.toast { padding:14px 20px; border-radius:var(--radius); margin-bottom:10px; animation:slideIn 0.4s cubic-bezier(0.16,1,0.3,1); display:flex; align-items:center; gap:10px; font-weight:600; font-size:13px; box-shadow:var(--shadow-xl); min-width:260px; backdrop-filter:blur(10px); }
+.toast.success { background:linear-gradient(135deg,var(--success),#059669); color:white; }
+.toast.error { background:linear-gradient(135deg,var(--danger),#dc2626); color:white; }
+.toast.info { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white; }
 @keyframes slideIn { from { transform:translateX(-100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
 
+/* ===== UTILITIES ===== */
 .hidden { display:none !important; }
-.empty-state { text-align:center; padding:80px 20px; color:#9ca3af; }
-.empty-state i { font-size:64px; margin-bottom:20px; opacity:0.5; }
-.empty-state h3 { color:#6b7280; margin-bottom:10px; font-size:20px; }
-.search-bar { display:flex; gap:12px; margin-bottom:20px; }
-.search-bar input { flex:1; padding:12px 18px; border:2px solid #e5e7eb; border-radius:10px; font-size:15px; font-family:inherit; transition:all 0.3s; }
-.search-bar input:focus { outline:none; border-color:#667eea; box-shadow:0 0 0 4px rgba(102,126,234,0.1); }
+.empty-state { text-align:center; padding:60px 20px; color:var(--gray-400); }
+.empty-state i { font-size:56px; margin-bottom:16px; opacity:0.4; }
+.empty-state h3 { color:var(--gray-600); margin-bottom:8px; font-size:18px; }
+.search-bar { display:flex; gap:10px; margin-bottom:20px; }
+.search-bar input { flex:1; padding:10px 16px; border:2px solid var(--gray-200); border-radius:var(--radius-sm); font-size:14px; font-family:inherit; transition:all 0.3s; }
+.search-bar input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(99,102,241,0.1); }
 
-/* Markdown toggle */
-.markdown-toggle { display:flex; align-items:center; gap:10px; margin-bottom:15px; padding:10px 15px; background:#f9fafb; border-radius:10px; }
-.markdown-toggle label { font-size:14px; color:#4b5563; font-weight:500; cursor:pointer; }
-.markdown-toggle input { width:18px; height:18px; cursor:pointer; accent-color:#667eea; }
+/* Markdown */
+.markdown-toggle { display:flex; align-items:center; gap:8px; padding:10px 16px; background:var(--gray-50); border-radius:var(--radius-sm); margin:0 28px 12px; border:1px solid var(--gray-100); }
+.markdown-toggle label { font-size:13px; color:var(--gray-600); font-weight:500; cursor:pointer; }
+.markdown-toggle input { width:16px; height:16px; cursor:pointer; accent-color:var(--primary); }
 
-::-webkit-scrollbar { width:8px; }
-::-webkit-scrollbar-track { background:#f1f1f1; }
-::-webkit-scrollbar-thumb { background:#c7c7c7; border-radius:4px; }
-::-webkit-scrollbar-thumb:hover { background:#a0a0a0; }
+/* Scrollbar */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--gray-300); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:var(--gray-400); }
+
+/* Online users indicator */
+.online-users { display:flex; align-items:center; gap:6px; padding:8px 16px; background:var(--gray-800); margin:8px 12px; border-radius:var(--radius-sm); }
+.online-users .dot { width:8px; height:8px; background:var(--success); border-radius:50%; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+.online-users span { font-size:11px; color:var(--gray-400); }
 </style>
 <base target="_blank">
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- ===== LOGIN ===== -->
 <div class="login-screen" id="loginScreen">
   <div class="login-box">
     <div class="logo"><i class="fas fa-shield-alt"></i></div>
-    <h1>מערכת ניהול בלוג</h1>
+    <h1>WordPress Studio</h1>
     <p>הזן את הסיסמה לגישה למערכת העריכה המתקדמת</p>
     <input type="password" id="appPassword" placeholder="הזן סיסמה..." onkeypress="if(event.key==='Enter')checkLogin()">
     <button onclick="checkLogin()"><i class="fas fa-sign-in-alt"></i> כניסה למערכת</button>
-    <div class="error-msg" id="loginError"><i class="fas fa-exclamation-triangle"></i> סיסמה שגויה, נסה שוב</div>
+    <div class="error-msg" id="loginError"><i class="fas fa-exclamation-triangle"></i> סיסמה שגויה</div>
   </div>
 </div>
 
-<!-- LOADING & TOAST -->
+<!-- ===== PROFILE SETUP (First Time) ===== -->
+<div class="profile-setup" id="profileSetup">
+  <div class="profile-box">
+    <div class="logo" style="width:70px;height:70px;margin:0 auto 20px;font-size:30px;"><i class="fas fa-user-circle"></i></div>
+    <h2>ברוך הבא! בוא נכיר אותך</h2>
+    <p>הגדר את הפרופיל שלך. ניתן לשנות בהמשך.</p>
+
+    <div style="margin-bottom:16px;">
+      <label style="display:block;margin-bottom:8px;font-weight:600;font-size:13px;color:var(--gray-700);">בחר תמונת פרופיל</label>
+      <div class="avatar-picker" id="avatarPicker"></div>
+      <div class="avatar-upload" onclick="document.getElementById('avatarUpload').click()">
+        <i class="fas fa-cloud-upload-alt"></i> העלה תמונה מהמחשב
+        <input type="file" id="avatarUpload" class="hidden" accept="image/*" onchange="handleAvatarUpload(event)">
+      </div>
+    </div>
+
+    <input type="text" id="profileName" placeholder="שם משתמש / כינוי...">
+    <input type="password" id="profilePass" placeholder="סיסמת אפליקציה (Application Password)...">
+    <input type="text" id="profileUrl" placeholder="כתובת האתר (לדוג': https://example.com)...">
+    <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="saveProfile()"><i class="fas fa-check"></i> המשך</button>
+  </div>
+</div>
+
+<!-- ===== LOADING & TOAST ===== -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-box">
     <div class="spinner"></div>
-    <p style="color:#6b7280;font-weight:600;">טוען...</p>
+    <p style="color:var(--gray-500);font-weight:600;font-size:14px;">טוען...</p>
   </div>
 </div>
 <div class="toast-container" id="toastContainer"></div>
 
-<!-- APP -->
+<!-- ===== IMAGE MINI MENU ===== -->
+<div class="img-mini-menu" id="imgMiniMenu">
+  <button onclick="cropImage()"><i class="fas fa-crop-alt"></i> חיתוך</button>
+  <button onclick="resizeImageDialog()"><i class="fas fa-expand"></i> גודל</button>
+  <button onclick="alignImage('left')"><i class="fas fa-align-left"></i> שמאל</button>
+  <button onclick="alignImage('center')"><i class="fas fa-align-center"></i> מרכז</button>
+  <button onclick="alignImage('right')"><i class="fas fa-align-right"></i> ימין</button>
+  <button onclick="removeImage()"><i class="fas fa-trash"></i> מחק</button>
+</div>
+
+<!-- ===== CROP MODAL ===== -->
+<div class="crop-modal" id="cropModal">
+  <div class="crop-box">
+    <h3><i class="fas fa-crop-alt" style="color:var(--primary);"></i> חיתוך תמונה</h3>
+    <div class="crop-area"><img id="cropImage" src=""></div>
+    <div class="crop-actions">
+      <button class="btn btn-secondary" onclick="closeCropModal()">ביטול</button>
+      <button class="btn btn-primary" onclick="applyCrop()"><i class="fas fa-check"></i> שמור חיתוך</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SHARED DRAFTS SIDEBAR ===== -->
+<div class="shared-sidebar" id="sharedSidebar">
+  <div class="shared-header">
+    <h3><i class="fas fa-users" style="color:var(--primary);"></i> טיוטות משותפות</h3>
+    <button class="btn btn-ghost btn-xs" onclick="toggleSharedSidebar()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="shared-list" id="sharedList"></div>
+  <div class="shared-chat">
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input">
+      <input type="text" id="chatInput" placeholder="כתוב הודעה..." onkeypress="if(event.key==='Enter')sendChat()">
+      <button class="btn btn-primary btn-xs" onclick="sendChat()"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
 <div class="app-container" id="appContainer">
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="logo-small"><i class="fas fa-pen-fancy"></i></div>
-      <h2>עורך בלוג</h2>
-      <p>WordPress Advanced Editor</p>
+      <div class="user-profile">
+        <div class="user-avatar" id="userAvatar"><i class="fas fa-user"></i></div>
+        <div class="user-info">
+          <h3 id="userName">משתמש</h3>
+          <p>עורך תוכן</p>
+        </div>
+      </div>
     </div>
     <ul class="nav-menu">
       <li class="active" onclick="showSection('posts')" id="navPosts"><i class="fas fa-newspaper"></i> הפוסטים שלי</li>
       <li onclick="showSection('editor')" id="navEditor"><i class="fas fa-plus-circle"></i> פוסט חדש</li>
+      <li onclick="toggleSharedSidebar()" id="navShared"><i class="fas fa-users"></i> טיוטות משותפות <span class="nav-badge" id="sharedBadge" style="display:none;">0</span></li>
       <li onclick="showSection('settings')" id="navSettings"><i class="fas fa-cog"></i> הגדרות</li>
-      <li onclick="logout()"><i class="fas fa-sign-out-alt"></i> יציאה</li>
+      <li onclick="switchAccount()"><i class="fas fa-exchange-alt"></i> החלף חשבון</li>
+      <li onclick="logout()"><i class="fas fa-sign-out-alt"></i> התנתק</li>
     </ul>
+    <div class="online-users" id="onlineUsers">
+      <div class="dot"></div>
+      <span id="onlineCount">מחובר</span>
+    </div>
   </aside>
 
   <main class="main-content">
-    <!-- POSTS LIST -->
+    <!-- POSTS -->
     <section id="postsSection">
       <div class="header-bar">
         <h2><i class="fas fa-newspaper"></i> כל הפוסטים</h2>
-        <button class="btn btn-primary" onclick="newPost()"><i class="fas fa-plus"></i> פוסט חדש</button>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost" onclick="showSection('editor')"><i class="fas fa-plus"></i> פוסט חדש</button>
+          <button class="btn btn-primary" onclick="newPost()"><i class="fas fa-magic"></i> יצירה מהירה</button>
+        </div>
       </div>
       <div class="search-bar">
         <input type="text" id="searchInput" placeholder="חפש פוסט..." oninput="filterPosts()">
@@ -206,33 +397,74 @@ body { font-family:'Heebo','Segoe UI',sans-serif; background:linear-gradient(135
     <section id="editorSection" class="hidden">
       <div class="header-bar">
         <h2 id="editorTitle"><i class="fas fa-edit"></i> עריכת פוסט</h2>
-        <div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <span id="editorStatus" style="font-size:12px;color:var(--gray-400);"></span>
           <button class="btn btn-secondary" onclick="showSection('posts')"><i class="fas fa-arrow-right"></i> חזרה</button>
         </div>
       </div>
       <div class="editor-wrapper">
         <div class="editor-header">
           <input type="text" id="postTitle" placeholder="כותרת הפוסט...">
+        </div>
 
-          <!-- Featured Image -->
-          <div class="featured-image-section" id="featuredImageSection"
-               ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleFeaturedImageDrop(event)"
-               onclick="document.getElementById('featuredImageInput').click()">
-            <i class="fas fa-image" style="font-size:48px;color:#9ca3af;"></i>
-            <p style="margin-top:10px;color:#6b7280;"><strong>לחץ לבחירת תמונה</strong> או גרור תמונה לכאן</p>
-            <p style="font-size:12px;color:#9ca3af;margin-top:5px;">התמונה המרכזית של הפוסט</p>
-            <input type="file" id="featuredImageInput" class="hidden" accept="image/*" onchange="handleFeaturedImageSelect(event)">
-            <div class="featured-image-preview-wrapper hidden" id="previewWrapper">
-              <img id="featuredImagePreview" class="featured-image-preview">
-              <button type="button" class="remove-image-btn" onclick="removeFeaturedImage(event)"><i class="fas fa-times"></i></button>
+        <!-- Style Panel -->
+        <div class="style-panel">
+          <div class="style-group">
+            <label>רקע:</label>
+            <input type="color" id="postBgColor" value="#ffffff" onchange="updatePostStyle()" title="צבע רקע">
+          </div>
+          <div class="style-group">
+            <label>מעבר צבע:</label>
+            <select id="postGradient" onchange="updatePostStyle()">
+              <option value="">ללא</option>
+              <option value="linear-gradient(135deg,#667eea,#764ba2)">סגול</option>
+              <option value="linear-gradient(135deg,#f093fb,#f5576c)">ורוד</option>
+              <option value="linear-gradient(135deg,#4facfe,#00f2fe)">כחול</option>
+              <option value="linear-gradient(135deg,#43e97b,#38f9d7)">ירוק</option>
+              <option value="linear-gradient(135deg,#fa709a,#fee140)">שקיעה</option>
+              <option value="linear-gradient(135deg,#a8edea,#fed6e3)">פסטל</option>
+            </select>
+          </div>
+          <div class="style-group">
+            <label>תמונת רקע:</label>
+            <button class="btn btn-secondary btn-xs" onclick="document.getElementById('bgImageInput').click()">
+              <i class="fas fa-image"></i> בחר
+            </button>
+            <input type="file" id="bgImageInput" class="hidden" accept="image/*" onchange="handleBgImage(event)">
+            <button class="btn btn-ghost btn-xs" id="removeBgBtn" style="display:none;" onclick="removeBgImage()">
+              <i class="fas fa-times"></i> הסר
+            </button>
+          </div>
+          <div class="style-group">
+            <label>פונט גלובלי:</label>
+            <div class="font-search-container">
+              <input type="text" class="font-search" id="fontSearch" placeholder="חפש פונט..." oninput="searchFonts(this.value)" onfocus="showFontDropdown()">
+              <div class="font-dropdown" id="fontDropdown"></div>
             </div>
+          </div>
+          <div class="style-group">
+            <button class="btn btn-primary btn-sm" onclick="convertToShared()"><i class="fas fa-users"></i> המר לטיוטה משותפת</button>
+          </div>
+        </div>
+
+        <!-- Featured Image -->
+        <div class="featured-image-section" id="featuredImageSection"
+             ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleFeaturedImageDrop(event)"
+             onclick="if(event.target===this||event.target.tagName==='I'||event.target.tagName==='P')document.getElementById('featuredImageInput').click()">
+          <i class="fas fa-image" style="font-size:40px;color:var(--gray-300);"></i>
+          <p style="margin-top:8px;color:var(--gray-500);font-weight:600;">לחץ לבחירת תמונה או גרור לכאן</p>
+          <p style="font-size:11px;color:var(--gray-400);margin-top:4px;">התמונה המרכזית של הפוסט</p>
+          <input type="file" id="featuredImageInput" class="hidden" accept="image/*" onchange="handleFeaturedImageSelect(event)">
+          <div class="featured-image-preview-wrapper hidden" id="previewWrapper">
+            <img id="featuredImagePreview" class="featured-image-preview">
+            <button type="button" class="remove-image-btn" onclick="removeFeaturedImage(event)"><i class="fas fa-times"></i></button>
           </div>
         </div>
 
         <!-- Markdown Toggle -->
         <div class="markdown-toggle">
           <input type="checkbox" id="markdownMode" onchange="toggleMarkdown()">
-          <label for="markdownMode">מצב Markdown (כתוב עם Markdown והמר אוטומטית)</label>
+          <label for="markdownMode">מצב Markdown — כתוב ב-Markdown והמר ל-HTML</label>
         </div>
 
         <div id="editor"></div>
@@ -251,8 +483,8 @@ body { font-family:'Heebo','Segoe UI',sans-serif; background:linear-gradient(135
         <h2><i class="fas fa-cog"></i> הגדרות</h2>
       </div>
       <div class="settings-panel">
-        <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:12px;padding:16px;margin-bottom:24px;">
-          <p style="color:#92400e;font-size:14px;margin:0;"><i class="fas fa-exclamation-triangle"></i> <strong>חשוב:</strong> הזן את פרטי החיבור שלך. הפרטים נשמרים רק בדפדפן שלך (localStorage) ולא בקוד.</p>
+        <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:var(--radius);padding:14px;margin-bottom:20px;">
+          <p style="color:#92400e;font-size:13px;margin:0;"><i class="fas fa-exclamation-triangle"></i> <strong>חשוב:</strong> הפרטים נשמרים רק בדפדפן שלך (localStorage) ולא בקוד.</p>
         </div>
         <div class="form-group">
           <label>כתובת האתר (WordPress URL)</label>
@@ -265,650 +497,1051 @@ body { font-family:'Heebo','Segoe UI',sans-serif; background:linear-gradient(135
         <div class="form-group">
           <label>סיסמת אפליקציה (Application Password)</label>
           <input type="password" id="wpAppPassword" value="" placeholder="הזן סיסמת אפליקציה...">
-          <small>ניתן למצוא בהגדרות המשתמש בוורדפרס > סיסמאות אפליקציה</small>
+          <small>ניתן למצוא בהגדרות המשתמש בוורדפרס</small>
         </div>
-        <button class="btn btn-primary" onclick="saveSettings()"><i class="fas fa-save"></i> שמור הגדרות</button>
+        <div class="form-group">
+          <label>שם תצוגה</label>
+          <input type="text" id="settingsName" value="" placeholder="הזן שם תצוגה...">
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" onclick="saveSettings()"><i class="fas fa-save"></i> שמור הגדרות</button>
+          <button class="btn btn-secondary" onclick="exportData()"><i class="fas fa-download"></i> ייצוא נתונים</button>
+          <button class="btn btn-danger" onclick="clearAllData()"><i class="fas fa-trash"></i> נקה הכל</button>
+        </div>
       </div>
     </section>
   </main>
 </div>
 
 <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
 <script>
-// ========== GLOBAL VARIABLES ==========
-let quill;
-let currentPostId = null;
-let featuredImageId = null;
-let featuredImageUrl = null;
-let allPosts = [];
-let wpConfig = { url: '', username: '', password: '' };
+// ========== GLOBAL STATE ==========
+let quill, cropper, currentPostId = null, featuredImageId = null, featuredImageUrl = null;
+let allPosts = [], selectedImage = null, allFonts = [], postStyle = {};
+let wpConfig = { url:'', username:'', password:'' };
+let userProfile = { name:'', avatar:'', pass:'', url:'' };
+let sharedDrafts = [], chatMessages = [];
 let isMarkdownMode = false;
 
-// ========== INITIALIZATION ==========
+const APP_PASSWORD = 'WPGWTEDIT1';
+const AVATAR_SVGS = [
+  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%236366f1"/><text x="50" y="65" font-size="45" text-anchor="middle" fill="white" font-family="Arial">🎨</text></svg>',
+  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23ec4899"/><text x="50" y="65" font-size="45" text-anchor="middle" fill="white" font-family="Arial">✨</text></svg>',
+  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%2310b981"/><text x="50" y="65" font-size="45" text-anchor="middle" fill="white" font-family="Arial">🚀</text></svg>',
+  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23f59e0b"/><text x="50" y="65" font-size="45" text-anchor="middle" fill="white" font-family="Arial">🔥</text></svg>',
+  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%238b5cf6"/><text x="50" y="65" font-size="45" text-anchor="middle" fill="white" font-family="Arial">💎</text></svg>',
+  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23ef4444"/><text x="50" y="65" font-size="45" text-anchor="middle" fill="white" font-family="Arial">⚡</text></svg>',
+  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%2306b6d4"/><text x="50" y="65" font-size="45" text-anchor="middle" fill="white" font-family="Arial">🌊</text></svg>',
+  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23f97316"/><text x="50" y="65" font-size="45" text-anchor="middle" fill="white" font-family="Arial">🎯</text></svg>',
+  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%2314b8a6"/><text x="50" y="65" font-size="45" text-anchor="middle" fill="white" font-family="Arial">🌿</text></svg>',
+  'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23e11d48"/><text x="50" y="65" font-size="45" text-anchor="middle" fill="white" font-family="Arial">❤️</text></svg>'
+];
+
+// ========== INIT ==========
 document.addEventListener('DOMContentLoaded', function() {
-    if (sessionStorage.getItem('appLoggedIn') === 'true') {
-        showApp();
+  loadLocalData();
+  if (sessionStorage.getItem('appLoggedIn') === 'true') {
+    if (!userProfile.name) {
+      showProfileSetup();
+    } else {
+      showApp();
     }
-    const saved = localStorage.getItem('wpConfig');
-    if (saved) {
-        wpConfig = JSON.parse(saved);
-        document.getElementById('wpUrl').value = wpConfig.url || '';
-        document.getElementById('wpUsername').value = wpConfig.username || '';
-        document.getElementById('wpAppPassword').value = wpConfig.password || '';
-    }
+  }
+  initAvatarPicker();
+  loadGoogleFonts();
+  setupImageMiniMenu();
+  setupEditorDragDrop();
 });
+
+function loadLocalData() {
+  const savedProfile = localStorage.getItem('userProfile');
+  if (savedProfile) userProfile = JSON.parse(savedProfile);
+  const savedConfig = localStorage.getItem('wpConfig');
+  if (savedConfig) wpConfig = JSON.parse(savedConfig);
+  const savedDrafts = localStorage.getItem('sharedDrafts');
+  if (savedDrafts) sharedDrafts = JSON.parse(savedDrafts);
+  const savedChat = localStorage.getItem('chatMessages');
+  if (savedChat) chatMessages = JSON.parse(savedChat);
+  const savedStyle = localStorage.getItem('postStyle');
+  if (savedStyle) postStyle = JSON.parse(savedStyle);
+}
 
 // ========== LOGIN ==========
 function checkLogin() {
-    const pass = document.getElementById('appPassword').value;
-    if (pass === 'WPGWTEDIT1') {
-        sessionStorage.setItem('appLoggedIn', 'true');
-        showApp();
+  const pass = document.getElementById('appPassword').value;
+  if (pass === APP_PASSWORD) {
+    sessionStorage.setItem('appLoggedIn', 'true');
+    if (!userProfile.name) {
+      showProfileSetup();
     } else {
-        document.getElementById('loginError').style.display = 'block';
-        document.getElementById('appPassword').value = '';
+      showApp();
     }
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('appPassword').value = '';
+  }
+}
+
+function showProfileSetup() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('profileSetup').classList.add('active');
+}
+
+function initAvatarPicker() {
+  const picker = document.getElementById('avatarPicker');
+  picker.innerHTML = AVATAR_SVGS.map((svg, i) =>
+    `<div class="avatar-option" data-idx="${i}" onclick="selectAvatar(${i})"><img src="${svg}" alt="avatar"></div>`
+  ).join('');
+}
+
+let selectedAvatarIdx = 0;
+function selectAvatar(idx) {
+  selectedAvatarIdx = idx;
+  document.querySelectorAll('.avatar-option').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+}
+selectAvatar(0);
+
+function handleAvatarUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    AVATAR_SVGS.push(ev.target.result);
+    initAvatarPicker();
+    selectAvatar(AVATAR_SVGS.length - 1);
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveProfile() {
+  const name = document.getElementById('profileName').value.trim();
+  const pass = document.getElementById('profilePass').value.trim();
+  const url = document.getElementById('profileUrl').value.trim().replace(/\/$/, '');
+  if (!name) { showToast('נא להזין שם', 'error'); return; }
+  if (!pass) { showToast('נא להזין סיסמת אפליקציה', 'error'); return; }
+  if (!url) { showToast('נא להזין כתובת אתר', 'error'); return; }
+
+  userProfile = { name, avatar: AVATAR_SVGS[selectedAvatarIdx], pass, url };
+  wpConfig = { url, username: name, password: pass };
+  localStorage.setItem('userProfile', JSON.stringify(userProfile));
+  localStorage.setItem('wpConfig', JSON.stringify(wpConfig));
+
+  document.getElementById('profileSetup').classList.remove('active');
+  showApp();
 }
 
 function showApp() {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appContainer').style.display = 'block';
-    initQuill();
-    loadPosts();
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('profileSetup').classList.remove('active');
+  document.getElementById('appContainer').style.display = 'block';
+
+  document.getElementById('userName').textContent = userProfile.name || 'משתמש';
+  const avatarEl = document.getElementById('userAvatar');
+  if (userProfile.avatar) {
+    avatarEl.innerHTML = `<img src="${userProfile.avatar}" alt="avatar">`;
+  }
+
+  document.getElementById('wpUrl').value = wpConfig.url || '';
+  document.getElementById('wpUsername').value = wpConfig.username || '';
+  document.getElementById('wpAppPassword').value = wpConfig.password || '';
+  document.getElementById('settingsName').value = userProfile.name || '';
+
+  initQuill();
+  loadPosts();
+  renderSharedList();
+  renderChat();
+  updateOnlineStatus();
+}
+
+function switchAccount() {
+  if (!confirm('האם ברצונך להתנתק ולהגדיר חשבון חדש?')) return;
+  logout();
 }
 
 function logout() {
-    sessionStorage.removeItem('appLoggedIn');
-    location.reload();
+  sessionStorage.removeItem('appLoggedIn');
+  location.reload();
+}
+
+function updateOnlineStatus() {
+  document.getElementById('onlineCount').textContent = userProfile.name || 'מחובר';
+}
+
+// ========== GOOGLE FONTS ==========
+async function loadGoogleFonts() {
+  try {
+    const res = await fetch('https://www.googleapis.com/webfonts/v1/webfonts?key=AIzaSyAOkdDlx49HCSBdu86oe8AD1Q7i_3B0Krg&sort=popularity');
+    const data = await res.json();
+    allFonts = data.items.slice(0, 500);
+  } catch(e) {
+    allFonts = [
+      { family: 'Heebo' }, { family: 'Inter' }, { family: 'Roboto' },
+      { family: 'Open Sans' }, { family: 'Lato' }, { family: 'Montserrat' },
+      { family: 'Poppins' }, { family: 'Raleway' }, { family: 'Ubuntu' },
+      { family: 'Playfair Display' }, { family: 'Merriweather' }, { family: 'Oswald' }
+    ];
+  }
+}
+
+function searchFonts(query) {
+  const dropdown = document.getElementById('fontDropdown');
+  if (!query) { dropdown.classList.remove('active'); return; }
+  const filtered = allFonts.filter(f => f.family.toLowerCase().includes(query.toLowerCase())).slice(0, 20);
+  dropdown.innerHTML = filtered.map(f =>
+    `<div class="font-item" onclick="applyFont('${f.family}')" style="font-family:'${f.family}',sans-serif;">${f.family}</div>`
+  ).join('');
+  dropdown.classList.add('active');
+}
+
+function showFontDropdown() {
+  if (document.getElementById('fontSearch').value) {
+    document.getElementById('fontDropdown').classList.add('active');
+  }
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.font-search-container')) {
+    document.getElementById('fontDropdown').classList.remove('active');
+  }
+});
+
+function applyFont(fontFamily) {
+  document.getElementById('fontDropdown').classList.remove('active');
+  document.getElementById('fontSearch').value = fontFamily;
+
+  const link = document.createElement('link');
+  link.href = `https://fonts.googleapis.com/css2?family=${fontFamily.replace(/ /g, '+')}:wght@300;400;500;600;700;800&display=swap`;
+  link.rel = 'stylesheet';
+  document.head.appendChild(link);
+
+  postStyle.fontFamily = fontFamily;
+  localStorage.setItem('postStyle', JSON.stringify(postStyle));
+
+  if (quill) {
+    quill.root.style.fontFamily = fontFamily + ', sans-serif';
+  }
 }
 
 // ========== QUILL EDITOR ==========
 function initQuill() {
-    if (quill) return;
+  if (quill) return;
 
-    // 9 Hebrew fonts
-    const Font = Quill.import('formats/font');
-    Font.whitelist = ['heebo', 'david-libre', 'rubik', 'assistant', 'varela-round', 'miriam-libre', 'suez-one', 'secular-one', 'arial', 'times-new-roman'];
-    Quill.register(Font, true);
+  const toolbarOptions = [
+    [{ 'header': [1, 2, 3, false] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ 'color': [] }, { 'background': [] }],
+    [{ 'script': 'sub' }, { 'script': 'super' }],
+    ['blockquote', 'code-block'],
+    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+    [{ 'indent': '-1' }, { 'indent': '+1' }],
+    [{ 'direction': 'rtl' }],
+    [{ 'align': [] }],
+    ['link', 'image', 'video'],
+    ['clean']
+  ];
 
-    const toolbarOptions = [
-        [{ 'font': ['heebo', 'david-libre', 'rubik', 'assistant', 'varela-round', 'miriam-libre', 'suez-one', 'secular-one', 'arial', 'times-new-roman'] }],
-        [{ 'size': ['small', false, 'large', 'huge'] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ 'color': [] }, { 'background': [] }],
-        [{ 'script': 'sub'}, { 'script': 'super' }],
-        [{ 'header': 1 }, { 'header': 2 }, { 'header': 3 }],
-        ['blockquote', 'code-block'],
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        [{ 'indent': '-1'}, { 'indent': '+1' }],
-        [{ 'direction': 'rtl' }],
-        [{ 'align': [] }],
-        ['link', 'image', 'video'],
-        ['clean']
-    ];
-
-    quill = new Quill('#editor', {
-        theme: 'snow',
-        placeholder: 'כתוב את תוכן הפוסט כאן...',
-        modules: {
-            toolbar: {
-                container: toolbarOptions,
-                handlers: {
-                    image: imageHandler
-                }
-            }
-        }
-    });
-
-    // RTL by default
-    quill.format('direction', 'rtl');
-    quill.format('align', 'right');
-
-    // Image resize in editor
-    enableImageResize();
-
-    // Handle image drop in editor
-    quill.root.addEventListener('drop', function(e) {
-        e.preventDefault();
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            for (let file of files) {
-                if (file.type.startsWith('image/')) {
-                    uploadImageToEditor(file);
-                }
-            }
-        }
-    });
-
-    // Handle image paste in editor
-    quill.root.addEventListener('paste', function(e) {
-        const items = e.clipboardData.items;
-        for (let item of items) {
-            if (item.type.startsWith('image/')) {
-                e.preventDefault();
-                const file = item.getAsFile();
-                uploadImageToEditor(file);
-            }
-        }
-    });
-}
-
-// ========== IMAGE RESIZE ==========
-function enableImageResize() {
-    const editor = document.querySelector('.ql-editor');
-    let activeImage = null;
-    let isResizing = false;
-    let startX, startY, startWidth, startHeight;
-
-    editor.addEventListener('click', function(e) {
-        if (e.target.tagName === 'IMG') {
-            activeImage = e.target;
-            addResizeHandles(activeImage);
-        } else if (!e.target.classList.contains('resize-handle')) {
-            removeResizeHandles();
-            activeImage = null;
-        }
-    });
-
-    function addResizeHandles(img) {
-        removeResizeHandles();
-        const wrapper = document.createElement('div');
-        wrapper.className = 'img-wrapper';
-        wrapper.style.display = 'inline-block';
-        wrapper.style.position = 'relative';
-        img.parentNode.insertBefore(wrapper, img);
-        wrapper.appendChild(img);
-
-        const positions = ['nw', 'ne', 'sw', 'se'];
-        positions.forEach(pos => {
-            const handle = document.createElement('div');
-            handle.className = 'resize-handle ' + pos;
-            handle.style.opacity = '0';
-            handle.style.transition = 'opacity 0.2s';
-            wrapper.appendChild(handle);
-
-            handle.addEventListener('mousedown', function(e) {
-                e.preventDefault();
-                isResizing = true;
-                startX = e.clientX;
-                startY = e.clientY;
-                startWidth = img.offsetWidth;
-                startHeight = img.offsetHeight;
-                document.addEventListener('mousemove', onResize);
-                document.addEventListener('mouseup', stopResize);
-            });
-        });
-
-        wrapper.addEventListener('mouseenter', function() {
-            wrapper.querySelectorAll('.resize-handle').forEach(h => h.style.opacity = '1');
-        });
-        wrapper.addEventListener('mouseleave', function() {
-            if (!isResizing) {
-                wrapper.querySelectorAll('.resize-handle').forEach(h => h.style.opacity = '0');
-            }
-        });
-
-        function onResize(e) {
-            if (!isResizing) return;
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            const aspectRatio = startWidth / startHeight;
-            let newWidth = startWidth + dx;
-            if (newWidth < 50) newWidth = 50;
-            img.style.width = newWidth + 'px';
-            img.style.height = 'auto';
-        }
-
-        function stopResize() {
-            isResizing = false;
-            document.removeEventListener('mousemove', onResize);
-            document.removeEventListener('mouseup', stopResize);
-        }
+  quill = new Quill('#editor', {
+    theme: 'snow',
+    placeholder: 'כתוב את תוכן הפוסט כאן...',
+    modules: {
+      toolbar: { container: toolbarOptions, handlers: { image: imageHandler } }
     }
+  });
 
-    function removeResizeHandles() {
-        document.querySelectorAll('.img-wrapper').forEach(wrapper => {
-            const img = wrapper.querySelector('img');
-            if (img) {
-                wrapper.parentNode.insertBefore(img, wrapper);
-            }
-            wrapper.remove();
-        });
-    }
+  quill.format('direction', 'rtl');
+  quill.format('align', 'right');
+
+  if (postStyle.fontFamily) {
+    quill.root.style.fontFamily = postStyle.fontFamily + ', sans-serif';
+  }
 }
 
 function imageHandler() {
-    const input = document.createElement('input');
-    input.setAttribute('type', 'file');
-    input.setAttribute('accept', 'image/*');
-    input.click();
-    input.onchange = function() {
-        const file = input.files[0];
-        if (file) uploadImageToEditor(file);
-    };
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.click();
+  input.onchange = () => { if (input.files[0]) uploadImageToEditor(input.files[0]); };
 }
 
-function uploadImageToEditor(file) {
-    showLoading(true);
-    uploadMedia(file).then(data => {
-        const range = quill.getSelection() || { index: quill.getLength() };
-        quill.insertEmbed(range.index, 'image', data.source_url);
-        quill.setSelection(range.index + 1);
-        showToast('התמונה הועלתה בהצלחה', 'success');
-        showLoading(false);
-        // Re-enable resize on new images
-        setTimeout(enableImageResize, 100);
-    }).catch(err => {
-        showToast('שגיאה בהעלאת תמונה: ' + err.message, 'error');
-        showLoading(false);
+async function uploadImageToEditor(file) {
+  showLoading(true);
+  try {
+    const data = await uploadMedia(file);
+    const range = quill.getSelection() || { index: quill.getLength() };
+    quill.insertEmbed(range.index, 'image', data.source_url);
+    quill.setSelection(range.index + 1);
+    setupDraggableImages();
+    showToast('התמונה הועלתה בהצלחה', 'success');
+  } catch(err) {
+    showToast('שגיאה בהעלאת תמונה', 'error');
+  }
+  showLoading(false);
+}
+
+// ========== IMAGE MINI MENU & DOUBLE CLICK ==========
+function setupImageMiniMenu() {
+  const menu = document.getElementById('imgMiniMenu');
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.img-mini-menu') && !e.target.closest('.ql-editor img')) {
+      menu.classList.remove('active');
+    }
+  });
+}
+
+function setupDraggableImages() {
+  const editor = document.querySelector('.ql-editor');
+  editor.querySelectorAll('img').forEach(img => {
+    if (img.dataset.setup) return;
+    img.dataset.setup = 'true';
+
+    img.addEventListener('dblclick', function(e) {
+      e.stopPropagation();
+      selectedImage = img;
+      const menu = document.getElementById('imgMiniMenu');
+      menu.style.left = (e.pageX - 100) + 'px';
+      menu.style.top = (e.pageY + 10) + 'px';
+      menu.classList.add('active');
     });
+
+    // Make draggable
+    img.setAttribute('draggable', 'true');
+    img.addEventListener('dragstart', function(e) {
+      e.dataTransfer.setData('text/html', img.outerHTML);
+      img.style.opacity = '0.5';
+    });
+    img.addEventListener('dragend', function() {
+      img.style.opacity = '1';
+    });
+  });
+}
+
+function cropImage() {
+  if (!selectedImage) return;
+  document.getElementById('imgMiniMenu').classList.remove('active');
+  document.getElementById('cropImage').src = selectedImage.src;
+  document.getElementById('cropModal').classList.add('active');
+
+  setTimeout(() => {
+    cropper = new Cropper(document.getElementById('cropImage'), {
+      aspectRatio: NaN,
+      viewMode: 1,
+      autoCropArea: 0.8
+    });
+  }, 100);
+}
+
+function closeCropModal() {
+  document.getElementById('cropModal').classList.remove('active');
+  if (cropper) { cropper.destroy(); cropper = null; }
+}
+
+function applyCrop() {
+  if (!cropper || !selectedImage) return;
+  const canvas = cropper.getCroppedCanvas();
+  selectedImage.src = canvas.toDataURL('image/png');
+  closeCropModal();
+  showToast('התמונה נחתכה בהצלחה', 'success');
+}
+
+function resizeImageDialog() {
+  if (!selectedImage) return;
+  document.getElementById('imgMiniMenu').classList.remove('active');
+  const width = prompt('רוחב תמונה (px):', selectedImage.width);
+  if (width && !isNaN(width)) {
+    selectedImage.style.width = width + 'px';
+    selectedImage.style.height = 'auto';
+  }
+}
+
+function alignImage(align) {
+  if (!selectedImage) return;
+  document.getElementById('imgMiniMenu').classList.remove('active');
+  selectedImage.style.display = 'block';
+  selectedImage.style.margin = align === 'center' ? '10px auto' : align === 'left' ? '10px auto 10px 0' : '10px 0 10px auto';
+  if (align === 'center') selectedImage.parentElement.style.textAlign = 'center';
+}
+
+function removeImage() {
+  if (!selectedImage) return;
+  document.getElementById('imgMiniMenu').classList.remove('active');
+  selectedImage.remove();
+  selectedImage = null;
+}
+
+// ========== EDITOR DRAG & DROP ==========
+function setupEditorDragDrop() {
+  const editor = document.querySelector('.ql-editor');
+  if (!editor) return;
+
+  editor.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    editor.style.background = '#f0f4ff';
+  });
+
+  editor.addEventListener('dragleave', function() {
+    editor.style.background = '';
+  });
+
+  editor.addEventListener('drop', function(e) {
+    e.preventDefault();
+    editor.style.background = '';
+    const files = e.dataTransfer.files;
+    for (let file of files) {
+      if (file.type.startsWith('image/')) {
+        uploadImageToEditor(file);
+      }
+    }
+  });
+
+  editor.addEventListener('paste', function(e) {
+    const items = e.clipboardData.items;
+    for (let item of items) {
+      if (item.type.startsWith('image/')) {
+        e.preventDefault();
+        uploadImageToEditor(item.getAsFile());
+      }
+    }
+  });
 }
 
 // ========== MARKDOWN ==========
 function toggleMarkdown() {
-    isMarkdownMode = document.getElementById('markdownMode').checked;
-    const editor = document.querySelector('.ql-editor');
-    if (isMarkdownMode) {
-        // Show raw markdown
-        const html = quill.root.innerHTML;
-        const markdown = htmlToMarkdown(html);
-        editor.innerText = markdown;
-        editor.setAttribute('contenteditable', 'true');
-        editor.style.fontFamily = 'monospace';
-        editor.style.whiteSpace = 'pre-wrap';
-        document.querySelector('.ql-toolbar').style.pointerEvents = 'none';
-        document.querySelector('.ql-toolbar').style.opacity = '0.5';
-    } else {
-        // Convert markdown back to HTML
-        const markdown = editor.innerText;
-        const html = markdownToHtml(markdown);
-        quill.root.innerHTML = html;
-        editor.style.fontFamily = '';
-        editor.style.whiteSpace = '';
-        document.querySelector('.ql-toolbar').style.pointerEvents = '';
-        document.querySelector('.ql-toolbar').style.opacity = '1';
-        quill.format('direction', 'rtl');
-        quill.format('align', 'right');
-        setTimeout(enableImageResize, 100);
-    }
+  isMarkdownMode = document.getElementById('markdownMode').checked;
+  const editor = document.querySelector('.ql-editor');
+  const toolbar = document.querySelector('.ql-toolbar');
+
+  if (isMarkdownMode) {
+    const html = quill.root.innerHTML;
+    const md = htmlToMarkdown(html);
+    quill.disable();
+    editor.setAttribute('contenteditable', 'true');
+    editor.innerText = md;
+    editor.style.fontFamily = 'monospace';
+    editor.style.whiteSpace = 'pre-wrap';
+    editor.style.background = '#f8fafc';
+    toolbar.style.pointerEvents = 'none';
+    toolbar.style.opacity = '0.4';
+  } else {
+    const md = editor.innerText;
+    const html = markdownToHtml(md);
+    quill.enable();
+    quill.root.innerHTML = html;
+    editor.style.fontFamily = '';
+    editor.style.whiteSpace = '';
+    editor.style.background = '';
+    toolbar.style.pointerEvents = '';
+    toolbar.style.opacity = '1';
+    quill.format('direction', 'rtl');
+    quill.format('align', 'right');
+    setupDraggableImages();
+  }
 }
 
 function htmlToMarkdown(html) {
-    let md = html;
-    md = md.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n');
-    md = md.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n');
-    md = md.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n');
-    md = md.replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**');
-    md = md.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**');
-    md = md.replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*');
-    md = md.replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*');
-    md = md.replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)');
-    md = md.replace(/<img[^>]*src="([^"]*)"[^>]*>/gi, '![image]($1)');
-    md = md.replace(/<blockquote[^>]*>(.*?)<\/blockquote>/gi, '> $1\n\n');
-    md = md.replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n');
-    md = md.replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n');
-    md = md.replace(/<br\s*\/?>/gi, '\n');
-    md = md.replace(/<[^>]+>/g, '');
-    md = md.replace(/&nbsp;/g, ' ');
-    md = md.replace(/&lt;/g, '<');
-    md = md.replace(/&gt;/g, '>');
-    md = md.replace(/&amp;/g, '&');
-    return md.trim();
+  let md = html;
+  md = md.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n');
+  md = md.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n');
+  md = md.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n');
+  md = md.replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**');
+  md = md.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**');
+  md = md.replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*');
+  md = md.replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*');
+  md = md.replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)');
+  md = md.replace(/<img[^>]*src="([^"]*)"[^>]*>/gi, '![image]($1)');
+  md = md.replace(/<blockquote[^>]*>(.*?)<\/blockquote>/gi, '> $1\n\n');
+  md = md.replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n');
+  md = md.replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n');
+  md = md.replace(/<br\s*\/?>/gi, '\n');
+  md = md.replace(/<[^>]+>/g, '');
+  md = md.replace(/&nbsp;/g, ' ');
+  md = md.replace(/&lt;/g, '<');
+  md = md.replace(/&gt;/g, '>');
+  md = md.replace(/&amp;/g, '&');
+  return md.trim();
 }
 
 function markdownToHtml(md) {
-    let html = md;
-    html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-    html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-    html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
-    html = html.replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>');
-    html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
-    html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
-    html = html.replace(/\n/g, '<br>');
-    html = html.replace(/^(?!<[h|b|u|i|a|img|l|p])(.+)$/gim, '<p>$1</p>');
-    return html;
+  let html = md;
+  html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+  html = html.replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>');
+  html = html.replace(/^- (.*$)/gim, '<li>$1</li>');
+  html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+  html = html.replace(/\n/g, '<br>');
+  html = html.replace(/^(?!<[h|b|u|i|a|img|l|p])(.+)$/gim, '<p>$1</p>');
+  return html;
 }
 
 // ========== NAVIGATION ==========
 function showSection(section) {
-    document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
-    document.querySelectorAll('.nav-menu li').forEach(li => li.classList.remove('active'));
-    if (section === 'posts') {
-        document.getElementById('postsSection').classList.remove('hidden');
-        document.getElementById('navPosts').classList.add('active');
-        loadPosts();
-    } else if (section === 'editor') {
-        document.getElementById('editorSection').classList.remove('hidden');
-        document.getElementById('navEditor').classList.add('active');
-        newPost();
-    } else if (section === 'settings') {
-        document.getElementById('settingsSection').classList.remove('hidden');
-        document.getElementById('navSettings').classList.add('active');
-    }
+  document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+  document.querySelectorAll('.nav-menu li').forEach(li => li.classList.remove('active'));
+
+  if (section === 'posts') {
+    document.getElementById('postsSection').classList.remove('hidden');
+    document.getElementById('navPosts').classList.add('active');
+    loadPosts();
+  } else if (section === 'editor') {
+    document.getElementById('editorSection').classList.remove('hidden');
+    document.getElementById('navEditor').classList.add('active');
+    newPost();
+  } else if (section === 'settings') {
+    document.getElementById('settingsSection').classList.remove('hidden');
+    document.getElementById('navSettings').classList.add('active');
+  }
+}
+
+// ========== POST STYLE ==========
+function updatePostStyle() {
+  const bgColor = document.getElementById('postBgColor').value;
+  const gradient = document.getElementById('postGradient').value;
+  const editor = document.querySelector('.ql-editor');
+
+  postStyle.bgColor = bgColor;
+  postStyle.gradient = gradient;
+
+  if (gradient) {
+    editor.style.background = gradient;
+  } else {
+    editor.style.background = bgColor;
+  }
+  editor.style.padding = '24px 28px';
+  editor.style.borderRadius = '0 0 12px 12px';
+
+  localStorage.setItem('postStyle', JSON.stringify(postStyle));
+}
+
+function handleBgImage(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    postStyle.bgImage = ev.target.result;
+    const editor = document.querySelector('.ql-editor');
+    editor.style.backgroundImage = `url(${ev.target.result})`;
+    editor.style.backgroundSize = 'cover';
+    editor.style.backgroundPosition = 'center';
+    document.getElementById('removeBgBtn').style.display = 'inline-flex';
+    localStorage.setItem('postStyle', JSON.stringify(postStyle));
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeBgImage() {
+  postStyle.bgImage = null;
+  const editor = document.querySelector('.ql-editor');
+  editor.style.backgroundImage = '';
+  updatePostStyle();
+  document.getElementById('removeBgBtn').style.display = 'none';
+  document.getElementById('bgImageInput').value = '';
 }
 
 // ========== POSTS MANAGEMENT ==========
 function newPost() {
-    currentPostId = null;
-    featuredImageId = null;
-    featuredImageUrl = null;
-    document.getElementById('postTitle').value = '';
-    quill.setContents([]);
-    quill.format('direction', 'rtl');
-    quill.format('align', 'right');
-    document.getElementById('previewWrapper').classList.add('hidden');
-    document.getElementById('featuredImagePreview').src = '';
-    document.getElementById('editorTitle').innerHTML = '<i class="fas fa-plus-circle"></i> פוסט חדש';
-    document.getElementById('deleteBtn').style.display = 'none';
-    document.getElementById('editorSection').classList.remove('hidden');
-    document.getElementById('postsSection').classList.add('hidden');
-    document.querySelectorAll('.nav-menu li').forEach(li => li.classList.remove('active'));
-    document.getElementById('navEditor').classList.add('active');
-    document.getElementById('markdownMode').checked = false;
-    isMarkdownMode = false;
-    document.querySelector('.ql-toolbar').style.pointerEvents = '';
-    document.querySelector('.ql-toolbar').style.opacity = '1';
+  currentPostId = null;
+  featuredImageId = null;
+  featuredImageUrl = null;
+  document.getElementById('postTitle').value = '';
+  quill.setContents([]);
+  quill.enable();
+  quill.format('direction', 'rtl');
+  quill.format('align', 'right');
+  document.getElementById('previewWrapper').classList.add('hidden');
+  document.getElementById('featuredImagePreview').src = '';
+  document.getElementById('editorTitle').innerHTML = '<i class="fas fa-plus-circle"></i> פוסט חדש';
+  document.getElementById('deleteBtn').style.display = 'none';
+  document.getElementById('editorStatus').textContent = '';
+  document.getElementById('markdownMode').checked = false;
+  isMarkdownMode = false;
+  document.querySelector('.ql-toolbar').style.pointerEvents = '';
+  document.querySelector('.ql-toolbar').style.opacity = '1';
+  updatePostStyle();
 }
 
 function getAuthHeaders() {
-    const cleanPass = wpConfig.password.replace(/\s/g, '');
-    const credentials = btoa(unescape(encodeURIComponent(wpConfig.username + ':' + cleanPass)));
-    return {
-        'Authorization': 'Basic ' + credentials,
-        'Content-Type': 'application/json'
-    };
+  const cleanPass = wpConfig.password.replace(/\s/g, '');
+  const credentials = btoa(unescape(encodeURIComponent(wpConfig.username + ':' + cleanPass)));
+  return { 'Authorization': 'Basic ' + credentials, 'Content-Type': 'application/json' };
 }
 
 async function loadPosts() {
-    if (!wpConfig.username || !wpConfig.password || !wpConfig.url) {
-        showToast('נא להגדיר שם משתמש, סיסמת אפליקציה וכתובת אתר בהגדרות', 'error');
-        showSection('settings');
-        return;
-    }
-    showLoading(true);
-    try {
-        const response = await fetch(wpConfig.url + '/wp-json/wp/v2/posts?per_page=50&_embed', {
-            headers: getAuthHeaders()
-        });
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.message || 'שגיאה בטעינת פוסטים');
-        }
-        allPosts = await response.json();
-        renderPosts(allPosts);
-    } catch (err) {
-        showToast('שגיאה בטעינת פוסטים: ' + err.message, 'error');
-    }
-    showLoading(false);
+  if (!wpConfig.url || !wpConfig.username || !wpConfig.password) {
+    showToast('נא להגדיר פרטי חיבור בהגדרות', 'error');
+    showSection('settings');
+    return;
+  }
+  showLoading(true);
+  try {
+    const response = await fetch(wpConfig.url + '/wp-json/wp/v2/posts?per_page=50&_embed', {
+      headers: getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('שגיאה בטעינת פוסטים');
+    allPosts = await response.json();
+    renderPosts(allPosts);
+  } catch (err) {
+    showToast('שגיאה בטעינת פוסטים: ' + err.message, 'error');
+  }
+  showLoading(false);
 }
 
 function renderPosts(posts) {
-    const container = document.getElementById('postsList');
-    if (posts.length === 0) {
-        container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><h3>אין פוסטים עדיין</h3><p>לחץ על "פוסט חדש" כדי ליצור את הפוסט הראשון</p></div>';
-        return;
-    }
-    container.innerHTML = posts.map(post => {
-        const date = new Date(post.date).toLocaleDateString('he-IL');
-        const status = post.status === 'publish' ? 'publish' : 'draft';
-        const statusText = post.status === 'publish' ? 'פורסם' : 'טיוטה';
-        const image = post._embedded && post._embedded['wp:featuredmedia'] ?
-            post._embedded['wp:featuredmedia'][0].source_url : '';
-        const excerpt = post.excerpt && post.excerpt.rendered ?
-            post.excerpt.rendered.replace(/<[^>]*>/g, '').substring(0, 120) + '...' : '';
-        return `<div class="post-card">
-            ${image ? `<div class="post-image"><img src="${image}" alt=""></div>` : `<div class="post-image"><i class="fas fa-image"></i></div>`}
-            <div class="post-content">
-                <h3>${post.title.rendered}</h3>
-                ${excerpt ? `<div class="post-excerpt">${excerpt}</div>` : ''}
-                <div class="post-meta">
-                    <span><i class="fas fa-calendar"></i> ${date}</span>
-                    <span class="post-status status-${status}">${statusText}</span>
-                </div>
-                <div class="post-actions">
-                    <button class="btn btn-primary btn-sm" onclick="editPost(${post.id}); event.stopPropagation();"><i class="fas fa-edit"></i> ערוך</button>
-                    <button class="btn btn-danger btn-sm" onclick="deletePostById(${post.id}); event.stopPropagation();"><i class="fas fa-trash"></i> מחק</button>
-                </div>
-            </div>
-        </div>`;
-    }).join('');
+  const container = document.getElementById('postsList');
+  if (posts.length === 0) {
+    container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><h3>אין פוסטים עדיין</h3><p>לחץ על "פוסט חדש" כדי ליצור את הפוסט הראשון</p></div>';
+    return;
+  }
+
+  container.innerHTML = posts.map(post => {
+    const date = new Date(post.date).toLocaleDateString('he-IL');
+    const status = post.status === 'publish' ? 'publish' : 'draft';
+    const statusText = post.status === 'publish' ? 'פורסם' : 'טיוטה';
+    const image = post._embedded && post._embedded['wp:featuredmedia'] ?
+      post._embedded['wp:featuredmedia'][0].source_url : '';
+    const excerpt = post.excerpt && post.excerpt.rendered ?
+      post.excerpt.rendered.replace(/<[^>]*>/g, '').substring(0, 120) + '...' : '';
+    const author = post._embedded && post._embedded.author ? post._embedded.author[0].name : '';
+    const authorAvatar = post._embedded && post._embedded.author && post._embedded.author[0].avatar_urls ?
+      post._embedded.author[0].avatar_urls['24'] : '';
+
+    return `<div class="post-card">
+      ${image ? `<div class="post-image"><img src="${image}" alt=""></div>` : `<div class="post-image"><i class="fas fa-image"></i></div>`}
+      <div class="post-content">
+        <h3>${post.title.rendered}</h3>
+        ${excerpt ? `<div class="post-excerpt">${excerpt}</div>` : ''}
+        <div class="post-meta">
+          <span><i class="fas fa-calendar"></i> ${date}</span>
+          <span class="post-status status-${status}">${statusText}</span>
+        </div>
+        ${author ? `<div class="post-author">
+          ${authorAvatar ? `<img src="${authorAvatar}" alt="">` : ''}
+          <span>נכתב על ידי ${author}</span>
+        </div>` : ''}
+        <div class="post-actions">
+          <button class="btn btn-primary btn-sm" onclick="editPost(${post.id}); event.stopPropagation();"><i class="fas fa-edit"></i> ערוך</button>
+          <button class="btn btn-secondary btn-sm" onclick="convertPostToShared(${post.id}); event.stopPropagation();"><i class="fas fa-users"></i> שתף</button>
+          <button class="btn btn-danger btn-sm" onclick="deletePostById(${post.id}); event.stopPropagation();"><i class="fas fa-trash"></i> מחק</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function filterPosts() {
-    const query = document.getElementById('searchInput').value.toLowerCase();
-    const filtered = allPosts.filter(post =>
-        post.title.rendered.toLowerCase().includes(query) ||
-        (post.content.rendered && post.content.rendered.toLowerCase().includes(query))
-    );
-    renderPosts(filtered);
+  const query = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = allPosts.filter(post =>
+    post.title.rendered.toLowerCase().includes(query) ||
+    (post.content.rendered && post.content.rendered.toLowerCase().includes(query))
+  );
+  renderPosts(filtered);
 }
 
 async function editPost(id) {
-    showLoading(true);
-    try {
-        const response = await fetch(wpConfig.url + '/wp-json/wp/v2/posts/' + id + '?_embed', {
-            headers: getAuthHeaders()
-        });
-        if (!response.ok) throw new Error('שגיאה בטעינת פוסט');
-        const post = await response.json();
+  showLoading(true);
+  try {
+    const response = await fetch(wpConfig.url + '/wp-json/wp/v2/posts/' + id + '?_embed', {
+      headers: getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('שגיאה בטעינת פוסט');
+    const post = await response.json();
 
-        currentPostId = post.id;
-        document.getElementById('postTitle').value = post.title.rendered;
+    currentPostId = post.id;
+    document.getElementById('postTitle').value = post.title.rendered;
 
-        const content = post.content.rendered || '';
-        quill.root.innerHTML = content;
-        quill.format('direction', 'rtl');
-        quill.format('align', 'right');
+    const content = post.content.rendered || '';
+    quill.root.innerHTML = content;
+    quill.format('direction', 'rtl');
+    quill.format('align', 'right');
+    setupDraggableImages();
 
-        if (post.featured_media && post._embedded && post._embedded['wp:featuredmedia']) {
-            featuredImageId = post.featured_media;
-            featuredImageUrl = post._embedded['wp:featuredmedia'][0].source_url;
-            document.getElementById('featuredImagePreview').src = featuredImageUrl;
-            document.getElementById('previewWrapper').classList.remove('hidden');
-        } else {
-            featuredImageId = null;
-            featuredImageUrl = null;
-            document.getElementById('previewWrapper').classList.add('hidden');
-            document.getElementById('featuredImagePreview').src = '';
-        }
-
-        document.getElementById('editorTitle').innerHTML = '<i class="fas fa-edit"></i> עריכת פוסט';
-        document.getElementById('deleteBtn').style.display = 'inline-flex';
-        showSection('editor');
-        setTimeout(enableImageResize, 200);
-    } catch (err) {
-        showToast('שגיאה בטעינת פוסט: ' + err.message, 'error');
+    if (post.featured_media && post._embedded && post._embedded['wp:featuredmedia']) {
+      featuredImageId = post.featured_media;
+      featuredImageUrl = post._embedded['wp:featuredmedia'][0].source_url;
+      document.getElementById('featuredImagePreview').src = featuredImageUrl;
+      document.getElementById('previewWrapper').classList.remove('hidden');
+    } else {
+      featuredImageId = null;
+      featuredImageUrl = null;
+      document.getElementById('previewWrapper').classList.add('hidden');
     }
-    showLoading(false);
+
+    document.getElementById('editorTitle').innerHTML = '<i class="fas fa-edit"></i> עריכת פוסט';
+    document.getElementById('deleteBtn').style.display = 'inline-flex';
+    document.getElementById('editorStatus').textContent = 'מצב: עריכה';
+    showSection('editor');
+  } catch (err) {
+    showToast('שגיאה: ' + err.message, 'error');
+  }
+  showLoading(false);
 }
 
 async function savePost(status) {
-    if (!wpConfig.username || !wpConfig.password || !wpConfig.url) {
-        showToast('נא להגדיר שם משתמש, סיסמת אפליקציה וכתובת אתר בהגדרות', 'error');
-        showSection('settings');
-        return;
+  if (!wpConfig.url || !wpConfig.username || !wpConfig.password) {
+    showToast('נא להגדיר פרטי חיבור בהגדרות', 'error');
+    showSection('settings');
+    return;
+  }
+  const title = document.getElementById('postTitle').value.trim();
+  if (!title) { showToast('נא להזין כותרת', 'error'); return; }
+
+  showLoading(true);
+
+  let content;
+  if (isMarkdownMode) {
+    const md = document.querySelector('.ql-editor').innerText;
+    content = markdownToHtml(md);
+  } else {
+    content = quill.root.innerHTML;
+  }
+
+  // Apply post styles inline
+  let styledContent = content;
+  if (postStyle.bgColor && postStyle.bgColor !== '#ffffff') {
+    styledContent = `<div style="background:${postStyle.bgColor};padding:20px;border-radius:8px;">${content}</div>`;
+  }
+  if (postStyle.gradient) {
+    styledContent = `<div style="background:${postStyle.gradient};padding:20px;border-radius:8px;color:white;">${content}</div>`;
+  }
+
+  const data = { title: title, content: styledContent, status: status };
+  if (featuredImageId) data.featured_media = featuredImageId;
+
+  try {
+    const url = currentPostId ? wpConfig.url + '/wp-json/wp/v2/posts/' + currentPostId : wpConfig.url + '/wp-json/wp/v2/posts';
+    const method = currentPostId ? 'PUT' : 'POST';
+
+    const response = await fetch(url, {
+      method: method,
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'שגיאה בשמירה');
     }
-    const title = document.getElementById('postTitle').value.trim();
-    if (!title) {
-        showToast('נא להזין כותרת לפוסט', 'error');
-        return;
-    }
-    showLoading(true);
 
-    let content;
-    if (isMarkdownMode) {
-        const md = document.querySelector('.ql-editor').innerText;
-        content = markdownToHtml(md);
-    } else {
-        content = quill.root.innerHTML;
+    const result = await response.json();
+    currentPostId = result.id;
+    document.getElementById('deleteBtn').style.display = 'inline-flex';
+
+    // If published, remove from local shared drafts
+    if (status === 'publish') {
+      sharedDrafts = sharedDrafts.filter(d => d.wpId !== currentPostId);
+      localStorage.setItem('sharedDrafts', JSON.stringify(sharedDrafts));
+      renderSharedList();
     }
 
-    const data = {
-        title: title,
-        content: content,
-        status: status
-    };
-    if (featuredImageId) {
-        data.featured_media = featuredImageId;
-    }
-
-    try {
-        const url = currentPostId ?
-            wpConfig.url + '/wp-json/wp/v2/posts/' + currentPostId :
-            wpConfig.url + '/wp-json/wp/v2/posts';
-        const method = currentPostId ? 'PUT' : 'POST';
-
-        const response = await fetch(url, {
-            method: method,
-            headers: getAuthHeaders(),
-            body: JSON.stringify(data)
-        });
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'שגיאה בשמירת הפוסט');
-        }
-
-        const result = await response.json();
-        currentPostId = result.id;
-        document.getElementById('deleteBtn').style.display = 'inline-flex';
-
-        showToast(status === 'publish' ? 'הפוסט פורסם בהצלחה!' : 'הטיוטה נשמרה בהצלחה!', 'success');
-        if (status === 'publish') {
-            setTimeout(() => showSection('posts'), 1200);
-        }
-    } catch (err) {
-        showToast('שגיאה: ' + err.message, 'error');
-    }
-    showLoading(false);
+    showToast(status === 'publish' ? 'הפוסט פורסם בהצלחה!' : 'הטיוטה נשמרה!', 'success');
+    if (status === 'publish') setTimeout(() => showSection('posts'), 1200);
+  } catch (err) {
+    showToast('שגיאה: ' + err.message, 'error');
+  }
+  showLoading(false);
 }
 
-function saveDraft() {
-    savePost('draft');
-}
-
-function publishPost() {
-    savePost('publish');
-}
+function saveDraft() { savePost('draft'); }
+function publishPost() { savePost('publish'); }
 
 async function deletePost() {
-    if (!currentPostId) return;
-    if (!confirm('האם אתה בטוח שברצונך למחוק את הפוסט? פעולה זו בלתי הפיכה!')) return;
-    await deletePostById(currentPostId);
+  if (!currentPostId) return;
+  if (!confirm('האם אתה בטוח שברצונך למחוק את הפוסט?')) return;
+  await deletePostById(currentPostId);
 }
 
 async function deletePostById(id) {
-    if (!confirm('האם אתה בטוח שברצונך למחוק את הפוסט? פעולה זו בלתי הפיכה!')) return;
-    showLoading(true);
-    try {
-        const response = await fetch(wpConfig.url + '/wp-json/wp/v2/posts/' + id, {
-            method: 'DELETE',
-            headers: getAuthHeaders()
-        });
-        if (!response.ok) throw new Error('שגיאה במחיקת הפוסט');
-        showToast('הפוסט נמחק בהצלחה', 'success');
-        setTimeout(() => showSection('posts'), 1000);
-    } catch (err) {
-        showToast('שגיאה: ' + err.message, 'error');
-    }
-    showLoading(false);
+  if (!confirm('האם אתה בטוח שברצונך למחוק את הפוסט? פעולה זו בלתי הפיכה!')) return;
+  showLoading(true);
+  try {
+    const response = await fetch(wpConfig.url + '/wp-json/wp/v2/posts/' + id, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('שגיאה במחיקה');
+    showToast('הפוסט נמחק בהצלחה', 'success');
+    setTimeout(() => showSection('posts'), 1000);
+  } catch (err) {
+    showToast('שגיאה: ' + err.message, 'error');
+  }
+  showLoading(false);
+}
+
+// ========== SHARED DRAFTS ==========
+function convertToShared() {
+  const title = document.getElementById('postTitle').value.trim();
+  if (!title) { showToast('נא להזין כותרת קודם', 'error'); return; }
+
+  let content;
+  if (isMarkdownMode) {
+    content = markdownToHtml(document.querySelector('.ql-editor').innerText);
+  } else {
+    content = quill.root.innerHTML;
+  }
+
+  const draft = {
+    id: Date.now(),
+    title: title,
+    content: content,
+    author: userProfile.name,
+    authorAvatar: userProfile.avatar,
+    date: new Date().toISOString(),
+    wpId: currentPostId,
+    featuredImage: featuredImageUrl
+  };
+
+  sharedDrafts.unshift(draft);
+  localStorage.setItem('sharedDrafts', JSON.stringify(sharedDrafts));
+  renderSharedList();
+  updateSharedBadge();
+  showToast('הפוסט הומר לטיוטה משותפת!', 'success');
+
+  // If it has a WP ID, update it to draft status
+  if (currentPostId) {
+    fetch(wpConfig.url + '/wp-json/wp/v2/posts/' + currentPostId, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ status: 'draft' })
+    }).catch(() => {});
+  }
+}
+
+async function convertPostToShared(postId) {
+  showLoading(true);
+  try {
+    const response = await fetch(wpConfig.url + '/wp-json/wp/v2/posts/' + postId + '?_embed', {
+      headers: getAuthHeaders()
+    });
+    if (!response.ok) throw new Error('שגיאה');
+    const post = await response.json();
+
+    const image = post._embedded && post._embedded['wp:featuredmedia'] ?
+      post._embedded['wp:featuredmedia'][0].source_url : '';
+
+    const draft = {
+      id: Date.now(),
+      title: post.title.rendered,
+      content: post.content.rendered,
+      author: userProfile.name,
+      authorAvatar: userProfile.avatar,
+      date: new Date().toISOString(),
+      wpId: post.id,
+      featuredImage: image
+    };
+
+    sharedDrafts.unshift(draft);
+    localStorage.setItem('sharedDrafts', JSON.stringify(sharedDrafts));
+    renderSharedList();
+    updateSharedBadge();
+    showToast('הפוסט הומר לטיוטה משותפת!', 'success');
+  } catch (err) {
+    showToast('שגיאה: ' + err.message, 'error');
+  }
+  showLoading(false);
+}
+
+function renderSharedList() {
+  const list = document.getElementById('sharedList');
+  if (sharedDrafts.length === 0) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;color:var(--gray-400);font-size:13px;">אין טיוטות משותפות עדיין</div>';
+    return;
+  }
+  list.innerHTML = sharedDrafts.map(d => {
+    const date = new Date(d.date).toLocaleDateString('he-IL');
+    return `<div class="shared-item" onclick="loadSharedDraft(${d.id})">
+      <h4>${d.title}</h4>
+      <p>${date} · מאת ${d.author}</p>
+      <div class="shared-authors">
+        ${d.authorAvatar ? `<img src="${d.authorAvatar}" alt="">` : ''}
+      </div>
+    </div>`;
+  }).join('');
+  updateSharedBadge();
+}
+
+function loadSharedDraft(id) {
+  const draft = sharedDrafts.find(d => d.id === id);
+  if (!draft) return;
+
+  currentPostId = draft.wpId || null;
+  document.getElementById('postTitle').value = draft.title;
+  quill.root.innerHTML = draft.content;
+  quill.format('direction', 'rtl');
+  quill.format('align', 'right');
+  setupDraggableImages();
+
+  if (draft.featuredImage) {
+    featuredImageUrl = draft.featuredImage;
+    document.getElementById('featuredImagePreview').src = draft.featuredImage;
+    document.getElementById('previewWrapper').classList.remove('hidden');
+  }
+
+  document.getElementById('editorTitle').innerHTML = '<i class="fas fa-users"></i> טיוטה משותפת';
+  document.getElementById('deleteBtn').style.display = 'inline-flex';
+  showSection('editor');
+  toggleSharedSidebar();
+}
+
+function updateSharedBadge() {
+  const badge = document.getElementById('sharedBadge');
+  if (sharedDrafts.length > 0) {
+    badge.textContent = sharedDrafts.length;
+    badge.style.display = 'inline';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function toggleSharedSidebar() {
+  document.getElementById('sharedSidebar').classList.toggle('active');
+}
+
+// ========== CHAT ==========
+function sendChat() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  const msg = {
+    id: Date.now(),
+    author: userProfile.name,
+    avatar: userProfile.avatar,
+    text: text,
+    time: new Date().toISOString()
+  };
+
+  chatMessages.push(msg);
+  localStorage.setItem('chatMessages', JSON.stringify(chatMessages));
+  input.value = '';
+  renderChat();
+}
+
+function renderChat() {
+  const container = document.getElementById('chatMessages');
+  container.innerHTML = chatMessages.slice(-50).map(m => {
+    const isMe = m.author === userProfile.name;
+    return `<div class="chat-message ${isMe ? 'me' : 'other'}">
+      ${!isMe ? `<div class="msg-author">${m.author}</div>` : ''}
+      ${m.text}
+    </div>`;
+  }).join('');
+  container.scrollTop = container.scrollHeight;
 }
 
 // ========== MEDIA UPLOAD ==========
 async function uploadMedia(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    const cleanPass = wpConfig.password.replace(/\s/g, '');
-    const credentials = btoa(unescape(encodeURIComponent(wpConfig.username + ':' + cleanPass)));
-    const response = await fetch(wpConfig.url + '/wp-json/wp/v2/media', {
-        method: 'POST',
-        headers: { 'Authorization': 'Basic ' + credentials },
-        body: formData
-    });
-    if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.message || 'שגיאה בהעלאת מדיה');
-    }
-    return await response.json();
+  const formData = new FormData();
+  formData.append('file', file);
+  const cleanPass = wpConfig.password.replace(/\s/g, '');
+  const credentials = btoa(unescape(encodeURIComponent(wpConfig.username + ':' + cleanPass)));
+  const response = await fetch(wpConfig.url + '/wp-json/wp/v2/media', {
+    method: 'POST',
+    headers: { 'Authorization': 'Basic ' + credentials },
+    body: formData
+  });
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.message || 'שגיאה בהעלאת מדיה');
+  }
+  return await response.json();
 }
 
 // ========== FEATURED IMAGE ==========
-function handleDragOver(e) {
-    e.preventDefault();
-    e.currentTarget.classList.add('dragover');
-}
-function handleDragLeave(e) {
-    e.currentTarget.classList.remove('dragover');
-}
+function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('dragover'); }
+function handleDragLeave(e) { e.currentTarget.classList.remove('dragover'); }
 function handleFeaturedImageDrop(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    e.currentTarget.classList.remove('dragover');
-    const files = e.dataTransfer.files;
-    if (files.length > 0 && files[0].type.startsWith('image/')) {
-        processFeaturedImage(files[0]);
-    }
+  e.preventDefault(); e.stopPropagation();
+  e.currentTarget.classList.remove('dragover');
+  const files = e.dataTransfer.files;
+  if (files.length > 0 && files[0].type.startsWith('image/')) processFeaturedImage(files[0]);
 }
 function handleFeaturedImageSelect(e) {
-    e.stopPropagation();
-    const file = e.target.files[0];
-    if (file) processFeaturedImage(file);
+  e.stopPropagation();
+  if (e.target.files[0]) processFeaturedImage(e.target.files[0]);
 }
 async function processFeaturedImage(file) {
-    showLoading(true);
-    try {
-        const data = await uploadMedia(file);
-        featuredImageId = data.id;
-        featuredImageUrl = data.source_url;
-        document.getElementById('featuredImagePreview').src = featuredImageUrl;
-        document.getElementById('previewWrapper').classList.remove('hidden');
-        showToast('התמונה המרכזית הועלתה בהצלחה', 'success');
-    } catch (err) {
-        showToast('שגיאה בהעלאת תמונה: ' + err.message, 'error');
-    }
-    showLoading(false);
+  showLoading(true);
+  try {
+    const data = await uploadMedia(file);
+    featuredImageId = data.id;
+    featuredImageUrl = data.source_url;
+    document.getElementById('featuredImagePreview').src = featuredImageUrl;
+    document.getElementById('previewWrapper').classList.remove('hidden');
+    showToast('התמונה המרכזית הועלתה', 'success');
+  } catch (err) { showToast('שגיאה: ' + err.message, 'error'); }
+  showLoading(false);
 }
 function removeFeaturedImage(e) {
-    e.stopPropagation();
-    featuredImageId = null;
-    featuredImageUrl = null;
-    document.getElementById('featuredImagePreview').src = '';
-    document.getElementById('previewWrapper').classList.add('hidden');
-    document.getElementById('featuredImageInput').value = '';
+  e.stopPropagation();
+  featuredImageId = null; featuredImageUrl = null;
+  document.getElementById('featuredImagePreview').src = '';
+  document.getElementById('previewWrapper').classList.add('hidden');
+  document.getElementById('featuredImageInput').value = '';
 }
 
 // ========== SETTINGS ==========
 function saveSettings() {
-    wpConfig = {
-        url: document.getElementById('wpUrl').value.replace(/\/$/, ''),
-        username: document.getElementById('wpUsername').value.trim(),
-        password: document.getElementById('wpAppPassword').value.trim()
-    };
-    localStorage.setItem('wpConfig', JSON.stringify(wpConfig));
-    showToast('ההגדרות נשמרו בהצלחה', 'success');
+  wpConfig = {
+    url: document.getElementById('wpUrl').value.replace(/\/$/, ''),
+    username: document.getElementById('wpUsername').value.trim(),
+    password: document.getElementById('wpAppPassword').value.trim()
+  };
+  userProfile.name = document.getElementById('settingsName').value.trim() || userProfile.name;
+  localStorage.setItem('wpConfig', JSON.stringify(wpConfig));
+  localStorage.setItem('userProfile', JSON.stringify(userProfile));
+  document.getElementById('userName').textContent = userProfile.name;
+  showToast('ההגדרות נשמרו', 'success');
+}
+
+function exportData() {
+  const data = {
+    profile: userProfile,
+    config: wpConfig,
+    drafts: sharedDrafts,
+    chat: chatMessages,
+    style: postStyle
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'wp-editor-backup.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('הנתונים יוצאו בהצלחה', 'success');
+}
+
+function clearAllData() {
+  if (!confirm('האם אתה בטוח? כל הנתונים יימחקו!')) return;
+  localStorage.removeItem('userProfile');
+  localStorage.removeItem('wpConfig');
+  localStorage.removeItem('sharedDrafts');
+  localStorage.removeItem('chatMessages');
+  localStorage.removeItem('postStyle');
+  sessionStorage.removeItem('appLoggedIn');
+  location.reload();
 }
 
 // ========== UTILITIES ==========
 function showLoading(show) {
-    document.getElementById('loadingOverlay').classList.toggle('active', show);
+  document.getElementById('loadingOverlay').classList.toggle('active', show);
 }
-
 function showToast(message, type) {
-    const container = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    toast.className = 'toast ' + type;
-    const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
-    toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + message;
-    container.appendChild(toast);
-    setTimeout(() => {
-        toast.style.animation = 'slideIn 0.4s ease reverse';
-        setTimeout(() => toast.remove(), 400);
-    }, 3000);
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle';
+  toast.innerHTML = '<i class="fas ' + icon + '"></i> ' + message;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.animation = 'slideIn 0.4s ease reverse'; setTimeout(() => toast.remove(), 400); }, 3000);
 }
 </script>
 </body>

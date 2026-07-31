@@ -1423,7 +1423,7 @@ function setTool(tool) {
     setTimeout(()=>{
       App.currentTool = 'select';
       document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
-      document.querySelector('[onclick="setTool('select')"]').classList.add('active');
+      document.querySelector("[onclick='setTool('select')']").classList.add('active');
     }, 100);
   }
 }

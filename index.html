@@ -28,174 +28,91 @@ tailwind.config = {
   ::-webkit-scrollbar-track { background: #1e1e2e; }
   ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
-
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
   @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 5px rgba(139,92,246,0.3); } 50% { box-shadow: 0 0 20px rgba(139,92,246,0.6); } }
   @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-
   .animate-fadeIn { animation: fadeIn 0.4s ease-out; }
   .animate-slideIn { animation: slideIn 0.3s ease-out; }
   .animate-pulse-glow { animation: pulse-glow 2s infinite; }
   .animate-float { animation: float 3s ease-in-out infinite; }
-
   .glass { background: rgba(30,30,46,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
   .glass-strong { background: rgba(17,17,27,0.9); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); }
-
-  #editor-canvas {
-    position: relative; width: 800px; min-height: 1000px; margin: 0 auto;
-    background: white; box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: visible;
-  }
-
-  .canvas-element {
-    position: absolute; cursor: move; user-select: none;
-    border: 2px solid transparent; transition: border-color 0.15s;
-  }
+  #editor-canvas { position: relative; width: 800px; min-height: 1000px; margin: 0 auto; background: white; box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: visible; }
+  .canvas-element { position: absolute; cursor: move; user-select: none; border: 2px solid transparent; transition: border-color 0.15s; }
   .canvas-element:hover { border-color: rgba(139,92,246,0.4); }
   .canvas-element.selected { border-color: #8b5cf6; z-index: 9999 !important; }
   .canvas-element.selected .resize-handle, .canvas-element.selected .rotate-handle { display: block; }
-
-  .resize-handle {
-    display: none; position: absolute; width: 10px; height: 10px;
-    background: #8b5cf6; border: 2px solid white; border-radius: 50%; z-index: 10001;
-  }
+  .resize-handle { display: none; position: absolute; width: 10px; height: 10px; background: #8b5cf6; border: 2px solid white; border-radius: 50%; z-index: 10001; }
   .resize-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
   .resize-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
   .resize-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
   .resize-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
-
-  .rotate-handle {
-    display: none; position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
-    width: 12px; height: 12px; background: #f59e0b; border: 2px solid white;
-    border-radius: 50%; cursor: grab; z-index: 10001;
-  }
-
+  .rotate-handle { display: none; position: absolute; top: -25px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; background: #f59e0b; border: 2px solid white; border-radius: 50%; cursor: grab; z-index: 10001; }
   .element-content { width: 100%; height: 100%; overflow: hidden; outline: none; }
   .element-content img { pointer-events: none; }
-  .text-element .element-content { padding: 8px; cursor: text; direction: rtl; }
+  .text-element .element-content { padding: 12px; cursor: text; direction: rtl; line-height: 1.6; font-size: 18px; color: #1f2937; }
   .text-element .element-content:focus { outline: none; }
+  .text-element .element-content p { margin: 0 0 8px 0; min-height: 1.4em; }
+  .text-element .element-content p:last-child { margin-bottom: 0; }
+  .text-element .element-content h1 { font-size: 32px; font-weight: 800; margin: 4px 0; line-height: 1.3; }
+  .text-element .element-content h2 { font-size: 26px; font-weight: 700; margin: 4px 0; line-height: 1.3; }
+  .text-element .element-content h3 { font-size: 22px; font-weight: 600; margin: 4px 0; line-height: 1.3; }
+  .text-element .element-content ul { margin: 4px 0; padding-right: 20px; }
+  .text-element .element-content blockquote { border-right: 4px solid #8b5cf6; margin: 8px 0; padding: 4px 12px; background: rgba(139,92,246,0.05); font-style: italic; }
   .image-element .element-content img { width: 100%; height: 100%; object-fit: cover; }
-
-  .tool-btn {
-    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
-    border-radius: 10px; color: #94a3b8; transition: all 0.2s; cursor: pointer;
-  }
+  .tool-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; color: #94a3b8; transition: all 0.2s; cursor: pointer; }
   .tool-btn:hover { background: rgba(139,92,246,0.15); color: #a78bfa; }
   .tool-btn.active { background: rgba(139,92,246,0.25); color: #a78bfa; }
-
-  input[type="color"] {
-    -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 8px;
-    cursor: pointer; padding: 0; overflow: hidden;
-  }
+  input[type="color"] { -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; padding: 0; overflow: hidden; }
   input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
   input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
-
-  input[type="range"] {
-    -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px;
-    background: #374151; outline: none;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
-    background: #8b5cf6; cursor: pointer; border: 2px solid white;
-  }
-
-  .toast {
-    position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
-    padding: 12px 24px; border-radius: 12px; font-size: 14px; z-index: 99999;
-    transition: transform 0.3s ease; backdrop-filter: blur(12px);
-  }
+  input[type="range"] { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: #374151; outline: none; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #8b5cf6; cursor: pointer; border: 2px solid white; }
+  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); padding: 12px 24px; border-radius: 12px; font-size: 14px; z-index: 99999; transition: transform 0.3s ease; backdrop-filter: blur(12px); }
   .toast.show { transform: translateX(-50%) translateY(0); }
   .toast.success { background: rgba(34,197,94,0.95); color: white; }
   .toast.error { background: rgba(239,68,68,0.95); color: white; }
   .toast.info { background: rgba(139,92,246,0.95); color: white; }
-
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px);
-    display: flex; align-items: center; justify-content: center; z-index: 99998;
-    opacity: 0; pointer-events: none; transition: opacity 0.2s;
-  }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 99998; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .modal-overlay.active { opacity: 1; pointer-events: all; }
-
-  .avatar-option {
-    width: 64px; height: 64px; border-radius: 50%; cursor: pointer;
-    border: 3px solid transparent; transition: all 0.2s; overflow: hidden;
-  }
+  .avatar-option { width: 64px; height: 64px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.2s; overflow: hidden; }
   .avatar-option:hover { transform: scale(1.1); }
   .avatar-option.selected { border-color: #8b5cf6; box-shadow: 0 0 15px rgba(139,92,246,0.4); }
-
-  .post-card {
-    background: rgba(30,30,46,0.6); border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s;
-  }
-  .post-card:hover {
-    background: rgba(30,30,46,0.9); border-color: rgba(139,92,246,0.3); transform: translateY(-2px);
-  }
-
-  .site-card {
-    background: rgba(30,30,46,0.6); border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.2s;
-  }
+  .post-card { background: rgba(30,30,46,0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s; }
+  .post-card:hover { background: rgba(30,30,46,0.9); border-color: rgba(139,92,246,0.3); transform: translateY(-2px); }
+  .site-card { background: rgba(30,30,46,0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.2s; }
   .site-card:hover { background: rgba(30,30,46,0.9); border-color: #f59e0b; transform: translateY(-2px); }
-
   .grad-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
   .grad-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
   .grad-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
   .grad-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
   .grad-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
   .grad-6 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
-
   input[type="file"] { display: none; }
-
-  .shape-thumb {
-    width: 60px; height: 60px; cursor: grab; transition: transform 0.2s;
-    display:flex;align-items:center;justify-content:center; border-radius: 8px;
-    background: rgba(30,30,46,0.8); border: 1px solid rgba(255,255,255,0.06);
-  }
+  .shape-thumb { width: 60px; height: 60px; cursor: grab; transition: transform 0.2s; display:flex;align-items:center;justify-content:center; border-radius: 8px; background: rgba(30,30,46,0.8); border: 1px solid rgba(255,255,255,0.06); }
   .shape-thumb:hover { transform: scale(1.1); border-color: rgba(139,92,246,0.4); }
-
   .font-item { padding: 8px 12px; cursor: pointer; font-size: 14px; border-radius: 6px; transition: all 0.15s; }
   .font-item:hover { background: rgba(139,92,246,0.15); }
   .font-item.selected { background: rgba(139,92,246,0.25); color: #a78bfa; }
-
-  .inline-toolbar {
-    position: absolute; background: #1e1e2e; border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 10px; padding: 6px; display: none; gap: 4px; z-index: 100000;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.5); flex-wrap: wrap; max-width: 320px;
-  }
+  .inline-toolbar { position: absolute; background: #1e1e2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 6px; display: none; gap: 4px; z-index: 100000; box-shadow: 0 10px 40px rgba(0,0,0,0.5); flex-wrap: wrap; max-width: 320px; }
   .inline-toolbar.show { display: flex; }
-  .inline-toolbar button {
-    width: 32px; height: 32px; border-radius: 6px; background: transparent;
-    border: 1px solid transparent; color: #cbd5e1; cursor: pointer; transition: all 0.15s;
-    display: flex; align-items: center; justify-content: center;
-  }
+  .inline-toolbar button { width: 32px; height: 32px; border-radius: 6px; background: transparent; border: 1px solid transparent; color: #cbd5e1; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
   .inline-toolbar button:hover { background: rgba(139,92,246,0.2); color: #a78bfa; border-color: rgba(139,92,246,0.3); }
-
   .pexels-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; cursor: pointer; transition: transform 0.2s; }
   .pexels-img:hover { transform: scale(1.05); }
-
-  /* Element Library Sidebar */
-  .elements-sidebar {
-    position: fixed; right: 0; top: 0; bottom: 0; width: 300px;
-    background: rgba(17,17,27,0.95); backdrop-filter: blur(16px);
-    border-right: 1px solid rgba(255,255,255,0.1);
-    transform: translateX(100%); transition: transform 0.3s ease;
-    z-index: 45; display: flex; flex-direction: column;
-  }
+  .elements-sidebar { position: fixed; right: 0; top: 0; bottom: 0; width: 320px; background: rgba(17,17,27,0.95); backdrop-filter: blur(16px); border-right: 1px solid rgba(255,255,255,0.1); transform: translateX(100%); transition: transform 0.3s ease; z-index: 45; display: flex; flex-direction: column; }
   .elements-sidebar.open { transform: translateX(0); }
-
-  .crop-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 99997;
-    display: flex; align-items: center; justify-content: center;
-  }
-
-  .element-thumb { 
-    width: 60px; height: 60px; cursor: grab; transition: all 0.2s; 
-    display:flex;align-items:center;justify-content:center; border-radius: 8px;
-    background: rgba(30,30,46,0.8); border: 1px solid rgba(255,255,255,0.06);
-  }
+  .crop-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 99997; display: flex; align-items: center; justify-content: center; }
+  .element-thumb { width: 60px; height: 60px; cursor: grab; transition: all 0.2s; display:flex;align-items:center;justify-content:center; border-radius: 8px; background: rgba(30,30,46,0.8); border: 1px solid rgba(255,255,255,0.06); }
   .element-thumb:hover { transform: scale(1.05); border-color: rgba(139,92,246,0.4); }
   .element-thumb.dragging { opacity: 0.5; }
-
+  .iconify-result { width: 60px; height: 60px; cursor: pointer; transition: all 0.2s; display:flex;align-items:center;justify-content:center; border-radius: 8px; background: rgba(30,30,46,0.8); border: 1px solid rgba(255,255,255,0.06); }
+  .iconify-result:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.15); }
+  .iconify-result svg { width: 32px; height: 32px; }
+  .brand-logo-result { padding: 8px; cursor: pointer; border-radius: 8px; background: rgba(30,30,46,0.6); border: 1px solid rgba(255,255,255,0.06); transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+  .brand-logo-result:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.15); }
+  .brand-logo-result img { width: 40px; height: 40px; object-fit: contain; }
   @media (max-width: 900px) { #editor-canvas { width: 100% !important; } }
 </style>
 <base target="_blank">
@@ -222,7 +139,10 @@ tailwind.config = {
   <div style="width:1px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
   <button onclick="execCmd('formatBlock','H1')" title="H1"><b>H1</b></button>
   <button onclick="execCmd('formatBlock','H2')" title="H2"><b>H2</b></button>
+  <button onclick="execCmd('formatBlock','H3')" title="H3"><b>H3</b></button>
   <button onclick="execCmd('formatBlock','P')" title="Paragraph"><b>P</b></button>
+  <button onclick="execCmd('insertUnorderedList')" title="Bullet List"><i class="fas fa-list-ul"></i></button>
+  <button onclick="execCmd('insertOrderedList')" title="Numbered List"><i class="fas fa-list-ol"></i></button>
   <button onclick="execCmd('removeFormat')" title="Clear"><i class="fas fa-eraser"></i></button>
 </div>
 
@@ -302,7 +222,10 @@ tailwind.config = {
       <p class="text-gray-400 text-sm mb-4">הזן את הסיסמה המקומית שלך</p>
       <input type="password" id="auth-pass" placeholder="סיסמה" class="w-full px-4 py-3 rounded-xl bg-dark-900 border border-gray-700 text-white placeholder-gray-500 focus:border-accent-500 focus:outline-none transition mb-4" onkeydown="if(event.key==='Enter')doAuth()">
       <button onclick="doAuth()" class="w-full py-3 bg-accent-600 hover:bg-accent-500 rounded-xl font-bold text-white transition mb-3">כניסה</button>
-      <button onclick="showProfiles()" class="text-sm text-gray-500 hover:text-gray-300 transition">חזרה לפרופילים</button>
+      <div class="flex justify-center gap-3">
+        <button onclick="showProfiles()" class="text-sm text-gray-500 hover:text-gray-300 transition">חזרה לפרופילים</button>
+        <button onclick="deleteCurrentProfile()" class="text-sm text-red-400 hover:text-red-300 transition"><i class="fas fa-trash"></i> מחיקת פרופיל</button>
+      </div>
     </div>
   </div>
 </div>
@@ -358,7 +281,7 @@ tailwind.config = {
         <h4 class="text-orange-400 font-bold mb-2 flex items-center gap-2"><i class="fas fa-info-circle"></i> איך להשיג סיסמת אפליקציה?</h4>
         <ol class="text-sm text-orange-200/80 space-y-1 list-decimal list-inside" dir="rtl">
           <li>היכנסו לממשק הניהול של וורדפרס (<code>wp-admin</code>)</li>
-          <li>לכו לתפריט: <b>משתמשים &rarr; פרופיל</b></li>
+          <li>לכו לתפריט: <b>משתמשים → פרופיל</b></li>
           <li>גללו למטה עד לקטע <b>"סיסמאות אפליקציה"</b> (Application Passwords)</li>
           <li>הזינו שם למכשיר/יישום, לדוג' <b>"EWolf Editor"</b></li>
           <li>לחצו על <b>"הוסף סיסמת אפליקציה חדשה"</b></li>
@@ -517,6 +440,11 @@ tailwind.config = {
                   <option value="300">דק</option><option value="400">רגיל</option><option value="500">בינוני</option><option value="700">bold</option><option value="900">שחור</option>
                 </select>
               </div>
+              <div><label class="text-xs text-gray-500 mb-1 block">גובה שורה</label>
+                <select id="prop-lineheight" class="w-full px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm" onchange="updateStyle('lineHeight',this.value)">
+                  <option value="1.2">צפוף</option><option value="1.5" selected>רגיל</option><option value="1.8">מרווח</option><option value="2.0">מרווח מאוד</option>
+                </select>
+              </div>
             </div>
           </div>
           <div id="image-props" class="p-4 border-b border-gray-800" style="display:none;">
@@ -636,10 +564,11 @@ tailwind.config = {
 <!-- Elements Sidebar (Right side) -->
 <div id="elements-sidebar" class="elements-sidebar">
   <div class="h-12 border-b border-gray-800 flex items-center px-4 justify-between">
-    <div class="flex gap-4">
-      <button onclick="setElementsTab('shapes')" id="elem-tab-shapes" class="text-sm font-medium text-accent-400 border-b-2 border-accent-500 pb-3 pt-3">צורות</button>
-      <button onclick="setElementsTab('logos')" id="elem-tab-logos" class="text-sm font-medium text-gray-500 hover:text-gray-300 pb-3 pt-3">לוגואים</button>
-      <button onclick="setElementsTab('pexels')" id="elem-tab-pexels" class="text-sm font-medium text-gray-500 hover:text-gray-300 pb-3 pt-3">תמונות</button>
+    <div class="flex gap-4 overflow-x-auto">
+      <button onclick="setElementsTab('shapes')" id="elem-tab-shapes" class="text-sm font-medium text-accent-400 border-b-2 border-accent-500 pb-3 pt-3 whitespace-nowrap">צורות</button>
+      <button onclick="setElementsTab('icons')" id="elem-tab-icons" class="text-sm font-medium text-gray-500 hover:text-gray-300 pb-3 pt-3 whitespace-nowrap">אייקונים</button>
+      <button onclick="setElementsTab('logos')" id="elem-tab-logos" class="text-sm font-medium text-gray-500 hover:text-gray-300 pb-3 pt-3 whitespace-nowrap">לוגואים</button>
+      <button onclick="setElementsTab('pexels')" id="elem-tab-pexels" class="text-sm font-medium text-gray-500 hover:text-gray-300 pb-3 pt-3 whitespace-nowrap">תמונות</button>
     </div>
     <button onclick="toggleElementsSidebar()" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center"><i class="fas fa-times"></i></button>
   </div>
@@ -662,31 +591,41 @@ tailwind.config = {
       <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','line-h')" onclick="addShape('line-h')" title="קו אופקי"><div class="w-8 h-1 bg-gray-400 rounded"></div></div>
       <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','line-v')" onclick="addShape('line-v')" title="קו אנכי"><div class="w-1 h-8 bg-gray-400 rounded"></div></div>
     </div>
-    <!-- Logos Tab -->
-    <div id="elem-logos" class="hidden grid grid-cols-3 gap-3">
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'wp-logo')" onclick="addWpLogo()" title="WordPress"><i class="fab fa-wordpress text-3xl text-blue-500"></i></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'site-logo')" onclick="addSiteLogo()" title="לוגו האתר"><i class="fas fa-globe text-3xl text-accent-400"></i><span class="text-[9px] text-gray-400 absolute bottom-1">אתר</span></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'html-logo','html5')" onclick="addLogoHtml('<i class=\'fab fa-html5 text-4xl text-orange-500\'></i>')" title="HTML5"><i class="fab fa-html5 text-3xl text-orange-500"></i></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'html-logo','css3')" onclick="addLogoHtml('<i class=\'fab fa-css3-alt text-4xl text-blue-400\'></i>')" title="CSS3"><i class="fab fa-css3-alt text-3xl text-blue-400"></i></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'html-logo','js')" onclick="addLogoHtml('<i class=\'fab fa-js text-4xl text-yellow-400\'></i>')" title="JS"><i class="fab fa-js text-3xl text-yellow-400"></i></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'html-logo','react')" onclick="addLogoHtml('<i class=\'fab fa-react text-4xl text-cyan-400\'></i>')" title="React"><i class="fab fa-react text-3xl text-cyan-400"></i></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'html-logo','github')" onclick="addLogoHtml('<i class=\'fab fa-github text-4xl text-white\'></i>')" title="GitHub"><i class="fab fa-github text-3xl text-white"></i></div>
+    <!-- Icons Tab (Iconify) -->
+    <div id="elem-icons" class="hidden">
+      <div class="flex gap-2 mb-4">
+        <input type="text" id="iconify-search" placeholder="חיפוש אייקונים... (לדוג' arrow, home, user)" class="flex-1 px-4 py-2 rounded-xl bg-dark-900 border border-gray-700 text-white placeholder-gray-500 focus:border-accent-500 focus:outline-none text-sm" onkeydown="if(event.key==='Enter')searchIconify()">
+        <button onclick="searchIconify()" class="px-4 py-2 rounded-xl bg-accent-600 hover:bg-accent-500 text-white font-medium"><i class="fas fa-search"></i></button>
+      </div>
+      <div id="iconify-results" class="grid grid-cols-4 gap-2"></div>
+      <p class="text-xs text-gray-500 mt-2 text-center">האייקונים מגיעים מ-Iconify API - רישיון חופשי, ללא צורך בקרדיט</p>
+    </div>
+    <!-- Logos Tab (Brand Search) -->
+    <div id="elem-logos" class="hidden">
+      <div class="flex gap-2 mb-4">
+        <input type="text" id="brand-search-input" placeholder="חיפוש מותג או כתובת אתר..." class="flex-1 px-4 py-2 rounded-xl bg-dark-900 border border-gray-700 text-white placeholder-gray-500 focus:border-accent-500 focus:outline-none text-sm" onkeydown="if(event.key==='Enter')searchBrandLogos()">
+        <button onclick="searchBrandLogos()" class="px-4 py-2 rounded-xl bg-accent-600 hover:bg-accent-500 text-white font-medium"><i class="fas fa-search"></i></button>
+      </div>
+      <div id="brand-logo-results" class="space-y-2"></div>
+      <p class="text-xs text-gray-500 mt-2 text-center">הלוגואים מגיעים מ-Brand Search API</p>
     </div>
     <!-- Pexels Tab -->
     <div id="elem-pexels" class="hidden">
       <div class="flex gap-2 mb-4">
-        <input type="text" id="pexels-search" placeholder="חיפוש תמונות..." class="flex-1 px-4 py-2 rounded-xl bg-dark-900 border border-gray-700 text-white placeholder-gray-500 focus:border-accent-500 focus:outline-none" onkeydown="if(event.key==='Enter')searchPexels()">
+        <input type="text" id="pexels-search" placeholder="חיפוש תמונות חופשיות מסחרית..." class="flex-1 px-4 py-2 rounded-xl bg-dark-900 border border-gray-700 text-white placeholder-gray-500 focus:border-accent-500 focus:outline-none text-sm" onkeydown="if(event.key==='Enter')searchPexels()">
         <button onclick="searchPexels()" class="px-4 py-2 rounded-xl bg-accent-600 hover:bg-accent-500 text-white font-medium"><i class="fas fa-search"></i></button>
       </div>
       <div id="pexels-results" class="grid grid-cols-2 gap-3"></div>
+      <p class="text-xs text-gray-500 mt-2 text-center">תמונות מ-Pexels - רישיון חופשי מסחרי, ללא צורך בקרדיט</p>
     </div>
   </div>
 </div>
 
 <script>
 // ==================== CONFIG ====================
-const DB_KEY = 'ewolf_editor_pro_v4';
+const DB_KEY = 'ewolf_editor_pro_v5';
 const PEXELS_KEY = 'GN2dKIz3gxA7DMYnRXdyxbZwhRbeNtzhwsWAkUrE4vrRqy45WgBwRVC3';
+const BRAND_SEARCH_KEY = '1id8RlM6U1EKkHr7j2u';
 const GOOGLE_FONTS = ['Assistant','Alef','Rubik','Heebo','Suez One','Varela Round','Roboto','Open Sans','Lato','Montserrat','Poppins','Oswald','Raleway','Merriweather','Playfair Display','Nunito','Ubuntu','Noto Sans','Inter','Fira Sans','Crimson Text','IBM Plex Sans','Josefin Sans','Lora','Manrope','Pacifico','Space Grotesk','Bebas Neue','Cairo','Comfortaa','DM Sans','Exo 2','Lobster','Orbitron','Tajawal','Amiri','Cinzel','Dancing Script','Great Vibes','Indie Flower','Kaushan Script','Teko','Righteous','MuseoModerno','Noto Serif','Overpass','Barlow','Hind','Arimo','Libre Franklin','Bitter','Domine','Literata','Spectral','Jost','Karla','Cabin','Quicksand','Source Sans Pro','Dosis','Titillium Web','Work Sans','M PLUS Rounded 1c'];
 
 // ==================== STATE ====================
@@ -703,10 +642,9 @@ const App = {
   dirty: false, autoSaveTimer: null,
   settings: {autoSave:true, snapGrid:0},
   cropState: {active:false, element:null, img:null, underlay:null, overlay:null, ctx:null, cropX:0, cropY:0, cropW:0, cropH:0, scaleX:1, scaleY:1, dragging:false, handle:null},
+  tempProfile: null,
   tempProfilePass: null,
-  // Undo/Redo
   history: [], historyIndex: -1, historyMax: 50,
-  // Site logo
   siteLogoUrl: null
 };
 
@@ -747,7 +685,7 @@ function saveDB() {
   localStorage.setItem(DB_KEY, JSON.stringify(App.data));
 }
 function initDB() {
-  App.data = { version:4, profiles:[], sites:[], drafts:{}, settings:{autoSave:true, snapGrid:0} };
+  App.data = { version:5, profiles:[], sites:[], drafts:{}, settings:{autoSave:true, snapGrid:0} };
   saveDB();
 }
 
@@ -893,6 +831,27 @@ function logoutProfile() {
   App.currentProfile = null;
   App.currentSite = null;
   App.tempProfilePass = null;
+  showProfiles();
+}
+function deleteCurrentProfile() {
+  if(!App.tempProfile) return;
+  if(!confirm('האם אתה בטוח שברצונך למחוק את הפרופיל "' + App.tempProfile.name + '"? פעולה זו תמחק גם את כל האתרים והטיוטות המשויכים לפרופיל.')) return;
+
+  // Remove profile
+  App.data.profiles = App.data.profiles.filter(p => p.id !== App.tempProfile.id);
+
+  // Remove associated sites
+  App.data.sites = App.data.sites.filter(s => s.profileId !== App.tempProfile.id);
+
+  // Remove associated drafts
+  if(App.data.drafts) {
+    Object.keys(App.data.drafts).forEach(siteUrl => {
+      App.data.drafts[siteUrl] = App.data.drafts[siteUrl].filter(d => d.author !== App.tempProfile.id);
+    });
+  }
+
+  saveDB();
+  showToast('הפרופיל נמחק בהצלחה','success');
   showProfiles();
 }
 
@@ -1072,11 +1031,9 @@ async function uploadMedia(file) {
 
 // ==================== UNDO / REDO ====================
 function pushHistory() {
-  // Remove future history if we're not at the end
   if(App.historyIndex < App.history.length - 1) {
     App.history = App.history.slice(0, App.historyIndex + 1);
   }
-  // Save current state
   const state = JSON.stringify({
     elements: App.currentPost.elements,
     elementCounter: App.elementCounter,
@@ -1084,7 +1041,6 @@ function pushHistory() {
     featuredImage: App.currentPost.featuredImage,
     background: App.currentPost.background
   });
-  // Don't push duplicate
   if(App.history.length > 0 && App.history[App.history.length - 1] === state) return;
 
   App.history.push(state);
@@ -1197,7 +1153,6 @@ function createElementDOM(el) {
   div.style.opacity = (el.opacity||100)/100;
   div.style.zIndex = el.zIndex || 1;
 
-  // Common border styles
   if(el.borderRadius) div.style.borderRadius = el.borderRadius;
   if(el.borderWidth) div.style.borderWidth = el.borderWidth;
   if(el.borderColor) div.style.borderColor = el.borderColor;
@@ -1208,19 +1163,39 @@ function createElementDOM(el) {
 
   if(el.type==='text') {
     content.contentEditable = true;
-    content.innerHTML = el.content || 'טקסט חדש';
+    content.innerHTML = el.content || '<p>טקסט חדש</p>';
     content.style.fontFamily = el.styles?.fontFamily || 'Assistant';
-    content.style.fontSize = el.styles?.fontSize || '24px';
+    content.style.fontSize = el.styles?.fontSize || '18px';
     content.style.color = el.styles?.color || '#1f2937';
     content.style.backgroundColor = el.styles?.backgroundColor || 'transparent';
     content.style.textAlign = el.styles?.textAlign || 'right';
     content.style.fontWeight = el.styles?.fontWeight || '400';
-    content.style.lineHeight = el.styles?.lineHeight || '1.5';
+    content.style.lineHeight = el.styles?.lineHeight || '1.6';
     content.style.direction = 'rtl';
-    content.addEventListener('input', ()=>{ handleMarkdown(content, el); markDirty(); });
+    content.addEventListener('input', ()=>{ el.content = content.innerHTML; markDirty(); });
     content.addEventListener('blur', ()=>{ el.content = content.innerHTML; });
     content.addEventListener('mouseup', showInlineToolbar);
     content.addEventListener('keyup', showInlineToolbar);
+    content.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter' && !e.shiftKey) {
+        // Let browser handle default enter, but ensure we have paragraphs
+        setTimeout(()=>{
+          const sel = window.getSelection();
+          if(sel.rangeCount) {
+            let node = sel.getRangeAt(0).startContainer;
+            while(node && node!==content) {
+              if(node.nodeType===1 && !['P','DIV','H1','H2','H3','BLOCKQUOTE','LI'].includes(node.tagName)) {
+                // Wrap inlines in paragraph
+                const p = document.createElement('p');
+                node.parentNode.insertBefore(p, node);
+                p.appendChild(node);
+              }
+              node = node.parentNode;
+            }
+          }
+        }, 0);
+      }
+    });
   } else if(el.type==='image') {
     const img = document.createElement('img');
     img.src = el.src;
@@ -1282,6 +1257,17 @@ function createElementDOM(el) {
     img.style.objectFit = 'contain';
     content.appendChild(img);
     content.style.pointerEvents = 'none';
+  } else if(el.type==='iconify') {
+    content.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">' + (el.svgContent || '') + '</div>';
+    content.style.pointerEvents = 'none';
+  } else if(el.type==='brand-logo') {
+    const img = document.createElement('img');
+    img.src = el.src || '';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+    content.appendChild(img);
+    content.style.pointerEvents = 'none';
   }
 
   div.appendChild(content);
@@ -1298,35 +1284,6 @@ function createElementDOM(el) {
 
   div.addEventListener('mousedown', (e)=>onElementMouseDown(e, el));
   canvas.appendChild(div);
-}
-
-// ==================== MARKDOWN AUTO-CONVERT ====================
-function handleMarkdown(contentEl, el) {
-  const html = contentEl.innerHTML;
-  const text = contentEl.innerText;
-  if(!html.endsWith(' ') && !html.endsWith('<br>') && !html.endsWith('\n')) return;
-
-  let modified = false;
-  let newHtml = html;
-
-  if(/^#\s(.+)$/m.test(text)) { newHtml = newHtml.replace(/<div>#\s(.+?)<\/div>/g,'<h1 style="font-size:32px;font-weight:700;margin:8px 0;">$1</h1>'); newHtml = newHtml.replace(/^#\s(.+)$/m,'<h1 style="font-size:32px;font-weight:700;margin:8px 0;">$1</h1>'); modified=true; }
-  if(/^##\s(.+)$/m.test(text)) { newHtml = newHtml.replace(/<div>##\s(.+?)<\/div>/g,'<h2 style="font-size:28px;font-weight:600;margin:8px 0;">$1</h2>'); modified=true; }
-  if(/^###\s(.+)$/m.test(text)) { newHtml = newHtml.replace(/<div>###\s(.+?)<\/div>/g,'<h3 style="font-size:24px;font-weight:600;margin:8px 0;">$1</h3>'); modified=true; }
-  if(/\*\*(.+?)\*\*/.test(text)) { newHtml = newHtml.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>'); modified=true; }
-  if(/\*(.+?)\*/.test(text)) { newHtml = newHtml.replace(/\*(.+?)\*/g,'<em>$1</em>'); modified=true; }
-  if(/`(.+?)`/.test(text)) { newHtml = newHtml.replace(/`(.+?)`/g,'<code style="background:#f3f4f6;padding:2px 4px;border-radius:4px;font-family:monospace;">$1</code>'); modified=true; }
-  if(/\[(.+?)\]\((.+?)\)/.test(text)) { newHtml = newHtml.replace(/\[(.+?)\]\((.+?)\)/g,'<a href="$2" style="color:#8b5cf6;text-decoration:underline;">$1</a>'); modified=true; }
-
-  if(modified) {
-    contentEl.innerHTML = newHtml;
-    el.content = newHtml;
-    const range = document.createRange();
-    const sel = window.getSelection();
-    range.selectNodeContents(contentEl);
-    range.collapse(false);
-    sel.removeAllRanges();
-    sel.addRange(range);
-  }
 }
 
 // ==================== MOUSE INTERACTIONS ====================
@@ -1446,7 +1403,7 @@ function setTool(tool) {
     setTimeout(()=>{
       App.currentTool = 'select';
       document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
-      document.querySelector('[onclick="setTool(\'select\')"]').classList.add('active');
+      document.querySelector('[onclick="setTool('select')"]').classList.add('active');
     }, 100);
   }
 }
@@ -1455,9 +1412,9 @@ function addTextElement() {
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'text', x: 100, y: 100 + (App.elementCounter*10)%300,
-    width: 400, height: 80, rotation: 0, opacity: 100, zIndex: App.elementCounter,
-    content: 'טקסט חדש',
-    styles: {fontFamily:'Assistant', fontSize:'24px', color:'#1f2937', textAlign:'right', fontWeight:'400'},
+    width: 400, height: 120, rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    content: '<p>טקסט חדש</p>',
+    styles: {fontFamily:'Assistant', fontSize:'18px', color:'#1f2937', textAlign:'right', fontWeight:'400', lineHeight:'1.6'},
     borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
   };
   App.currentPost.elements.push(el);
@@ -1575,12 +1532,27 @@ function addSiteLogo() {
   markDirty();
   pushHistory();
 }
-function addLogoHtml(html) {
+function addIconifyElement(svgContent, iconName) {
   const el = {
     id: 'el_' + (++App.elementCounter),
-    type: 'html', x: 100, y: 100, width: 100, height: 100,
+    type: 'iconify', x: 100, y: 100, width: 80, height: 80,
     rotation: 0, opacity: 100, zIndex: App.elementCounter,
-    content: '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">' + html + '</div>',
+    svgContent: svgContent, iconName: iconName,
+    styles: {},
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+  };
+  App.currentPost.elements.push(el);
+  createElementDOM(el);
+  selectElement(el);
+  markDirty();
+  pushHistory();
+}
+function addBrandLogoElement(src, brandName) {
+  const el = {
+    id: 'el_' + (++App.elementCounter),
+    type: 'brand-logo', x: 100, y: 100, width: 120, height: 120,
+    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    src: src, brandName: brandName,
     styles: {},
     borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
   };
@@ -1661,10 +1633,11 @@ function updatePropsPanel() {
   document.getElementById('video-props').style.display = el.type==='video' ? 'block' : 'none';
 
   if(el.type==='text') {
-    document.getElementById('prop-fontsize').value = parseInt(el.styles?.fontSize || 24);
+    document.getElementById('prop-fontsize').value = parseInt(el.styles?.fontSize || 18);
     document.getElementById('prop-color').value = rgbToHex(el.styles?.color || '#1f2937');
     document.getElementById('prop-bg').value = rgbToHex(el.styles?.backgroundColor || '#ffffff');
     document.getElementById('prop-weight').value = el.styles?.fontWeight || '400';
+    document.getElementById('prop-lineheight').value = el.styles?.lineHeight || '1.5';
   } else if(el.type==='image') {
     document.getElementById('prop-fit').value = el.styles?.objectFit || 'cover';
     document.getElementById('prop-filter').value = el.styles?.filter || '';
@@ -1714,7 +1687,7 @@ function updateImageStyle(prop, value) {
   const el = App.selectedElement;
   if(!el.styles) el.styles = {};
   el.styles[prop] = value;
-  const img = document.querySelector('#el-' + el.id + ' img');
+  const img = document.querySelector('#el-' + App.selectedElement.id + ' img');
   if(img) img.style[prop] = value;
   markDirty();
 }
@@ -1825,9 +1798,9 @@ function handleDrop(e) {
   if(type==='shape') addShape(subtype, x, y);
   else if(type==='wp-logo') addWpLogoAt(x, y);
   else if(type==='site-logo') addSiteLogoAt(x, y);
-  else if(type==='html-logo') addLogoHtmlAt(subtype, x, y);
+  else if(type==='iconify') addIconifyElement(subtype, '');
+  else if(type==='brand-logo') addBrandLogoElement(subtype, '');
   else if(type==='image') {
-    // Handle file drop
     const files = e.dataTransfer.files;
     if(files.length > 0) handleImageFile(files[0], x, y);
   }
@@ -1853,28 +1826,6 @@ function addSiteLogoAt(x, y) {
     id: 'el_' + (++App.elementCounter),
     type: 'site-logo', x: x-60, y: y-60, width: 120, height: 120,
     rotation: 0, opacity: 100, zIndex: App.elementCounter,
-    styles: {},
-    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
-  };
-  App.currentPost.elements.push(el);
-  createElementDOM(el);
-  selectElement(el);
-  markDirty();
-  pushHistory();
-}
-function addLogoHtmlAt(subtype, x, y) {
-  const logos = {
-    'html5': '<i class="fab fa-html5 text-4xl text-orange-500"></i>',
-    'css3': '<i class="fab fa-css3-alt text-4xl text-blue-400"></i>',
-    'js': '<i class="fab fa-js text-4xl text-yellow-400"></i>',
-    'react': '<i class="fab fa-react text-4xl text-cyan-400"></i>',
-    'github': '<i class="fab fa-github text-4xl text-white"></i>'
-  };
-  const el = {
-    id: 'el_' + (++App.elementCounter),
-    type: 'html', x: x-50, y: y-50, width: 100, height: 100,
-    rotation: 0, opacity: 100, zIndex: App.elementCounter,
-    content: '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">' + (logos[subtype] || '') + '</div>',
     styles: {},
     borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
   };
@@ -1942,8 +1893,6 @@ function updatePostBg(type, value) {
   App.currentPost.background.value = value;
   renderCanvas();
   markDirty();
-
-  // Show/hide bg image settings
   document.getElementById('bg-image-settings').classList.toggle('hidden', type !== 'image');
 }
 function updatePostBgOpacity(val) {
@@ -2013,7 +1962,7 @@ document.addEventListener('click', (e)=>{
   if(!e.target.closest('#font-search')) document.getElementById('font-dropdown').classList.add('hidden');
 });
 
-// ==================== IMAGE CROP (with overlay) ====================
+// ==================== IMAGE CROP ====================
 function openCropModal(el) {
   if(!el) el = App.selectedElement;
   if(!el || el.type !== 'image') return;
@@ -2044,7 +1993,6 @@ function openCropModal(el) {
     App.cropState.scaleY = img.height / h;
     App.cropState.img = img;
 
-    // Default crop: center 80%
     App.cropState.cropW = w * 0.8;
     App.cropState.cropH = h * 0.8;
     App.cropState.cropX = (w - App.cropState.cropW) / 2;
@@ -2068,25 +2016,18 @@ function drawCropOverlay() {
   const w = st.overlay.width, h = st.overlay.height;
 
   ctx.clearRect(0, 0, w, h);
-
-  // Dark overlay outside crop area
   ctx.fillStyle = 'rgba(0,0,0,0.6)';
   ctx.fillRect(0, 0, w, h);
-
-  // Clear crop area (show original image at 100%)
   ctx.clearRect(st.cropX, st.cropY, st.cropW, st.cropH);
 
-  // Draw the cropped portion of original image
   const uCtx = st.underlay.getContext('2d');
   const imageData = uCtx.getImageData(st.cropX, st.cropY, st.cropW, st.cropH);
   ctx.putImageData(imageData, st.cropX, st.cropY);
 
-  // Border around crop area
   ctx.strokeStyle = '#f59e0b';
   ctx.lineWidth = 2;
   ctx.strokeRect(st.cropX, st.cropY, st.cropW, st.cropH);
 
-  // Handles
   const handles = [
     [st.cropX, st.cropY], [st.cropX+st.cropW/2, st.cropY], [st.cropX+st.cropW, st.cropY],
     [st.cropX, st.cropY+st.cropH/2], [st.cropX+st.cropW, st.cropY+st.cropH/2],
@@ -2095,7 +2036,6 @@ function drawCropOverlay() {
   ctx.fillStyle = '#f59e0b';
   handles.forEach(([hx,hy])=>{ ctx.fillRect(hx-5, hy-5, 10, 10); });
 
-  // Rule of thirds lines
   ctx.strokeStyle = 'rgba(255,255,255,0.3)';
   ctx.lineWidth = 1;
   ctx.setLineDash([5, 5]);
@@ -2121,7 +2061,6 @@ function getCropHandle(x, y) {
   return null;
 }
 
-// Setup crop canvas events
 setTimeout(()=>{
   const overlay = document.getElementById('crop-overlay-canvas');
   if(!overlay) return;
@@ -2206,14 +2145,14 @@ function replaceSelectedImage() {
   input.click();
 }
 
-// ==================== PEXELS ====================
+// ==================== PEXELS (Commercial-Free) ====================
 async function searchPexels() {
   const query = document.getElementById('pexels-search').value.trim();
   if(!query) return;
   const container = document.getElementById('pexels-results');
   container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-4">טוען...</div>';
   try {
-    const res = await fetch('https://api.pexels.com/v1/search?query=' + encodeURIComponent(query) + '&per_page=24', {
+    const res = await fetch('https://api.pexels.com/v1/search?query=' + encodeURIComponent(query) + '&per_page=24&orientation=all', {
       headers: {Authorization: PEXELS_KEY}
     });
     const data = await res.json();
@@ -2222,7 +2161,7 @@ async function searchPexels() {
       return;
     }
     container.innerHTML = data.photos.map(p=>`
-      <img src="${p.src.medium}" class="pexels-img" draggable="true" ondragstart="dragPexelsStart(event,'${p.src.large}')" onclick="addPexelsImage('${p.src.large}')" title="${p.photographer}">
+      <img src="${p.src.medium}" class="pexels-img" draggable="true" ondragstart="dragPexelsStart(event,'${p.src.large}')" onclick="addPexelsImage('${p.src.large}')" title="${p.photographer} - חופשי מסחרית">
     `).join('');
   } catch(e) {
     container.innerHTML = '<div class="col-span-full text-center text-red-400 py-4">שגיאה בטעינת תמונות</div>';
@@ -2234,7 +2173,7 @@ function dragPexelsStart(e, url) {
 }
 function addPexelsImage(url) {
   addImageElement(url);
-  showToast('תמונה נוספה מהספרייה','success');
+  showToast('תמונה נוספה מהספרייה (רישיון חופשי)','success');
 }
 
 // ==================== ELEMENTS SIDEBAR ====================
@@ -2243,12 +2182,15 @@ function toggleElementsSidebar() {
 }
 function setElementsTab(tab) {
   document.getElementById('elem-shapes').classList.add('hidden');
+  document.getElementById('elem-icons').classList.add('hidden');
   document.getElementById('elem-logos').classList.add('hidden');
   document.getElementById('elem-pexels').classList.add('hidden');
   document.getElementById('elem-tab-shapes').classList.remove('text-accent-400', 'border-b-2', 'border-accent-500');
+  document.getElementById('elem-tab-icons').classList.remove('text-accent-400', 'border-b-2', 'border-accent-500');
   document.getElementById('elem-tab-logos').classList.remove('text-accent-400', 'border-b-2', 'border-accent-500');
   document.getElementById('elem-tab-pexels').classList.remove('text-accent-400', 'border-b-2', 'border-accent-500');
   document.getElementById('elem-tab-shapes').classList.add('text-gray-500');
+  document.getElementById('elem-tab-icons').classList.add('text-gray-500');
   document.getElementById('elem-tab-logos').classList.add('text-gray-500');
   document.getElementById('elem-tab-pexels').classList.add('text-gray-500');
 
@@ -2284,15 +2226,19 @@ function renderPostsList(posts) {
   }
   list.innerHTML = posts.map(p=>{
     const img = p._embedded?.['wp:featuredmedia']?.[0]?.source_url;
+    const isPublished = p.status === 'publish';
     return `
     <div class="post-card" onclick="editWPPost(${p.id})">
       ${img ? `<img src="${img}" class="w-full h-24 object-cover rounded-lg mb-2">` : ''}
       <h4 class="font-medium text-sm mb-1">${p.title.rendered}</h4>
       <p class="text-xs text-gray-500">${new Date(p.date).toLocaleDateString('he-IL')}</p>
-      <div class="flex gap-2 mt-2">
-        <span class="text-xs px-2 py-0.5 rounded ${p.status==='publish'?'bg-green-900 text-green-400':'bg-gray-800 text-gray-400'}">${p.status==='publish'?'פורסם':'טיוטה'}</span>
-        <button onclick="event.stopPropagation(); deletePost(${p.id})" class="text-xs text-red-400 hover:text-red-300"><i class="fas fa-trash"></i></button>
-        <button onclick="event.stopPropagation(); moveToDraft(${p.id})" class="text-xs text-yellow-400 hover:text-yellow-300"><i class="fas fa-save"></i> טיוטה</button>
+      <div class="flex gap-2 mt-2 flex-wrap">
+        <span class="text-xs px-2 py-0.5 rounded ${isPublished?'bg-green-900 text-green-400':'bg-gray-800 text-gray-400'}">${isPublished?'פורסם':'טיוטה'}</span>
+        <button onclick="event.stopPropagation(); deletePost(${p.id})" class="text-xs text-red-400 hover:text-red-300"><i class="fas fa-trash"></i> מחיקה</button>
+        ${isPublished ? 
+          `<button onclick="event.stopPropagation(); unpublishPost(${p.id})" class="text-xs text-yellow-400 hover:text-yellow-300"><i class="fas fa-undo"></i> ביטול פרסום</button>` :
+          `<button onclick="event.stopPropagation(); publishExistingPost(${p.id})" class="text-xs text-green-400 hover:text-green-300"><i class="fas fa-paper-plane"></i> פרסום</button>`
+        }
       </div>
     </div>`;
   }).join('');
@@ -2303,12 +2249,21 @@ async function deletePost(id) {
   try { await deleteWPPost(id); refreshPosts(); showToast('הפוסט נמחק','success'); }
   catch(e) { showToast(e.message,'error'); }
 }
-async function moveToDraft(id) {
-  showToast('מעביר לטיוטה...','info');
+async function unpublishPost(id) {
+  if(!confirm('לבטל את הפרסום של הפוסט? הוא יועבר לטיוטות.')) return;
+  showToast('מבטל פרסום...','info');
   try {
     await wpFetch('/posts/'+id, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:'draft'})});
     refreshPosts();
-    showToast('הפוסט הועבר לטיוטה','success');
+    showToast('הפרסום בוטל בהצלחה','success');
+  } catch(e) { showToast(e.message,'error'); }
+}
+async function publishExistingPost(id) {
+  showToast('מפרסם...','info');
+  try {
+    await wpFetch('/posts/'+id, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:'publish'})});
+    refreshPosts();
+    showToast('הפוסט פורסם בהצלחה','success');
   } catch(e) { showToast(e.message,'error'); }
 }
 
@@ -2343,7 +2298,6 @@ async function editWPPost(id) {
 
     renderCanvas();
     closePanel();
-    // Reset history for loaded post
     App.history = [];
     App.historyIndex = -1;
     pushHistory();
@@ -2367,7 +2321,7 @@ function parseHTMLToElements(html) {
           type: 'text', x: 50, y: currentY, width: 700, height: 50,
           rotation: 0, opacity: 100, zIndex: counter,
           content: '<p>' + escapeHtml(node.textContent) + '</p>',
-          styles: {fontFamily:'Assistant', fontSize:'18px', color:'#1f2937', textAlign:'right', fontWeight:'400'},
+          styles: {fontFamily:'Assistant', fontSize:'18px', color:'#1f2937', textAlign:'right', fontWeight:'400', lineHeight:'1.6'},
           borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
         });
         currentY += 60;
@@ -2399,21 +2353,22 @@ function parseHTMLToElements(html) {
       currentY += 420;
     } else if(['p','h1','h2','h3','h4','h5','h6','div','blockquote','pre','section','article'].includes(tag)) {
       const isHeading = /^h[1-6]$/.test(tag);
-      const fontSize = tag==='h1'?'32px':tag==='h2'?'28px':tag==='h3'?'24px':'18px';
+      const fontSize = tag==='h1'?'32px':tag==='h2'?'26px':tag==='h3'?'22px':'18px';
       const fontWeight = isHeading?'700':'400';
       const height = isHeading?60:Math.max(50, node.textContent.length/25*24);
       elements.push({
         id: 'el_' + (++counter),
         type: 'text', x: 50, y: currentY, width: 700, height: height,
         rotation: 0, opacity: 100, zIndex: counter,
-        content: node.innerHTML,
+        content: node.innerHTML || '<p></p>',
         styles: {
           fontFamily: node.style.fontFamily || 'Assistant',
           fontSize: node.style.fontSize || fontSize,
           fontWeight: node.style.fontWeight || fontWeight,
           color: node.style.color || '#1f2937',
           textAlign: node.style.textAlign || 'right',
-          backgroundColor: 'transparent'
+          backgroundColor: 'transparent',
+          lineHeight: '1.6'
         },
         borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
       });
@@ -2440,7 +2395,7 @@ function parseHTMLToElements(html) {
           type: 'text', x: 50, y: currentY, width: 700, height: 40,
           rotation: 0, opacity: 100, zIndex: counter,
           content: '<p style="text-align:center;color:#666;font-size:14px;">' + caption.innerHTML + '</p>',
-          styles: {fontFamily:'Assistant', fontSize:'14px', color:'#666', textAlign:'center'},
+          styles: {fontFamily:'Assistant', fontSize:'14px', color:'#666', textAlign:'center', lineHeight:'1.6'},
           borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
         });
         currentY += 50;
@@ -2534,7 +2489,6 @@ function loadDraft(id) {
   } else { removeFeaturedImage(); }
   renderCanvas();
   closePanel();
-  // Reset history
   App.history = [];
   App.historyIndex = -1;
   pushHistory();
@@ -2598,7 +2552,7 @@ async function publishDraft(draftId) {
   await publishPost();
 }
 
-// Generate EXACT HTML that preserves the visual layout
+// Generate clean HTML for WordPress
 function generateExactHTML() {
   const post = App.currentPost;
   let bgStyle = '';
@@ -2623,7 +2577,6 @@ function generateExactHTML() {
     if(opacity < 1) bgStyle += 'opacity:'+opacity+';';
   }
 
-  // Use a container with exact pixel positioning like the editor
   let html = '<div style="position:relative;width:800px;min-height:1000px;margin:0 auto;'+bgStyle+'overflow:hidden;box-sizing:border-box;">';
 
   const sorted = [...post.elements].sort((a,b)=>(a.zIndex||0)-(b.zIndex||0));
@@ -2640,7 +2593,7 @@ function generateExactHTML() {
 
     if(el.type==='text') {
       const s = el.styles||{};
-      html += '<div style="width:100%;height:100%;overflow:hidden;font-family:'+(s.fontFamily||'Assistant')+',sans-serif;font-size:'+(s.fontSize||'18px')+';color:'+(s.color||'#1f2937')+';background:'+(s.backgroundColor||'transparent')+';text-align:'+(s.textAlign||'right')+';font-weight:'+(s.fontWeight||'400')+';padding:8px;direction:rtl;line-height:1.5;box-sizing:border-box;">'+(el.content||'')+'</div>';
+      html += '<div style="width:100%;height:100%;overflow:hidden;font-family:'+(s.fontFamily||'Assistant')+',sans-serif;font-size:'+(s.fontSize||'18px')+';color:'+(s.color||'#1f2937')+';background:'+(s.backgroundColor||'transparent')+';text-align:'+(s.textAlign||'right')+';font-weight:'+(s.fontWeight||'400')+';padding:12px;direction:rtl;line-height:'+(s.lineHeight||'1.6')+';box-sizing:border-box;">'+(el.content||'')+'</div>';
     } else if(el.type==='image') {
       const s = el.styles||{};
       html += '<img src="'+el.src+'" style="width:100%;height:100%;object-fit:'+(s.objectFit||'cover')+';border-radius:'+(s.borderRadius||'0')+';'+(s.filter?s.filter:'')+'display:block;">';
@@ -2653,14 +2606,14 @@ function generateExactHTML() {
       if(el.shapeType==='triangle') clip = 'clip-path:polygon(50% 0%,0% 100%,100% 100%);';
       if(el.shapeType==='diamond') clip = 'clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);';
       if(el.shapeType==='arrow-right') clip = 'clip-path:polygon(0% 20%,60% 20%,60% 0%,100% 50%,60% 100%,60% 80%,0% 80%);';
-      if(el.shapeType==='heart') clip = 'clip-path:path(\'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z\');';
+      if(el.shapeType==='heart') clip = 'clip-path:path('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z');';
       if(el.shapeType==='half-circle') clip = 'border-radius:50% 50% 0 0 / 100% 100% 0 0;height:50%;';
       if(el.shapeType==='moon') clip = 'border-radius:50%;box-shadow:inset -10px 0 0 '+(s.backgroundColor||'#f59e0b')+';';
       if(el.shapeType==='oval') clip = 'border-radius:50%;';
       if(el.shapeType==='pentagon') clip = 'clip-path:polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);';
       if(el.shapeType==='hexagon') clip = 'clip-path:polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);';
-      if(el.shapeType==='line-h') { html += '<div style="width:100%;height:4px;background:'+(s.backgroundColor||'#94a3b8')+';"></div>'; }
-      else if(el.shapeType==='line-v') { html += '<div style="width:4px;height:100%;background:'+(s.backgroundColor||'#94a3b8')+';"></div>'; }
+      if(el.shapeType==='line-h') { html += '<div style="width:100%;height:4px;background:'+(s.backgroundColor||'#94a3b8')+';border-radius:2px;"></div>'; }
+      else if(el.shapeType==='line-v') { html += '<div style="width:4px;height:100%;background:'+(s.backgroundColor||'#94a3b8')+';border-radius:2px;"></div>'; }
       else { html += '<div style="width:100%;height:100%;background:'+bg+';border-radius:'+(s.borderRadius||'0')+';'+clip+'"></div>'; }
     } else if(el.type==='embed') {
       html += '<iframe src="'+el.src+'" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>';
@@ -2672,6 +2625,10 @@ function generateExactHTML() {
       html += '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:80px;color:#21759b;"><i class="fab fa-wordpress"></i></div>';
     } else if(el.type==='site-logo') {
       html += '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><img src="'+(App.siteLogoUrl||'')+'" style="max-width:100%;max-height:100%;object-fit:contain;"></div>';
+    } else if(el.type==='iconify') {
+      html += '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">' + (el.svgContent || '') + '</div>';
+    } else if(el.type==='brand-logo') {
+      html += '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><img src="'+(el.src||'')+'" style="max-width:100%;max-height:100%;object-fit:contain;"></div>';
     }
     html += '</div>';
   });
@@ -2737,22 +2694,91 @@ function handleImport(e) {
 }
 
 document.addEventListener('keydown', (e)=>{
-  // Delete element
   if((e.key==='Delete' || e.key==='Backspace') && App.selectedElement) {
     const active = document.activeElement;
     if(!active || !active.isContentEditable) { deleteSelected(); pushHistory(); }
   }
-  // Ctrl+S - Save
   if(e.ctrlKey && e.key==='s') { e.preventDefault(); saveDraftManual(); }
-  // Escape
   if(e.key==='Escape') { deselectAll(); closePanel(); hideInlineToolbar(); }
-  // Ctrl+Z - Undo
   if(e.ctrlKey && e.key==='z' && !e.shiftKey) { e.preventDefault(); undo(); }
-  // Ctrl+Shift+Z - Redo
   if(e.ctrlKey && e.shiftKey && e.key==='z') { e.preventDefault(); redo(); }
-  // Ctrl+Y - Redo (alternative)
   if(e.ctrlKey && e.key==='y') { e.preventDefault(); redo(); }
 });
+
+
+// ==================== ICONIFY API (Free SVG Icons) ====================
+async function searchIconify() {
+  const query = document.getElementById('iconify-search').value.trim();
+  if(!query) return;
+  const container = document.getElementById('iconify-results');
+  container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-4">טוען אייקונים...</div>';
+  try {
+    const res = await fetch('https://api.iconify.design/search?query=' + encodeURIComponent(query) + '&limit=32');
+    const data = await res.json();
+    if(!data.icons || data.icons.length === 0) {
+      container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-4">לא נמצאו אייקונים</div>';
+      return;
+    }
+    // Fetch SVGs for each icon
+    const iconPromises = data.icons.slice(0, 32).map(async (iconName) => {
+      try {
+        const svgRes = await fetch('https://api.iconify.design/' + iconName + '.svg');
+        const svgText = await svgRes.text();
+        return {name: iconName, svg: svgText};
+      } catch(e) { return null; }
+    });
+    const icons = (await Promise.all(iconPromises)).filter(i => i !== null);
+
+    container.innerHTML = icons.map(icon => `
+      <div class="iconify-result" draggable="true" ondragstart="dragElementStart(event,'iconify','${encodeURIComponent(icon.svg)}')" onclick="addIconifyElement('${encodeURIComponent(icon.svg).replace(/'/g, "\'")}', '${icon.name}')" title="${icon.name}">
+        ${icon.svg}
+      </div>
+    `).join('');
+  } catch(e) {
+    container.innerHTML = '<div class="col-span-full text-center text-red-400 py-4">שגיאה בטעינת אייקונים</div>';
+  }
+}
+
+// ==================== BRAND SEARCH API (Logos) ====================
+async function searchBrandLogos() {
+  const query = document.getElementById('brand-search-input').value.trim();
+  if(!query) return;
+  const container = document.getElementById('brand-logo-results');
+  container.innerHTML = '<div class="text-center text-gray-500 py-4">טוען לוגואים...</div>';
+  try {
+    // Try Brand Search API first
+    const res = await fetch('https://api.brandfetch.io/v2/search/' + encodeURIComponent(query), {
+      headers: {'Authorization': 'Bearer ' + BRAND_SEARCH_KEY}
+    });
+    if(res.ok) {
+      const data = await res.json();
+      if(data && data.length > 0) {
+        container.innerHTML = data.slice(0, 20).map(brand => {
+          const logoUrl = brand.icon || brand.logo || (brand.image ? brand.image : null);
+          if(!logoUrl) return '';
+          return `
+            <div class="brand-logo-result" draggable="true" ondragstart="dragElementStart(event,'brand-logo','${logoUrl}')" onclick="addBrandLogoElement('${logoUrl}', '${brand.name}')">
+              <img src="${logoUrl}" alt="${brand.name}" onerror="this.style.display='none'">
+              <span class="text-sm">${brand.name}</span>
+            </div>
+          `;
+        }).join('');
+        return;
+      }
+    }
+    // Fallback: try simple logo fetch from Clearbit
+    const fallbackUrl = 'https://logo.clearbit.com/' + encodeURIComponent(query);
+    container.innerHTML = `
+      <div class="brand-logo-result" onclick="addBrandLogoElement('${fallbackUrl}', '${query}')">
+        <img src="${fallbackUrl}" alt="${query}" onerror="this.parentElement.innerHTML='<span class=\'text-red-400 text-sm\'>לא נמצא לוגו</span>'">
+        <span class="text-sm">${query}</span>
+      </div>
+      <p class="text-xs text-gray-500 mt-2">לוגו מ-Clearbit (fallback)</p>
+    `;
+  } catch(e) {
+    container.innerHTML = '<div class="text-center text-red-400 py-4">שגיאה בטעינת לוגואים</div>';
+  }
+}
 
 async function init() {
   App.data = loadDB();

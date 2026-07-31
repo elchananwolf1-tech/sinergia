@@ -666,12 +666,11 @@ const GOOGLE_FONTS = ['Assistant','Alef','Rubik','Heebo','Suez One','Varela Roun
 // Firebase config - using a demo project (replace with your own)
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyCG9WYRbckHlAF5MqdYtgGmU9d4j2egtjo",
-    authDomain: "wpposteditor.firebaseapp.com",
-    projectId: "wpposteditor",
-    storageBucket: "wpposteditor.firebasestorage.app",
-    messagingSenderId: "496697667033",
-    appId: "1:496697667033:web:c80646730e1c02dbf4fdc8",
-    measurementId: "G-V1J67F0FC2"
+  authDomain: "wpposteditor.firebaseapp.com",
+  projectId: "wpposteditor",
+  storageBucket: "wpposteditor.firebasestorage.app",
+  messagingSenderId: "496697667033",
+  appId: "1:496697667033:web:c80646730e1c02dbf4fdc8"
 };
 
 let db = null;
@@ -912,7 +911,7 @@ async function createNewProfile() {
     passHash: hash,
     createdAt: Date.now()
   };
-  if(!App.data) App.data = loadDB() || {};
+  if(!App.data) App.data = await loadDB() || {};
   if(!App.data.profiles) App.data.profiles = [];
   App.data.profiles.push(profile);
   saveDB();
@@ -927,7 +926,7 @@ async function doAuth() {
 
   App.currentProfile = App.tempProfile;
   App.tempProfilePass = pass;
-  App.data = loadDB() || {};
+  App.data = await loadDB() || {};
   showSites();
 }
 function logoutProfile() {
@@ -1344,10 +1343,14 @@ function createElementDOM(el) {
     if(el.shapeType==='diamond') content.style.clipPath = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)';
     if(el.shapeType==='arrow-right') content.style.clipPath = 'polygon(0% 20%, 60% 20%, 60% 0%, 100% 50%, 60% 100%, 60% 80%, 0% 80%)';
     if(el.shapeType==='heart') {
-      content.innerHTML = '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="' + (el.styles?.backgroundColor || '#ec4899') + '"></path></svg>';
+      content.innerHTML = '<svg viewBox="0 0 24 24" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="' + (el.styles?.backgroundColor || '#ec4899') + '"></path></svg>';
+      content.style.background = 'transparent';
     }
     if(el.shapeType==='half-circle') { content.style.borderRadius = '50% 50% 0 0 / 100% 100% 0 0'; content.style.height = '50%'; }
-    if(el.shapeType==='moon') { content.style.borderRadius = '50%'; content.style.boxShadow = 'inset -10px 0 0 ' + (el.styles?.backgroundColor || '#f59e0b'); }
+    if(el.shapeType==='moon') {
+      content.innerHTML = '<svg viewBox="0 0 24 24" width="100%" height="100%" preserveAspectRatio="xMidYMid meet"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="' + (el.styles?.backgroundColor || '#f59e0b') + '"></path></svg>';
+      content.style.background = 'transparent';
+    }
     if(el.shapeType==='oval') content.style.borderRadius = '50%';
     if(el.shapeType==='pentagon') content.style.clipPath = 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)';
     if(el.shapeType==='hexagon') content.style.clipPath = 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)';
@@ -1559,13 +1562,30 @@ function setTool(tool) {
 }
 
 function addTextElement() {
+  let startY = 40;
+  let startX = 50;
+  let maxWidth = 700;
+  const canvas = document.getElementById('editor-canvas');
+  const canvasWidth = parseInt(canvas.style.width) || 800;
+
+  const textElements = App.currentPost.elements.filter(e => e.type === 'text');
+  if(textElements.length > 0) {
+    const lastText = textElements[textElements.length - 1];
+    startY = lastText.y + lastText.height + 20;
+    startX = lastText.x;
+    maxWidth = lastText.width;
+  } else {
+    startX = 50;
+    maxWidth = canvasWidth - 100;
+  }
+
   const el = {
     id: 'el_' + (++App.elementCounter),
-    type: 'text', x: 100, y: 100 + (App.elementCounter*10)%300,
-    width: 400, height: 120, rotation: 0, opacity: 100, zIndex: App.elementCounter,
-    content: '<p>טקסט חדש</p>',
+    type: 'text', x: startX, y: startY,
+    width: maxWidth, height: 60, rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    content: '<p>התחל לכתוב כאן...</p>',
     styles: {fontFamily:'Assistant', fontSize:'18px', color:'#1f2937', textAlign:'right', fontWeight:'400', lineHeight:'1.6'},
-    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+    borderRadius: '0px', borderWidth: '0px', borderColor: 'transparent', borderStyle: 'solid'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -1573,7 +1593,7 @@ function addTextElement() {
   setTimeout(()=>{
     const content = document.querySelector('#el-' + el.id + ' .element-content');
     if(content) { content.focus(); document.execCommand('selectAll', false, null); }
-  }, 50);
+  }, 100);
   markDirty();
   pushHistory();
 }
@@ -2932,7 +2952,7 @@ function generateExactHTML() {
 
     if(el.type==='text') {
       const s = el.styles||{};
-      html += '<div style="width:100%;height:100%;overflow:hidden;font-family:'+(s.fontFamily||'Assistant')+',sans-serif;font-size:'+(s.fontSize||'18px')+';color:'+(s.color||'#1f2937')+';background:'+(s.backgroundColor||'transparent')+';text-align:'+(s.textAlign||'right')+';font-weight:'+(s.fontWeight||'400')+';padding:12px;direction:rtl;line-height:'+(s.lineHeight||'1.6')+';box-sizing:border-box;">'+(el.content||'')+'</div>';
+      html += '<div style="width:100%;height:auto;overflow:visible;font-family:'+(s.fontFamily||'Assistant')+',sans-serif;font-size:'+(s.fontSize||'18px')+';color:'+(s.color||'#1f2937')+';background:'+(s.backgroundColor||'transparent')+';text-align:'+(s.textAlign||'right')+';font-weight:'+(s.fontWeight||'400')+';padding:12px;direction:rtl;line-height:'+(s.lineHeight||'1.6')+';box-sizing:border-box;word-wrap:break-word;">'+(el.content||'')+'</div>';
     } else if(el.type==='image') {
       const s = el.styles||{};
       html += '<img src="'+el.src+'" style="width:100%;height:100%;object-fit:'+(s.objectFit||'cover')+';border-radius:'+(s.borderRadius||'0')+';'+(s.filter?s.filter:'')+'display:block;">';

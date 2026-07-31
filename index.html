@@ -137,10 +137,21 @@ tailwind.config = {
   }
   .site-card:hover { background: rgba(30,30,46,0.9); border-color: #f59e0b; transform: translateY(-2px); }
 
-  .crop-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 99997;
-    display: flex; align-items: center; justify-content: center;
+  .grad-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+  .grad-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+  .grad-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+  .grad-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+  .grad-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+  .grad-6 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+
+  input[type="file"] { display: none; }
+
+  .shape-thumb {
+    width: 60px; height: 60px; cursor: grab; transition: transform 0.2s;
+    display:flex;align-items:center;justify-content:center; border-radius: 8px;
+    background: rgba(30,30,46,0.8); border: 1px solid rgba(255,255,255,0.06);
   }
+  .shape-thumb:hover { transform: scale(1.1); border-color: rgba(139,92,246,0.4); }
 
   .font-item { padding: 8px 12px; cursor: pointer; font-size: 14px; border-radius: 6px; transition: all 0.15s; }
   .font-item:hover { background: rgba(139,92,246,0.15); }
@@ -162,28 +173,32 @@ tailwind.config = {
   .pexels-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; cursor: pointer; transition: transform 0.2s; }
   .pexels-img:hover { transform: scale(1.05); }
 
-  .shape-thumb { width: 60px; height: 60px; cursor: grab; transition: transform 0.2s; display:flex;align-items:center;justify-content:center; }
-  .shape-thumb:hover { transform: scale(1.1); }
-
-  .grad-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-  .grad-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-  .grad-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-  .grad-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-  .grad-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-  .grad-6 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
-
-  input[type="file"] { display: none; }
-
-  .library-panel {
-    position: fixed; bottom: 0; left: 0; right: 0; height: 280px;
+  /* Element Library Sidebar */
+  .elements-sidebar {
+    position: fixed; right: 0; top: 0; bottom: 0; width: 300px;
     background: rgba(17,17,27,0.95); backdrop-filter: blur(16px);
-    border-top: 1px solid rgba(255,255,255,0.1); transform: translateY(100%);
-    transition: transform 0.3s ease; z-index: 50; display: flex; flex-direction: column;
+    border-right: 1px solid rgba(255,255,255,0.1);
+    transform: translateX(100%); transition: transform 0.3s ease;
+    z-index: 45; display: flex; flex-direction: column;
   }
-  .library-panel.open { transform: translateY(0); }
+  .elements-sidebar.open { transform: translateX(0); }
+
+  .crop-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 99997;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .element-thumb { 
+    width: 60px; height: 60px; cursor: grab; transition: all 0.2s; 
+    display:flex;align-items:center;justify-content:center; border-radius: 8px;
+    background: rgba(30,30,46,0.8); border: 1px solid rgba(255,255,255,0.06);
+  }
+  .element-thumb:hover { transform: scale(1.05); border-color: rgba(139,92,246,0.4); }
+  .element-thumb.dragging { opacity: 0.5; }
 
   @media (max-width: 900px) { #editor-canvas { width: 100% !important; } }
 </style>
+<base target="_blank">
 <base target="_blank">
 </head>
 <body class="h-screen w-screen overflow-hidden">
@@ -218,8 +233,11 @@ tailwind.config = {
       <h3 class="text-lg font-bold">חיתוך תמונה</h3>
       <button onclick="closeCrop()" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center"><i class="fas fa-times"></i></button>
     </div>
-    <div class="relative bg-black rounded-lg overflow-hidden flex-1 flex items-center justify-center" style="min-height:300px;" id="crop-container">
-      <canvas id="crop-canvas" style="max-width:100%;max-height:70vh;cursor:crosshair;"></canvas>
+    <div class="relative bg-black rounded-lg overflow-hidden flex-1 flex items-center justify-center" style="min-height:300px;" id="crop-wrapper">
+      <div id="crop-container" style="position:relative;display:inline-block;">
+        <canvas id="crop-underlay" style="display:block;"></canvas>
+        <canvas id="crop-overlay-canvas" style="position:absolute;top:0;left:0;cursor:crosshair;"></canvas>
+      </div>
     </div>
     <div class="flex justify-center gap-3 mt-4">
       <button onclick="applyCrop()" class="px-6 py-2 bg-accent-600 hover:bg-accent-500 rounded-lg font-bold text-white transition">אישור חיתוך</button>
@@ -367,26 +385,22 @@ tailwind.config = {
         </div>
       </div>
     </div>
-    <!-- Site Switcher -->
     <div class="p-3 border-b border-gray-800">
       <p class="text-xs text-gray-500 mb-2 px-2">אתר נוכחי</p>
       <select id="site-switcher" onchange="switchSite(this.value)" class="w-full px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm focus:border-accent-500 focus:outline-none cursor-pointer"></select>
     </div>
-    <!-- Tools -->
     <div class="p-3 border-b border-gray-800">
       <p class="text-xs text-gray-500 mb-2 px-2">כלים</p>
       <div class="grid grid-cols-4 gap-1">
         <div class="tool-btn active" onclick="setTool('select')" title="בחירה"><i class="fas fa-mouse-pointer"></i></div>
         <div class="tool-btn" onclick="setTool('text')" title="טקסט"><i class="fas fa-font"></i></div>
         <div class="tool-btn" onclick="setTool('image')" title="תמונה"><i class="fas fa-image"></i></div>
-        <div class="tool-btn" onclick="setTool('shape')" title="צורה"><i class="fas fa-shapes"></i></div>
+        <div class="tool-btn" onclick="toggleElementsSidebar()" title="אלמנטים"><i class="fas fa-shapes"></i></div>
         <div class="tool-btn" onclick="setTool('embed')" title="אתר מוטמע"><i class="fas fa-globe"></i></div>
         <div class="tool-btn" onclick="setTool('html')" title="קוד HTML"><i class="fas fa-code"></i></div>
         <div class="tool-btn" onclick="setTool('video')" title="סרטון"><i class="fas fa-video"></i></div>
-        <div class="tool-btn" onclick="setTool('wp-logo')" title="לוגו וורדפרס"><i class="fab fa-wordpress"></i></div>
       </div>
     </div>
-    <!-- Navigation -->
     <div class="flex-1 overflow-y-auto p-3">
       <button onclick="showPanel('posts')" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition text-right mb-1" id="nav-posts">
         <i class="fas fa-file-alt text-primary-500 w-5"></i><span class="text-sm">פוסטים מהאתר</span>
@@ -395,14 +409,17 @@ tailwind.config = {
         <i class="fas fa-save text-accent-400 w-5"></i><span class="text-sm">טיוטות מקומיות</span>
         <span id="draft-count" class="mr-auto text-xs bg-accent-600 px-2 py-0.5 rounded-full hidden">0</span>
       </button>
-      <button onclick="toggleLibrary()" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition text-right mb-1">
-        <i class="fas fa-shapes text-pink-400 w-5"></i><span class="text-sm">ספריית אלמנטים</span>
-      </button>
       <button onclick="showPanel('settings')" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition text-right mb-1">
         <i class="fas fa-cog text-gray-400 w-5"></i><span class="text-sm">הגדרות</span>
       </button>
     </div>
-    <!-- User -->
+    <div class="p-3 border-b border-gray-800">
+      <p class="text-xs text-gray-500 mb-2 px-2">פעולות</p>
+      <div class="flex gap-1">
+        <button onclick="undo()" id="btn-undo" class="flex-1 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm transition" title="Ctrl+Z" disabled style="opacity:0.3"><i class="fas fa-undo"></i> ביטול</button>
+        <button onclick="redo()" id="btn-redo" class="flex-1 py-2 rounded-lg bg-gray-800 hover:bg-gray-700 text-sm transition" title="Ctrl+Shift+Z" disabled style="opacity:0.3"><i class="fas fa-redo"></i> ביצוע</button>
+      </div>
+    </div>
     <div class="p-3 border-t border-gray-800">
       <div class="flex items-center gap-3">
         <img id="sidebar-avatar" src="" class="w-10 h-10 rounded-full border-2 border-accent-500">
@@ -415,9 +432,7 @@ tailwind.config = {
     </div>
   </div>
 
-  <!-- Main Content -->
   <div class="flex-1 flex flex-col min-w-0">
-    <!-- Top Bar -->
     <div class="h-14 glass-strong border-b border-gray-800 flex items-center px-4 gap-4" style="z-index:40;">
       <div class="flex-1 flex items-center gap-3 min-w-0">
         <input type="text" id="post-title" placeholder="כותרת הפוסט..." class="bg-transparent text-lg font-bold placeholder-gray-600 focus:outline-none flex-1 min-w-0" oninput="markDirty()">
@@ -425,23 +440,16 @@ tailwind.config = {
         <span id="save-status" class="text-xs text-gray-500 whitespace-nowrap"></span>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="saveDraftManual()" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-sm font-medium transition flex items-center gap-2">
-          <i class="fas fa-save"></i> שמירה
-        </button>
-        <button onclick="publishPost()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-accent-600 to-primary-600 hover:from-accent-500 hover:to-primary-500 text-sm font-bold text-white transition flex items-center gap-2">
-          <i class="fas fa-paper-plane"></i> פרסום
-        </button>
+        <button onclick="saveDraftManual()" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-sm font-medium transition flex items-center gap-2"><i class="fas fa-save"></i> שמירה</button>
+        <button onclick="publishPost()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-accent-600 to-primary-600 hover:from-accent-500 hover:to-primary-500 text-sm font-bold text-white transition flex items-center gap-2"><i class="fas fa-paper-plane"></i> פרסום</button>
         <button onclick="newPost()" class="px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-sm transition" title="חדש"><i class="fas fa-plus"></i></button>
         <button onclick="togglePreview()" class="px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-sm transition" title="תצוגה מקדימה"><i class="fas fa-eye"></i></button>
       </div>
     </div>
 
-    <!-- Editor Workspace -->
     <div class="flex-1 flex overflow-hidden">
-      <!-- Center: Canvas -->
       <div class="flex-1 overflow-auto bg-gray-900/50 relative" id="canvas-container" ondragover="handleDragOver(event)" ondrop="handleDrop(event)">
         <div class="py-8 px-4">
-          <!-- Featured Image -->
           <div id="featured-image-area" class="w-full max-w-[800px] mx-auto mb-4 rounded-2xl overflow-hidden relative group" style="min-height:120px;">
             <div id="featured-image-placeholder" class="absolute inset-0 flex flex-col items-center justify-center bg-dark-800 border-2 border-dashed border-gray-700 rounded-2xl cursor-pointer hover:border-accent-500 transition" onclick="document.getElementById('featured-upload').click()">
               <i class="fas fa-image text-3xl text-gray-600 mb-2 group-hover:text-accent-400 transition"></i>
@@ -451,7 +459,6 @@ tailwind.config = {
             <button id="featured-remove" onclick="removeFeaturedImage()" class="absolute top-2 right-2 w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition" style="display:none;"><i class="fas fa-times"></i></button>
             <input type="file" id="featured-upload" accept="image/*" onchange="handleFeaturedUpload(event)">
           </div>
-          <!-- Canvas -->
           <div id="editor-canvas" onclick="deselectAll(event)">
             <div class="absolute top-4 left-4 text-gray-400 text-sm pointer-events-none select-none opacity-30" style="z-index:0;">
               <i class="fas fa-info-circle ml-1"></i> לחץ על הכלים כדי להוסיף אלמנטים. גרור להזזה. גרור פינות לשינוי גודל.
@@ -460,7 +467,6 @@ tailwind.config = {
         </div>
       </div>
 
-      <!-- Right Sidebar: Properties -->
       <div id="right-sidebar" class="w-72 glass-strong border-r border-gray-800 overflow-y-auto hidden">
         <div id="element-props" style="display:none;">
           <div class="p-4 border-b border-gray-800">
@@ -474,10 +480,19 @@ tailwind.config = {
               </div>
               <div><label class="text-xs text-gray-500 mb-1 block">סיבוב</label><input type="range" id="prop-rot" min="-180" max="180" value="0" oninput="updateProp('rotation',this.value)"><span id="prop-rot-val" class="text-xs text-gray-500">0&deg;</span></div>
               <div><label class="text-xs text-gray-500 mb-1 block">שקיפות</label><input type="range" id="prop-op" min="0" max="100" value="100" oninput="updateProp('opacity',this.value)"></div>
+              <div><label class="text-xs text-gray-500 mb-1 block">עיגול פינות</label><input type="range" id="prop-radius" min="0" max="50" value="0" oninput="updateCommonStyle('borderRadius',this.value+'px')"></div>
+              <div><label class="text-xs text-gray-500 mb-1 block">גודל מסגרת</label><input type="range" id="prop-border-width" min="0" max="20" value="0" oninput="updateCommonStyle('borderWidth',this.value+'px')"></div>
+              <div class="flex gap-2">
+                <div class="flex-1"><label class="text-xs text-gray-500 mb-1 block">צבע מסגרת</label><input type="color" id="prop-border-color" value="#000000" oninput="updateCommonStyle('borderColor',this.value)"></div>
+                <div class="flex-1"><label class="text-xs text-gray-500 mb-1 block">סגנון</label>
+                  <select id="prop-border-style" class="w-full px-2 py-1 rounded-lg bg-dark-900 border border-gray-700 text-sm" onchange="updateCommonStyle('borderStyle',this.value)">
+                    <option value="solid">מלא</option><option value="dashed">מקווקו</option><option value="dotted">נקודות</option><option value="double">כפול</option>
+                  </select>
+                </div>
+              </div>
               <div class="flex items-center gap-2"><input type="checkbox" id="prop-snap" onchange="toggleSnap()" class="rounded bg-dark-900 border-gray-700"><label class="text-sm text-gray-400">הצמדה לרשת (10px)</label></div>
             </div>
           </div>
-          <!-- Text props -->
           <div id="text-props" class="p-4 border-b border-gray-800" style="display:none;">
             <h3 class="font-bold text-sm mb-3">טקסט</h3>
             <div class="space-y-3">
@@ -504,45 +519,46 @@ tailwind.config = {
               </div>
             </div>
           </div>
-          <!-- Image props -->
           <div id="image-props" class="p-4 border-b border-gray-800" style="display:none;">
             <h3 class="font-bold text-sm mb-3">תמונה</h3>
             <div class="space-y-3">
-              <div><label class="text-xs text-gray-500 mb-1 block">עיגול פינות</label><input type="range" id="prop-radius" min="0" max="50" value="0" oninput="updateImageStyle('borderRadius',this.value+'%')"></div>
               <div><label class="text-xs text-gray-500 mb-1 block">התאמה</label>
                 <select id="prop-fit" class="w-full px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm focus:border-accent-500 focus:outline-none" onchange="updateImageStyle('objectFit',this.value)">
                   <option value="cover">כיסוי</option><option value="contain">התאמה</option><option value="fill">מילוי</option>
+                </select>
+              </div>
+              <div><label class="text-xs text-gray-500 mb-1 block">פילטר</label>
+                <select id="prop-filter" class="w-full px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm" onchange="updateImageStyle('filter',this.value)">
+                  <option value="">ללא</option><option value="grayscale(100%)">שחור-לבן</option><option value="sepia(100%)">ספיה</option><option value="blur(4px)">טשטוש</option><option value="brightness(150%)">בהירות</option><option value="contrast(150%)">ניגודיות</option><option value="invert(100%)">היפוך</option>
                 </select>
               </div>
               <button onclick="openCropModalForSelected()" class="w-full py-2 rounded-lg bg-dark-900 border border-gray-700 hover:border-accent-500 transition text-sm"><i class="fas fa-crop ml-1"></i> חיתוך</button>
               <button onclick="replaceSelectedImage()" class="w-full py-2 rounded-lg bg-dark-900 border border-gray-700 hover:border-accent-500 transition text-sm"><i class="fas fa-exchange-alt ml-1"></i> החלפת תמונה</button>
             </div>
           </div>
-          <!-- Shape props -->
           <div id="shape-props" class="p-4 border-b border-gray-800" style="display:none;">
             <h3 class="font-bold text-sm mb-3">צורה</h3>
             <div class="space-y-3">
               <div><label class="text-xs text-gray-500 mb-1 block">צבע/מילוי</label><input type="color" id="shape-color" oninput="updateShapeStyle('backgroundColor',this.value)"></div>
-              <div><label class="text-xs text-gray-500 mb-1 block">עיגול פינות</label><input type="range" id="shape-radius" min="0" max="50" value="0" oninput="updateShapeStyle('borderRadius',this.value+'%')"></div>
-              <div><label class="text-xs text-gray-500 mb-1 block">גודל מסגרת</label><input type="range" id="shape-border" min="0" max="10" value="0" oninput="updateShapeStyle('borderWidth',this.value+'px')"></div>
-              <div><label class="text-xs text-gray-500 mb-1 block">צבע מסגרת</label><input type="color" id="shape-border-color" oninput="updateShapeStyle('borderColor',this.value)"></div>
+              <div><label class="text-xs text-gray-500 mb-1 block">מילוי מעבר צבע</label>
+                <select id="shape-gradient" class="w-full px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm" onchange="updateShapeGradient(this.value)">
+                  <option value="">ללא</option><option value="grad-1">סגול-כחול</option><option value="grad-2">ורוד-אדום</option><option value="grad-3">כחול-טורקיז</option><option value="grad-4">ירוק</option><option value="grad-5">ורוד-צהוב</option><option value="grad-6">טורקיז-סגול</option>
+                </select>
+              </div>
             </div>
           </div>
-          <!-- Embed props -->
           <div id="embed-props" class="p-4 border-b border-gray-800" style="display:none;">
             <h3 class="font-bold text-sm mb-3">הטמעה</h3>
             <div class="space-y-3">
               <div><label class="text-xs text-gray-500 mb-1 block">כתובת URL</label><input type="url" id="embed-url" class="w-full px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm focus:border-accent-500 focus:outline-none" onchange="updateEmbedUrl(this.value)"></div>
             </div>
           </div>
-          <!-- HTML props -->
           <div id="html-props" class="p-4 border-b border-gray-800" style="display:none;">
             <h3 class="font-bold text-sm mb-3">קוד HTML</h3>
             <div class="space-y-3">
               <textarea id="html-code" rows="6" class="w-full px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm focus:border-accent-500 focus:outline-none font-mono" oninput="updateHtmlCode(this.value)"></textarea>
             </div>
           </div>
-          <!-- Video props -->
           <div id="video-props" class="p-4 border-b border-gray-800" style="display:none;">
             <h3 class="font-bold text-sm mb-3">סרטון</h3>
             <div class="space-y-3">
@@ -553,7 +569,6 @@ tailwind.config = {
             <button onclick="deleteSelected()" class="w-full py-2 rounded-lg bg-red-900/30 border border-red-800 text-red-400 hover:bg-red-900/50 transition text-sm"><i class="fas fa-trash ml-1"></i> מחיקת אלמנט</button>
           </div>
         </div>
-        <!-- Post Settings -->
         <div id="post-props">
           <div class="p-4 border-b border-gray-800">
             <h3 class="font-bold text-sm mb-3">הגדרות פוסט</h3>
@@ -568,8 +583,20 @@ tailwind.config = {
                   <button onclick="updatePostBg('gradient','grad-5')" class="w-8 h-8 rounded-lg grad-5 border-2 border-transparent hover:border-white transition"></button>
                   <button onclick="updatePostBg('gradient','grad-6')" class="w-8 h-8 rounded-lg grad-6 border-2 border-transparent hover:border-white transition"></button>
                 </div>
+                <div><label class="text-xs text-gray-500 mb-1 block">שקיפות רקע</label><input type="range" id="post-bg-opacity" min="0" max="100" value="100" oninput="updatePostBgOpacity(this.value)"></div>
                 <button onclick="document.getElementById('post-bg-upload').click()" class="w-full py-2 rounded-lg bg-dark-900 border border-gray-700 hover:border-accent-500 transition text-sm"><i class="fas fa-image ml-1"></i> תמונת רקע</button>
                 <input type="file" id="post-bg-upload" accept="image/*" onchange="handlePostBgUpload(event)">
+                <div id="bg-image-settings" class="hidden mt-2 space-y-2">
+                  <div><label class="text-xs text-gray-500">התאמה</label>
+                    <select id="post-bg-size" class="w-full px-2 py-1 rounded-lg bg-dark-900 border border-gray-700 text-sm" onchange="updatePostBgImageSetting('size',this.value)"><option value="cover">כיסוי</option><option value="contain">התאמה</option><option value="auto">מקורי</option></select>
+                  </div>
+                  <div><label class="text-xs text-gray-500">חזרה</label>
+                    <select id="post-bg-repeat" class="w-full px-2 py-1 rounded-lg bg-dark-900 border border-gray-700 text-sm" onchange="updatePostBgImageSetting('repeat',this.value)"><option value="no-repeat">ללא</option><option value="repeat">חזרה</option><option value="repeat-x">אופקי</option><option value="repeat-y">אנכי</option></select>
+                  </div>
+                  <div><label class="text-xs text-gray-500">מיקוד</label>
+                    <select id="post-bg-position" class="w-full px-2 py-1 rounded-lg bg-dark-900 border border-gray-700 text-sm" onchange="updatePostBgImageSetting('position',this.value)"><option value="center">מרכז</option><option value="top">למעלה</option><option value="bottom">למטה</option><option value="left">שמאל</option><option value="right">ימין</option></select>
+                  </div>
+                </div>
               </div>
               <div><label class="text-xs text-gray-500 mb-1 block">גובה מינימלי</label><input type="range" id="post-min-height" min="500" max="2000" value="1000" oninput="updateCanvasHeight(this.value)"></div>
             </div>
@@ -582,40 +609,21 @@ tailwind.config = {
     </div>
   </div>
 
-  <!-- Panels Overlay -->
   <div id="panel-overlay" class="fixed inset-0 bg-black/50 hidden" style="z-index:35;" onclick="closePanel()"></div>
-
-  <!-- Posts Panel -->
   <div id="panel-posts" class="fixed right-64 top-14 bottom-0 w-80 glass-strong border-r border-gray-800 transform translate-x-full transition-transform duration-300 overflow-y-auto" style="z-index:36;">
-    <div class="p-4 border-b border-gray-800 flex items-center justify-between">
-      <h3 class="font-bold">פוסטים מהאתר</h3>
-      <button onclick="refreshPosts()" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition"><i class="fas fa-sync-alt text-sm"></i></button>
-    </div>
+    <div class="p-4 border-b border-gray-800 flex items-center justify-between"><h3 class="font-bold">פוסטים מהאתר</h3><button onclick="refreshPosts()" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition"><i class="fas fa-sync-alt text-sm"></i></button></div>
     <div id="posts-list" class="p-3 space-y-2"></div>
   </div>
-
-  <!-- Drafts Panel -->
   <div id="panel-drafts" class="fixed right-64 top-14 bottom-0 w-80 glass-strong border-r border-gray-800 transform translate-x-full transition-transform duration-300 overflow-y-auto" style="z-index:36;">
     <div class="p-4 border-b border-gray-800"><h3 class="font-bold">טיוטות מקומיות</h3></div>
     <div id="drafts-list" class="p-3 space-y-2"></div>
   </div>
-
-  <!-- Settings Panel -->
   <div id="panel-settings" class="fixed right-64 top-14 bottom-0 w-80 glass-strong border-r border-gray-800 transform translate-x-full transition-transform duration-300 overflow-y-auto" style="z-index:36;">
     <div class="p-4 border-b border-gray-800"><h3 class="font-bold">הגדרות</h3></div>
     <div class="p-4 space-y-4">
-      <div class="flex items-center justify-between">
-        <span class="text-sm">שמירה אוטומטית</span>
-        <input type="checkbox" id="setting-autosave" checked onchange="App.settings.autoSave=this.checked" class="rounded bg-dark-900 border-gray-700 w-5 h-5 accent-accent-500">
-      </div>
-      <div class="flex items-center justify-between">
-        <span class="text-sm">הצמדה לרשת</span>
-        <input type="checkbox" id="setting-snap" onchange="App.settings.snapGrid=this.checked?10:0" class="rounded bg-dark-900 border-gray-700 w-5 h-5 accent-accent-500">
-      </div>
-      <div>
-        <span class="text-sm block mb-2">גודל רשת (px)</span>
-        <input type="range" min="5" max="50" value="10" oninput="App.settings.snapGrid=parseInt(this.value)" class="w-full">
-      </div>
+      <div class="flex items-center justify-between"><span class="text-sm">שמירה אוטומטית</span><input type="checkbox" id="setting-autosave" checked onchange="App.settings.autoSave=this.checked" class="rounded bg-dark-900 border-gray-700 w-5 h-5 accent-accent-500"></div>
+      <div class="flex items-center justify-between"><span class="text-sm">הצמדה לרשת</span><input type="checkbox" id="setting-snap" onchange="App.settings.snapGrid=this.checked?10:0" class="rounded bg-dark-900 border-gray-700 w-5 h-5 accent-accent-500"></div>
+      <div><span class="text-sm block mb-2">גודל רשת (px)</span><input type="range" min="5" max="50" value="10" oninput="App.settings.snapGrid=parseInt(this.value)" class="w-full"></div>
       <hr class="border-gray-800">
       <button onclick="manageProfileSites()" class="w-full py-2 rounded-lg bg-dark-900 border border-gray-700 hover:border-accent-500 transition text-sm"><i class="fas fa-sitemap ml-1"></i> ניהול אתרים לפרופיל</button>
       <button onclick="exportData()" class="w-full py-2 rounded-lg bg-dark-900 border border-gray-700 hover:border-accent-500 transition text-sm"><i class="fas fa-download ml-1"></i> גיבוי נתונים</button>
@@ -623,56 +631,61 @@ tailwind.config = {
       <input type="file" id="import-file" accept=".json" onchange="handleImport(event)">
     </div>
   </div>
-
 </div>
 
-<!-- Library Panel -->
-<div id="library-panel" class="library-panel">
+<!-- Elements Sidebar (Right side) -->
+<div id="elements-sidebar" class="elements-sidebar">
   <div class="h-12 border-b border-gray-800 flex items-center px-4 justify-between">
     <div class="flex gap-4">
-      <button onclick="setLibraryTab('shapes')" id="lib-tab-shapes" class="text-sm font-medium text-accent-400 border-b-2 border-accent-500 pb-3 pt-3">צורות</button>
-      <button onclick="setLibraryTab('pexels')" id="lib-tab-pexels" class="text-sm font-medium text-gray-500 hover:text-gray-300 pb-3 pt-3">תמונות (Pexels)</button>
-      <button onclick="setLibraryTab('logos')" id="lib-tab-logos" class="text-sm font-medium text-gray-500 hover:text-gray-300 pb-3 pt-3">לוגואים</button>
+      <button onclick="setElementsTab('shapes')" id="elem-tab-shapes" class="text-sm font-medium text-accent-400 border-b-2 border-accent-500 pb-3 pt-3">צורות</button>
+      <button onclick="setElementsTab('logos')" id="elem-tab-logos" class="text-sm font-medium text-gray-500 hover:text-gray-300 pb-3 pt-3">לוגואים</button>
+      <button onclick="setElementsTab('pexels')" id="elem-tab-pexels" class="text-sm font-medium text-gray-500 hover:text-gray-300 pb-3 pt-3">תמונות</button>
     </div>
-    <button onclick="toggleLibrary()" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center"><i class="fas fa-times"></i></button>
+    <button onclick="toggleElementsSidebar()" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center"><i class="fas fa-times"></i></button>
   </div>
   <div class="flex-1 overflow-y-auto p-4">
-    <!-- Shapes -->
-    <div id="lib-shapes" class="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-12 gap-4">
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addShape('rect')" title="מרובע"><div class="w-8 h-8 bg-accent-500 rounded"></div></div>
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addShape('circle')" title="עיגול"><div class="w-8 h-8 bg-accent-500 rounded-full"></div></div>
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addShape('rounded')" title="מעוגל"><div class="w-8 h-8 bg-accent-500 rounded-xl"></div></div>
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addShape('star')" title="כוכב"><svg width="40" height="40" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#8b5cf6"/></svg></div>
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addShape('triangle')" title="משולש"><svg width="40" height="40" viewBox="0 0 24 24"><path d="M12 4L2 20h20L12 4z" fill="#8b5cf6"/></svg></div>
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addShape('arrow-right')" title="חץ"><svg width="40" height="40" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" fill="#8b5cf6"/></svg></div>
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addShape('heart')" title="לב"><svg width="40" height="40" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ec4899"/></svg></div>
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addShape('diamond')" title="יהלום"><svg width="40" height="40" viewBox="0 0 24 24"><path d="M12 2L2 12l10 10 10-10L12 2z" fill="#0ea5e9"/></svg></div>
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addShape('line-h')" title="קו אופקי"><div class="w-10 h-1 bg-gray-400 rounded"></div></div>
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addShape('line-v')" title="קו אנכי"><div class="w-1 h-10 bg-gray-400 rounded"></div></div>
+    <!-- Shapes Tab -->
+    <div id="elem-shapes" class="grid grid-cols-3 gap-3">
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','rect')" onclick="addShape('rect')" title="מרובע"><div class="w-8 h-8 bg-accent-500 rounded"></div></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','circle')" onclick="addShape('circle')" title="עיגול"><div class="w-8 h-8 bg-accent-500 rounded-full"></div></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','rounded')" onclick="addShape('rounded')" title="מעוגל"><div class="w-8 h-8 bg-accent-500 rounded-xl"></div></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','star')" onclick="addShape('star')" title="כוכב"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#8b5cf6"/></svg></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','triangle')" onclick="addShape('triangle')" title="משולש"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 4L2 20h20L12 4z" fill="#8b5cf6"/></svg></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','diamond')" onclick="addShape('diamond')" title="יהלום"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 2L2 12l10 10 10-10L12 2z" fill="#0ea5e9"/></svg></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','heart')" onclick="addShape('heart')" title="לב"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ec4899"/></svg></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','arrow-right')" onclick="addShape('arrow-right')" title="חץ"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" fill="#8b5cf6"/></svg></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','half-circle')" onclick="addShape('half-circle')" title="חצי עיגול"><div style="width:32px;height:16px;background:#8b5cf6;border-radius:32px 32px 0 0;"></div></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','moon')" onclick="addShape('moon')" title="ירח"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="#f59e0b"/></svg></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','oval')" onclick="addShape('oval')" title="אליפסה"><div style="width:28px;height:18px;background:#8b5cf6;border-radius:50%;"></div></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','pentagon')" onclick="addShape('pentagon')" title="מחומש"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 2l10 7-4 13H6L2 9z" fill="#10b981"/></svg></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','hexagon')" onclick="addShape('hexagon')" title="משושה"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z" fill="#6366f1"/></svg></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','line-h')" onclick="addShape('line-h')" title="קו אופקי"><div class="w-8 h-1 bg-gray-400 rounded"></div></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','line-v')" onclick="addShape('line-v')" title="קו אנכי"><div class="w-1 h-8 bg-gray-400 rounded"></div></div>
     </div>
-    <!-- Pexels -->
-    <div id="lib-pexels" class="hidden">
+    <!-- Logos Tab -->
+    <div id="elem-logos" class="hidden grid grid-cols-3 gap-3">
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'wp-logo')" onclick="addWpLogo()" title="WordPress"><i class="fab fa-wordpress text-3xl text-blue-500"></i></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'site-logo')" onclick="addSiteLogo()" title="לוגו האתר"><i class="fas fa-globe text-3xl text-accent-400"></i><span class="text-[9px] text-gray-400 absolute bottom-1">אתר</span></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'html-logo','html5')" onclick="addLogoHtml('<i class=\'fab fa-html5 text-4xl text-orange-500\'></i>')" title="HTML5"><i class="fab fa-html5 text-3xl text-orange-500"></i></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'html-logo','css3')" onclick="addLogoHtml('<i class=\'fab fa-css3-alt text-4xl text-blue-400\'></i>')" title="CSS3"><i class="fab fa-css3-alt text-3xl text-blue-400"></i></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'html-logo','js')" onclick="addLogoHtml('<i class=\'fab fa-js text-4xl text-yellow-400\'></i>')" title="JS"><i class="fab fa-js text-3xl text-yellow-400"></i></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'html-logo','react')" onclick="addLogoHtml('<i class=\'fab fa-react text-4xl text-cyan-400\'></i>')" title="React"><i class="fab fa-react text-3xl text-cyan-400"></i></div>
+      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'html-logo','github')" onclick="addLogoHtml('<i class=\'fab fa-github text-4xl text-white\'></i>')" title="GitHub"><i class="fab fa-github text-3xl text-white"></i></div>
+    </div>
+    <!-- Pexels Tab -->
+    <div id="elem-pexels" class="hidden">
       <div class="flex gap-2 mb-4">
         <input type="text" id="pexels-search" placeholder="חיפוש תמונות..." class="flex-1 px-4 py-2 rounded-xl bg-dark-900 border border-gray-700 text-white placeholder-gray-500 focus:border-accent-500 focus:outline-none" onkeydown="if(event.key==='Enter')searchPexels()">
         <button onclick="searchPexels()" class="px-4 py-2 rounded-xl bg-accent-600 hover:bg-accent-500 text-white font-medium"><i class="fas fa-search"></i></button>
       </div>
-      <div id="pexels-results" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"></div>
-    </div>
-    <!-- Logos -->
-    <div id="lib-logos" class="hidden flex gap-4 flex-wrap">
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addWpLogo()" title="WordPress"><i class="fab fa-wordpress text-4xl text-blue-500"></i></div>
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addLogoHtml('<i class=\\'fab fa-html5 text-4xl text-orange-500\\'></i>')" title="HTML5"><i class="fab fa-html5 text-4xl text-orange-500"></i></div>
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addLogoHtml('<i class=\\'fab fa-css3-alt text-4xl text-blue-400\\'></i>')" title="CSS3"><i class="fab fa-css3-alt text-4xl text-blue-400"></i></div>
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addLogoHtml('<i class=\\'fab fa-js text-4xl text-yellow-400\\'></i>')" title="JS"><i class="fab fa-js text-4xl text-yellow-400"></i></div>
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addLogoHtml('<i class=\\'fab fa-react text-4xl text-cyan-400\\'></i>')" title="React"><i class="fab fa-react text-4xl text-cyan-400"></i></div>
-      <div class="shape-thumb bg-gray-800 rounded-lg hover:bg-gray-700" onclick="addLogoHtml('<i class=\\'fab fa-github text-4xl text-white\\'></i>')" title="GitHub"><i class="fab fa-github text-4xl text-white"></i></div>
+      <div id="pexels-results" class="grid grid-cols-2 gap-3"></div>
     </div>
   </div>
 </div>
 
 <script>
 // ==================== CONFIG ====================
-const DB_KEY = 'ewolf_editor_pro_v3';
+const DB_KEY = 'ewolf_editor_pro_v4';
 const PEXELS_KEY = 'GN2dKIz3gxA7DMYnRXdyxbZwhRbeNtzhwsWAkUrE4vrRqy45WgBwRVC3';
 const GOOGLE_FONTS = ['Assistant','Alef','Rubik','Heebo','Suez One','Varela Round','Roboto','Open Sans','Lato','Montserrat','Poppins','Oswald','Raleway','Merriweather','Playfair Display','Nunito','Ubuntu','Noto Sans','Inter','Fira Sans','Crimson Text','IBM Plex Sans','Josefin Sans','Lora','Manrope','Pacifico','Space Grotesk','Bebas Neue','Cairo','Comfortaa','DM Sans','Exo 2','Lobster','Orbitron','Tajawal','Amiri','Cinzel','Dancing Script','Great Vibes','Indie Flower','Kaushan Script','Teko','Righteous','MuseoModerno','Noto Serif','Overpass','Barlow','Hind','Arimo','Libre Franklin','Bitter','Domine','Literata','Spectral','Jost','Karla','Cabin','Quicksand','Source Sans Pro','Dosis','Titillium Web','Work Sans','M PLUS Rounded 1c'];
 
@@ -689,9 +702,12 @@ const App = {
   elementCounter: 0, loadedFonts: new Set(['Assistant']),
   dirty: false, autoSaveTimer: null,
   settings: {autoSave:true, snapGrid:0},
-  cropState: {active:false, element:null, img:null, canvas:null, ctx:null, cropX:0, cropY:0, cropW:0, cropH:0, scaleX:1, scaleY:1, dragging:false, resizing:false, handle:null},
-  cropMouseStart: {x:0,y:0},
-  tempProfilePass: null
+  cropState: {active:false, element:null, img:null, underlay:null, overlay:null, ctx:null, cropX:0, cropY:0, cropW:0, cropH:0, scaleX:1, scaleY:1, dragging:false, handle:null},
+  tempProfilePass: null,
+  // Undo/Redo
+  history: [], historyIndex: -1, historyMax: 50,
+  // Site logo
+  siteLogoUrl: null
 };
 
 // ==================== CRYPTO ====================
@@ -731,7 +747,7 @@ function saveDB() {
   localStorage.setItem(DB_KEY, JSON.stringify(App.data));
 }
 function initDB() {
-  App.data = { version:3, profiles:[], sites:[], drafts:{}, settings:{autoSave:true, snapGrid:0} };
+  App.data = { version:4, profiles:[], sites:[], drafts:{}, settings:{autoSave:true, snapGrid:0} };
   saveDB();
 }
 
@@ -935,11 +951,9 @@ async function testAndAddSite() {
     if(!res.ok) throw new Error('שגיאת אימות - בדוק את הפרטים');
     const userData = await res.json();
 
-    // Encrypt creds with profile password
     const encrypted = await encryptData({user, pass}, App.tempProfilePass);
 
     if(!App.data.sites) App.data.sites = [];
-    // Remove existing site with same URL for this profile
     App.data.sites = App.data.sites.filter(s => !(s.profileId===App.currentProfile.id && s.url===url));
     App.data.sites.push({
       url, name: userData.name || url,
@@ -972,16 +986,25 @@ async function enterSite(url) {
   const site = App.data.sites.find(s => s.profileId===App.currentProfile.id && s.url===url);
   if(!site) return showToast('אתר לא נמצא','error');
 
-  // Decrypt creds
   const creds = await decryptData(site.encryptedCreds, App.tempProfilePass);
   if(!creds) return showToast('שגיאה בפענוח פרטי האתר','error');
 
   App.currentSite = {url: site.url, name: site.name, user: creds.user, pass: creds.pass};
+
+  // Try to fetch site logo
+  try {
+    const auth = 'Basic ' + btoa(creds.user + ':' + creds.pass);
+    const res = await fetch(site.url + '/wp-json/wp/v2/settings', {headers:{'Authorization':auth}});
+    if(res.ok) {
+      const settings = await res.json();
+      App.siteLogoUrl = settings.site_logo || settings.site_icon || null;
+    }
+  } catch(e) { App.siteLogoUrl = null; }
+
   showEditor();
   refreshPosts();
 }
 function backToSites() {
-  // Save current draft before leaving
   if(App.currentPost && App.dirty) saveDraftQuiet();
   showSites();
 }
@@ -1047,20 +1070,88 @@ async function uploadMedia(file) {
   return wpFetch('/media', {method:'POST', body:formData});
 }
 
+// ==================== UNDO / REDO ====================
+function pushHistory() {
+  // Remove future history if we're not at the end
+  if(App.historyIndex < App.history.length - 1) {
+    App.history = App.history.slice(0, App.historyIndex + 1);
+  }
+  // Save current state
+  const state = JSON.stringify({
+    elements: App.currentPost.elements,
+    elementCounter: App.elementCounter,
+    title: App.currentPost.title,
+    featuredImage: App.currentPost.featuredImage,
+    background: App.currentPost.background
+  });
+  // Don't push duplicate
+  if(App.history.length > 0 && App.history[App.history.length - 1] === state) return;
+
+  App.history.push(state);
+  if(App.history.length > App.historyMax) App.history.shift();
+  else App.historyIndex++;
+
+  updateUndoRedoButtons();
+}
+function undo() {
+  if(App.historyIndex <= 0) return;
+  App.historyIndex--;
+  restoreHistory(App.history[App.historyIndex]);
+  updateUndoRedoButtons();
+  showToast('בוטל','info');
+}
+function redo() {
+  if(App.historyIndex >= App.history.length - 1) return;
+  App.historyIndex++;
+  restoreHistory(App.history[App.historyIndex]);
+  updateUndoRedoButtons();
+  showToast('בוצע מחדש','info');
+}
+function restoreHistory(stateStr) {
+  const state = JSON.parse(stateStr);
+  App.currentPost.elements = state.elements;
+  App.elementCounter = state.elementCounter;
+  App.currentPost.title = state.title;
+  App.currentPost.featuredImage = state.featuredImage;
+  App.currentPost.background = state.background;
+
+  document.getElementById('post-title').value = state.title || '';
+  if(state.featuredImage) {
+    document.getElementById('featured-image').src = state.featuredImage;
+    document.getElementById('featured-image').classList.remove('hidden');
+    document.getElementById('featured-image-placeholder').style.display = 'none';
+    document.getElementById('featured-remove').style.display = 'flex';
+  } else {
+    removeFeaturedImage();
+  }
+  renderCanvas();
+}
+function updateUndoRedoButtons() {
+  const undoBtn = document.getElementById('btn-undo');
+  const redoBtn = document.getElementById('btn-redo');
+  undoBtn.disabled = App.historyIndex <= 0;
+  redoBtn.disabled = App.historyIndex >= App.history.length - 1;
+  undoBtn.style.opacity = undoBtn.disabled ? '0.3' : '1';
+  redoBtn.style.opacity = redoBtn.disabled ? '0.3' : '1';
+}
+
 // ==================== EDITOR CORE ====================
 function newPost() {
   App.currentPost = {
     id: null, wpId: null, title: '', elements: [],
-    featuredImage: null, background: {type:'color', value:'#ffffff'},
+    featuredImage: null, background: {type:'color', value:'#ffffff', opacity: 100},
     status: 'draft', author: App.currentProfile.id, createdAt: Date.now()
   };
   App.elementCounter = 0;
   App.dirty = false;
+  App.history = [];
+  App.historyIndex = -1;
   renderCanvas();
   document.getElementById('post-title').value = '';
   updatePostStatus('draft');
   deselectAll();
   document.getElementById('save-status').textContent = '';
+  updateUndoRedoButtons();
 }
 function renderCanvas() {
   const canvas = document.getElementById('editor-canvas');
@@ -1071,12 +1162,23 @@ function renderCanvas() {
   if(App.currentPost.background) {
     canvas.style.background = '';
     canvas.className = '';
-    if(App.currentPost.background.type==='color') canvas.style.background = App.currentPost.background.value;
-    else if(App.currentPost.background.type==='gradient') canvas.classList.add(App.currentPost.background.value);
-    else if(App.currentPost.background.type==='image') {
-      canvas.style.background = 'url('+App.currentPost.background.value+')';
-      canvas.style.backgroundSize = 'cover';
-      canvas.style.backgroundPosition = 'center';
+    const bg = App.currentPost.background;
+    const opacity = (bg.opacity !== undefined ? bg.opacity : 100) / 100;
+
+    if(bg.type==='color') {
+      canvas.style.background = bg.value;
+      canvas.style.opacity = opacity;
+    }
+    else if(bg.type==='gradient') {
+      canvas.classList.add(bg.value);
+      canvas.style.opacity = opacity;
+    }
+    else if(bg.type==='image') {
+      canvas.style.backgroundImage = 'url('+bg.value+')';
+      canvas.style.backgroundSize = bg.imageSize || 'cover';
+      canvas.style.backgroundRepeat = bg.imageRepeat || 'no-repeat';
+      canvas.style.backgroundPosition = bg.imagePosition || 'center';
+      canvas.style.opacity = opacity;
     }
   }
   App.currentPost.elements.forEach(el => createElementDOM(el));
@@ -1094,6 +1196,12 @@ function createElementDOM(el) {
   div.style.transform = 'rotate(' + (el.rotation||0) + 'deg)';
   div.style.opacity = (el.opacity||100)/100;
   div.style.zIndex = el.zIndex || 1;
+
+  // Common border styles
+  if(el.borderRadius) div.style.borderRadius = el.borderRadius;
+  if(el.borderWidth) div.style.borderWidth = el.borderWidth;
+  if(el.borderColor) div.style.borderColor = el.borderColor;
+  if(el.borderStyle) div.style.borderStyle = el.borderStyle;
 
   const content = document.createElement('div');
   content.className = 'element-content';
@@ -1134,6 +1242,11 @@ function createElementDOM(el) {
     if(el.shapeType==='diamond') content.style.clipPath = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)';
     if(el.shapeType==='arrow-right') content.style.clipPath = 'polygon(0% 20%, 60% 20%, 60% 0%, 100% 50%, 60% 100%, 60% 80%, 0% 80%)';
     if(el.shapeType==='heart') content.style.clipPath = 'path("M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z")';
+    if(el.shapeType==='half-circle') { content.style.borderRadius = '50% 50% 0 0 / 100% 100% 0 0'; content.style.height = '50%'; }
+    if(el.shapeType==='moon') content.style.borderRadius = '50%'; content.style.boxShadow = 'inset -10px 0 0 ' + (el.styles?.backgroundColor || '#f59e0b');
+    if(el.shapeType==='oval') content.style.borderRadius = '50%';
+    if(el.shapeType==='pentagon') content.style.clipPath = 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)';
+    if(el.shapeType==='hexagon') content.style.clipPath = 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)';
     if(el.shapeType==='line-h') { content.style.height='4px'; content.style.backgroundColor = el.styles?.backgroundColor || '#94a3b8'; }
     if(el.shapeType==='line-v') { content.style.width='4px'; content.style.backgroundColor = el.styles?.backgroundColor || '#94a3b8'; }
   } else if(el.type==='embed') {
@@ -1160,6 +1273,14 @@ function createElementDOM(el) {
     content.appendChild(iframe);
   } else if(el.type==='wp-logo') {
     content.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="fab fa-wordpress" style="font-size:80px;color:#21759b;"></i></div>';
+    content.style.pointerEvents = 'none';
+  } else if(el.type==='site-logo') {
+    const img = document.createElement('img');
+    img.src = App.siteLogoUrl || 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" fill="#8b5cf6"/></svg>');
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'contain';
+    content.appendChild(img);
     content.style.pointerEvents = 'none';
   }
 
@@ -1291,7 +1412,7 @@ document.addEventListener('mousemove', (e)=>{
 document.addEventListener('mouseup', ()=>{
   if(App.isDragging || App.isResizing || App.isRotating) {
     App.isDragging = false; App.isResizing = false; App.isRotating = false;
-    if(App.dirty) saveDraftQuiet();
+    if(App.dirty) { saveDraftQuiet(); pushHistory(); }
   }
 });
 
@@ -1318,11 +1439,9 @@ function setTool(tool) {
   event.currentTarget.classList.add('active');
   if(tool==='text') addTextElement();
   if(tool==='image') document.getElementById('image-upload-trigger').click();
-  if(tool==='shape') addShapeElement('rect');
   if(tool==='embed') addEmbedElement();
   if(tool==='html') addHtmlElement();
   if(tool==='video') addVideoElement();
-  if(tool==='wp-logo') addWpLogoElement();
   if(tool!=='select') {
     setTimeout(()=>{
       App.currentTool = 'select';
@@ -1338,7 +1457,8 @@ function addTextElement() {
     type: 'text', x: 100, y: 100 + (App.elementCounter*10)%300,
     width: 400, height: 80, rotation: 0, opacity: 100, zIndex: App.elementCounter,
     content: 'טקסט חדש',
-    styles: {fontFamily:'Assistant', fontSize:'24px', color:'#1f2937', textAlign:'right', fontWeight:'400'}
+    styles: {fontFamily:'Assistant', fontSize:'24px', color:'#1f2937', textAlign:'right', fontWeight:'400'},
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -1348,31 +1468,36 @@ function addTextElement() {
     if(content) { content.focus(); document.execCommand('selectAll', false, null); }
   }, 50);
   markDirty();
+  pushHistory();
 }
 function addImageElement(src) {
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'image', x: 100, y: 100, width: 300, height: 200,
     rotation: 0, opacity: 100, zIndex: App.elementCounter,
-    src: src, styles: {borderRadius:'0', objectFit:'cover'}
+    src: src, styles: {borderRadius:'0', objectFit:'cover'},
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
   selectElement(el);
   markDirty();
+  pushHistory();
 }
-function addShapeElement(shapeType) {
+function addShape(shapeType, x, y) {
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'shape', shapeType: shapeType || 'rect',
-    x: 150, y: 150, width: 150, height: 150,
+    x: x || 150, y: y || 150, width: 150, height: 150,
     rotation: 0, opacity: 100, zIndex: App.elementCounter,
-    styles: {backgroundColor:'#8b5cf6', borderRadius:'0'}
+    styles: {backgroundColor:'#8b5cf6', borderRadius:'0'},
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
   selectElement(el);
   markDirty();
+  pushHistory();
 }
 function addEmbedElement() {
   const url = prompt('הזן כתובת אתר להטמעה:');
@@ -1381,12 +1506,14 @@ function addEmbedElement() {
     id: 'el_' + (++App.elementCounter),
     type: 'embed', x: 100, y: 100, width: 600, height: 400,
     rotation: 0, opacity: 100, zIndex: App.elementCounter,
-    src: url, styles: {}
+    src: url, styles: {},
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
   selectElement(el);
   markDirty();
+  pushHistory();
 }
 function addHtmlElement() {
   const el = {
@@ -1394,12 +1521,14 @@ function addHtmlElement() {
     type: 'html', x: 100, y: 100, width: 400, height: 200,
     rotation: 0, opacity: 100, zIndex: App.elementCounter,
     content: '<div style="padding:20px;"><h3>כותרת HTML</h3><p>תוכן כאן...</p></div>',
-    styles: {}
+    styles: {},
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
   selectElement(el);
   markDirty();
+  pushHistory();
 }
 function addVideoElement() {
   const url = prompt('הזן קישור YouTube או Vimeo:');
@@ -1409,24 +1538,57 @@ function addVideoElement() {
     id: 'el_' + (++App.elementCounter),
     type: 'video', x: 100, y: 100, width: 560, height: 315,
     rotation: 0, opacity: 100, zIndex: App.elementCounter,
-    src: embedUrl, styles: {}
+    src: embedUrl, styles: {},
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
   selectElement(el);
   markDirty();
+  pushHistory();
 }
-function addWpLogoElement() {
+function addWpLogo() {
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'wp-logo', x: 100, y: 100, width: 120, height: 120,
     rotation: 0, opacity: 100, zIndex: App.elementCounter,
-    styles: {}
+    styles: {},
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
   selectElement(el);
   markDirty();
+  pushHistory();
+}
+function addSiteLogo() {
+  const el = {
+    id: 'el_' + (++App.elementCounter),
+    type: 'site-logo', x: 100, y: 100, width: 120, height: 120,
+    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    styles: {},
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+  };
+  App.currentPost.elements.push(el);
+  createElementDOM(el);
+  selectElement(el);
+  markDirty();
+  pushHistory();
+}
+function addLogoHtml(html) {
+  const el = {
+    id: 'el_' + (++App.elementCounter),
+    type: 'html', x: 100, y: 100, width: 100, height: 100,
+    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    content: '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">' + html + '</div>',
+    styles: {},
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+  };
+  App.currentPost.elements.push(el);
+  createElementDOM(el);
+  selectElement(el);
+  markDirty();
+  pushHistory();
 }
 function convertToEmbedUrl(url) {
   if(url.includes('youtube.com/watch?v=')) {
@@ -1454,6 +1616,7 @@ function deleteSelected() {
   App.selectedElement = null;
   showPostProps();
   markDirty();
+  pushHistory();
 }
 function clearCanvas() {
   if(!confirm('לנקות את הלוח? כל התוכן יימחק.')) return;
@@ -1461,6 +1624,7 @@ function clearCanvas() {
   App.elementCounter = 0;
   renderCanvas();
   markDirty();
+  pushHistory();
 }
 
 // ==================== PROPERTIES PANEL ====================
@@ -1484,6 +1648,10 @@ function updatePropsPanel() {
   document.getElementById('prop-rot').value = Math.round(el.rotation||0);
   document.getElementById('prop-rot-val').textContent = Math.round(el.rotation||0) + '°';
   document.getElementById('prop-op').value = el.opacity || 100;
+  document.getElementById('prop-radius').value = parseInt(el.borderRadius || 0);
+  document.getElementById('prop-border-width').value = parseInt(el.borderWidth || 0);
+  document.getElementById('prop-border-color').value = el.borderColor || '#000000';
+  document.getElementById('prop-border-style').value = el.borderStyle || 'solid';
 
   document.getElementById('text-props').style.display = el.type==='text' ? 'block' : 'none';
   document.getElementById('image-props').style.display = el.type==='image' ? 'block' : 'none';
@@ -1498,13 +1666,11 @@ function updatePropsPanel() {
     document.getElementById('prop-bg').value = rgbToHex(el.styles?.backgroundColor || '#ffffff');
     document.getElementById('prop-weight').value = el.styles?.fontWeight || '400';
   } else if(el.type==='image') {
-    document.getElementById('prop-radius').value = parseInt(el.styles?.borderRadius || 0);
     document.getElementById('prop-fit').value = el.styles?.objectFit || 'cover';
+    document.getElementById('prop-filter').value = el.styles?.filter || '';
   } else if(el.type==='shape') {
     document.getElementById('shape-color').value = rgbToHex(el.styles?.backgroundColor || '#8b5cf6');
-    document.getElementById('shape-radius').value = parseInt(el.styles?.borderRadius || 0);
-    document.getElementById('shape-border').value = parseInt(el.styles?.borderWidth || 0);
-    document.getElementById('shape-border-color').value = rgbToHex(el.styles?.borderColor || '#000000');
+    document.getElementById('shape-gradient').value = el.styles?.gradient ? el.styles.gradient.replace('grad-','grad-') : '';
   } else if(el.type==='embed') {
     document.getElementById('embed-url').value = el.src || '';
   } else if(el.type==='html') {
@@ -1523,6 +1689,14 @@ function updateProp(prop, value) {
   if(prop==='height') { el.height = parseInt(value); div.style.height = value + 'px'; }
   if(prop==='rotation') { el.rotation = parseInt(value); div.style.transform = 'rotate(' + value + 'deg)'; document.getElementById('prop-rot-val').textContent = value + '°'; }
   if(prop==='opacity') { el.opacity = parseInt(value); div.style.opacity = value/100; }
+  markDirty();
+}
+function updateCommonStyle(prop, value) {
+  if(!App.selectedElement) return;
+  const el = App.selectedElement;
+  el[prop] = value;
+  const div = document.getElementById('el-' + el.id);
+  if(div) div.style[prop] = value;
   markDirty();
 }
 function updateStyle(prop, value) {
@@ -1551,6 +1725,29 @@ function updateShapeStyle(prop, value) {
   el.styles[prop] = value;
   const content = document.querySelector('#el-' + el.id + ' .element-content');
   if(content) content.style[prop] = value;
+  markDirty();
+}
+function updateShapeGradient(gradClass) {
+  if(!App.selectedElement || App.selectedElement.type !== 'shape') return;
+  const el = App.selectedElement;
+  if(!el.styles) el.styles = {};
+  const content = document.querySelector('#el-' + el.id + ' .element-content');
+  if(!content) return;
+  if(!gradClass) {
+    el.styles.gradient = null;
+    content.style.background = el.styles.backgroundColor || '#8b5cf6';
+  } else {
+    el.styles.gradient = gradClass;
+    const gradients = {
+      'grad-1': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'grad-2': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'grad-3': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'grad-4': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'grad-5': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      'grad-6': 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
+    };
+    content.style.background = gradients[gradClass];
+  }
   markDirty();
 }
 function updateEmbedUrl(url) {
@@ -1609,16 +1806,100 @@ function hideInlineToolbar() {
   document.getElementById('inline-toolbar').classList.remove('show');
 }
 
-// ==================== DRAG & DROP ====================
+// ==================== DRAG & DROP FROM SIDEBAR ====================
+function dragElementStart(e, type, subtype) {
+  e.dataTransfer.setData('elementType', type);
+  e.dataTransfer.setData('elementSubtype', subtype || '');
+  e.target.classList.add('dragging');
+}
 function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }
 function handleDrop(e) {
   e.preventDefault();
-  const files = e.dataTransfer.files;
-  if(files.length > 0) handleImageFile(files[0]);
+  const type = e.dataTransfer.getData('elementType');
+  const subtype = e.dataTransfer.getData('elementSubtype');
+  const canvas = document.getElementById('editor-canvas');
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  if(type==='shape') addShape(subtype, x, y);
+  else if(type==='wp-logo') addWpLogoAt(x, y);
+  else if(type==='site-logo') addSiteLogoAt(x, y);
+  else if(type==='html-logo') addLogoHtmlAt(subtype, x, y);
+  else if(type==='image') {
+    // Handle file drop
+    const files = e.dataTransfer.files;
+    if(files.length > 0) handleImageFile(files[0], x, y);
+  }
+
+  document.querySelectorAll('.element-thumb.dragging').forEach(el=>el.classList.remove('dragging'));
 }
-function handleImageFile(file) {
+function addWpLogoAt(x, y) {
+  const el = {
+    id: 'el_' + (++App.elementCounter),
+    type: 'wp-logo', x: x-60, y: y-60, width: 120, height: 120,
+    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    styles: {},
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+  };
+  App.currentPost.elements.push(el);
+  createElementDOM(el);
+  selectElement(el);
+  markDirty();
+  pushHistory();
+}
+function addSiteLogoAt(x, y) {
+  const el = {
+    id: 'el_' + (++App.elementCounter),
+    type: 'site-logo', x: x-60, y: y-60, width: 120, height: 120,
+    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    styles: {},
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+  };
+  App.currentPost.elements.push(el);
+  createElementDOM(el);
+  selectElement(el);
+  markDirty();
+  pushHistory();
+}
+function addLogoHtmlAt(subtype, x, y) {
+  const logos = {
+    'html5': '<i class="fab fa-html5 text-4xl text-orange-500"></i>',
+    'css3': '<i class="fab fa-css3-alt text-4xl text-blue-400"></i>',
+    'js': '<i class="fab fa-js text-4xl text-yellow-400"></i>',
+    'react': '<i class="fab fa-react text-4xl text-cyan-400"></i>',
+    'github': '<i class="fab fa-github text-4xl text-white"></i>'
+  };
+  const el = {
+    id: 'el_' + (++App.elementCounter),
+    type: 'html', x: x-50, y: y-50, width: 100, height: 100,
+    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    content: '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">' + (logos[subtype] || '') + '</div>',
+    styles: {},
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+  };
+  App.currentPost.elements.push(el);
+  createElementDOM(el);
+  selectElement(el);
+  markDirty();
+  pushHistory();
+}
+function handleImageFile(file, x, y) {
   const reader = new FileReader();
-  reader.onload = ()=>addImageElement(reader.result);
+  reader.onload = ()=>{
+    const el = {
+      id: 'el_' + (++App.elementCounter),
+      type: 'image', x: (x||100)-150, y: (y||100)-100, width: 300, height: 200,
+      rotation: 0, opacity: 100, zIndex: App.elementCounter,
+      src: reader.result, styles: {borderRadius:'0', objectFit:'cover'},
+      borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+    };
+    App.currentPost.elements.push(el);
+    createElementDOM(el);
+    selectElement(el);
+    markDirty();
+    pushHistory();
+  };
   reader.readAsDataURL(file);
 }
 const imgInput = document.createElement('input');
@@ -1656,7 +1937,18 @@ function removeFeaturedImage() {
 // ==================== POST SETTINGS ====================
 function updatePostBg(type, value) {
   if(!App.currentPost) return;
-  App.currentPost.background = {type, value};
+  if(!App.currentPost.background) App.currentPost.background = {};
+  App.currentPost.background.type = type;
+  App.currentPost.background.value = value;
+  renderCanvas();
+  markDirty();
+
+  // Show/hide bg image settings
+  document.getElementById('bg-image-settings').classList.toggle('hidden', type !== 'image');
+}
+function updatePostBgOpacity(val) {
+  if(!App.currentPost || !App.currentPost.background) return;
+  App.currentPost.background.opacity = parseInt(val);
   renderCanvas();
   markDirty();
 }
@@ -1664,8 +1956,24 @@ function handlePostBgUpload(e) {
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = ()=>{ updatePostBg('image', reader.result); };
+  reader.onload = ()=>{
+    if(!App.currentPost.background) App.currentPost.background = {};
+    App.currentPost.background.type = 'image';
+    App.currentPost.background.value = reader.result;
+    App.currentPost.background.imageSize = 'cover';
+    App.currentPost.background.imageRepeat = 'no-repeat';
+    App.currentPost.background.imagePosition = 'center';
+    renderCanvas();
+    document.getElementById('bg-image-settings').classList.remove('hidden');
+    markDirty();
+  };
   reader.readAsDataURL(file);
+}
+function updatePostBgImageSetting(prop, value) {
+  if(!App.currentPost.background) return;
+  App.currentPost.background['image' + prop.charAt(0).toUpperCase() + prop.slice(1)] = value;
+  renderCanvas();
+  markDirty();
 }
 function updateCanvasHeight(val) {
   document.getElementById('editor-canvas').style.minHeight = val + 'px';
@@ -1705,15 +2013,17 @@ document.addEventListener('click', (e)=>{
   if(!e.target.closest('#font-search')) document.getElementById('font-dropdown').classList.add('hidden');
 });
 
-// ==================== IMAGE CROP ====================
+// ==================== IMAGE CROP (with overlay) ====================
 function openCropModal(el) {
   if(!el) el = App.selectedElement;
   if(!el || el.type !== 'image') return;
-  App.cropState = {active:true, element:el, img:null, canvas:null, ctx:null, cropX:0, cropY:0, cropW:0, cropH:0, scaleX:1, scaleY:1, dragging:false, resizing:false, handle:null};
+  App.cropState = {active:true, element:el, img:null, underlay:null, overlay:null, ctx:null, cropX:0, cropY:0, cropW:0, cropH:0, scaleX:1, scaleY:1, dragging:false, handle:null};
   const modal = document.getElementById('crop-modal');
-  const canvas = document.getElementById('crop-canvas');
-  const ctx = canvas.getContext('2d');
-  App.cropState.canvas = canvas;
+  const underlay = document.getElementById('crop-underlay');
+  const overlay = document.getElementById('crop-overlay-canvas');
+  const ctx = overlay.getContext('2d');
+  App.cropState.underlay = underlay;
+  App.cropState.overlay = overlay;
   App.cropState.ctx = ctx;
 
   const img = new Image();
@@ -1723,11 +2033,17 @@ function openCropModal(el) {
     let w = img.width, h = img.height;
     if(w > maxW) { h = h * maxW / w; w = maxW; }
     if(h > maxH) { w = w * maxH / h; h = maxH; }
-    canvas.width = w;
-    canvas.height = h;
+
+    underlay.width = w; underlay.height = h;
+    overlay.width = w; overlay.height = h;
+
+    const uCtx = underlay.getContext('2d');
+    uCtx.drawImage(img, 0, 0, w, h);
+
     App.cropState.scaleX = img.width / w;
     App.cropState.scaleY = img.height / h;
     App.cropState.img = img;
+
     // Default crop: center 80%
     App.cropState.cropW = w * 0.8;
     App.cropState.cropH = h * 0.8;
@@ -1748,25 +2064,48 @@ function openCropModalForSelected() {
 function drawCropOverlay() {
   const st = App.cropState;
   if(!st.ctx) return;
-  st.ctx.clearRect(0, 0, st.canvas.width, st.canvas.height);
-  st.ctx.drawImage(st.img, 0, 0, st.canvas.width, st.canvas.height);
-  // Dark overlay
-  st.ctx.fillStyle = 'rgba(0,0,0,0.5)';
-  st.ctx.fillRect(0, 0, st.canvas.width, st.canvas.height);
-  // Clear crop area
-  st.ctx.clearRect(st.cropX, st.cropY, st.cropW, st.cropH);
-  // Border
-  st.ctx.strokeStyle = '#f59e0b';
-  st.ctx.lineWidth = 2;
-  st.ctx.strokeRect(st.cropX, st.cropY, st.cropW, st.cropH);
+  const ctx = st.ctx;
+  const w = st.overlay.width, h = st.overlay.height;
+
+  ctx.clearRect(0, 0, w, h);
+
+  // Dark overlay outside crop area
+  ctx.fillStyle = 'rgba(0,0,0,0.6)';
+  ctx.fillRect(0, 0, w, h);
+
+  // Clear crop area (show original image at 100%)
+  ctx.clearRect(st.cropX, st.cropY, st.cropW, st.cropH);
+
+  // Draw the cropped portion of original image
+  const uCtx = st.underlay.getContext('2d');
+  const imageData = uCtx.getImageData(st.cropX, st.cropY, st.cropW, st.cropH);
+  ctx.putImageData(imageData, st.cropX, st.cropY);
+
+  // Border around crop area
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(st.cropX, st.cropY, st.cropW, st.cropH);
+
   // Handles
   const handles = [
     [st.cropX, st.cropY], [st.cropX+st.cropW/2, st.cropY], [st.cropX+st.cropW, st.cropY],
     [st.cropX, st.cropY+st.cropH/2], [st.cropX+st.cropW, st.cropY+st.cropH/2],
     [st.cropX, st.cropY+st.cropH], [st.cropX+st.cropW/2, st.cropY+st.cropH], [st.cropX+st.cropW, st.cropY+st.cropH]
   ];
-  st.ctx.fillStyle = '#f59e0b';
-  handles.forEach(([hx,hy])=>{ st.ctx.fillRect(hx-5, hy-5, 10, 10); });
+  ctx.fillStyle = '#f59e0b';
+  handles.forEach(([hx,hy])=>{ ctx.fillRect(hx-5, hy-5, 10, 10); });
+
+  // Rule of thirds lines
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath();
+  ctx.moveTo(st.cropX + st.cropW/3, st.cropY); ctx.lineTo(st.cropX + st.cropW/3, st.cropY + st.cropH);
+  ctx.moveTo(st.cropX + 2*st.cropW/3, st.cropY); ctx.lineTo(st.cropX + 2*st.cropW/3, st.cropY + st.cropH);
+  ctx.moveTo(st.cropX, st.cropY + st.cropH/3); ctx.lineTo(st.cropX + st.cropW, st.cropY + st.cropH/3);
+  ctx.moveTo(st.cropX, st.cropY + 2*st.cropH/3); ctx.lineTo(st.cropX + st.cropW, st.cropY + 2*st.cropH/3);
+  ctx.stroke();
+  ctx.setLineDash([]);
 }
 function getCropHandle(x, y) {
   const st = App.cropState;
@@ -1781,44 +2120,54 @@ function getCropHandle(x, y) {
   if(x >= st.cropX && x <= st.cropX+st.cropW && y >= st.cropY && y <= st.cropY+st.cropH) return 'move';
   return null;
 }
-const cropCanvas = document.getElementById('crop-canvas');
-if(cropCanvas) {
-  cropCanvas.addEventListener('mousedown', (e)=>{
+
+// Setup crop canvas events
+setTimeout(()=>{
+  const overlay = document.getElementById('crop-overlay-canvas');
+  if(!overlay) return;
+
+  overlay.addEventListener('mousedown', (e)=>{
     if(!App.cropState.active) return;
-    const rect = cropCanvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) * (cropCanvas.width / rect.width);
-    const y = (e.clientY - rect.top) * (cropCanvas.height / rect.height);
+    const rect = overlay.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (overlay.width / rect.width);
+    const y = (e.clientY - rect.top) * (overlay.height / rect.height);
     const handle = getCropHandle(x, y);
     if(handle) {
-      App.cropState.resizing = true;
+      App.cropState.dragging = true;
       App.cropState.handle = handle;
       App.cropState.dragStart = {x, y, cropX:App.cropState.cropX, cropY:App.cropState.cropY, cropW:App.cropState.cropW, cropH:App.cropState.cropH};
       e.preventDefault();
     }
   });
-  cropCanvas.addEventListener('mousemove', (e)=>{
-    if(!App.cropState.active || !App.cropState.resizing) return;
-    const rect = cropCanvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) * (cropCanvas.width / rect.width);
-    const y = (e.clientY - rect.top) * (cropCanvas.height / rect.height);
+
+  overlay.addEventListener('mousemove', (e)=>{
+    if(!App.cropState.active || !App.cropState.dragging) return;
+    const rect = overlay.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (overlay.width / rect.width);
+    const y = (e.clientY - rect.top) * (overlay.height / rect.height);
     const ds = App.cropState.dragStart;
     const dx = x - ds.x;
     const dy = y - ds.y;
     const handle = App.cropState.handle;
+    const canvasW = App.cropState.overlay.width;
+    const canvasH = App.cropState.overlay.height;
 
     if(handle === 'move') {
-      App.cropState.cropX = Math.max(0, Math.min(cropCanvas.width - App.cropState.cropW, ds.cropX + dx));
-      App.cropState.cropY = Math.max(0, Math.min(cropCanvas.height - App.cropState.cropH, ds.cropY + dy));
+      App.cropState.cropX = Math.max(0, Math.min(canvasW - App.cropState.cropW, ds.cropX + dx));
+      App.cropState.cropY = Math.max(0, Math.min(canvasH - App.cropState.cropH, ds.cropY + dy));
     } else {
-      if(handle.includes('e')) App.cropState.cropW = Math.max(20, ds.cropW + dx);
-      if(handle.includes('w')) { const newW = Math.max(20, ds.cropW - dx); App.cropState.cropX = ds.cropX + ds.cropW - newW; App.cropState.cropW = newW; }
-      if(handle.includes('s')) App.cropState.cropH = Math.max(20, ds.cropH + dy);
-      if(handle.includes('n')) { const newH = Math.max(20, ds.cropH - dy); App.cropState.cropY = ds.cropY + ds.cropH - newH; App.cropState.cropH = newH; }
+      if(handle.includes('e')) App.cropState.cropW = Math.max(20, Math.min(canvasW - App.cropState.cropX, ds.cropW + dx));
+      if(handle.includes('w')) { const newW = Math.max(20, Math.min(ds.cropX + ds.cropW, ds.cropW - dx)); App.cropState.cropX = ds.cropX + ds.cropW - newW; App.cropState.cropW = newW; }
+      if(handle.includes('s')) App.cropState.cropH = Math.max(20, Math.min(canvasH - App.cropState.cropY, ds.cropH + dy));
+      if(handle.includes('n')) { const newH = Math.max(20, Math.min(ds.cropY + ds.cropH, ds.cropH - dy)); App.cropState.cropY = ds.cropY + ds.cropH - newH; App.cropState.cropH = newH; }
     }
     drawCropOverlay();
   });
-  cropCanvas.addEventListener('mouseup', ()=>{ App.cropState.resizing = false; App.cropState.handle = null; });
-}
+
+  overlay.addEventListener('mouseup', ()=>{ App.cropState.dragging = false; App.cropState.handle = null; });
+  overlay.addEventListener('mouseleave', ()=>{ App.cropState.dragging = false; App.cropState.handle = null; });
+}, 100);
+
 function applyCrop() {
   const st = App.cropState;
   if(!st.active || !st.element) return;
@@ -1834,10 +2183,11 @@ function applyCrop() {
   showToast('חיתוך הוחל בהצלחה','success');
   closeCrop();
   markDirty();
+  pushHistory();
 }
 function closeCrop() {
   document.getElementById('crop-modal').classList.add('hidden');
-  App.cropState = {active:false, element:null, img:null, canvas:null, ctx:null, cropX:0, cropY:0, cropW:0, cropH:0, scaleX:1, scaleY:1, dragging:false, resizing:false, handle:null};
+  App.cropState = {active:false, element:null, img:null, underlay:null, overlay:null, ctx:null, cropX:0, cropY:0, cropW:0, cropH:0, scaleX:1, scaleY:1, dragging:false, handle:null};
 }
 function replaceSelectedImage() {
   const id = App.selectedElement?.id;
@@ -1849,7 +2199,7 @@ function replaceSelectedImage() {
     const reader = new FileReader();
     reader.onload = ()=>{
       const el = App.currentPost.elements.find(e=>e.id===id);
-      if(el) { el.src = reader.result; const img = document.querySelector('#el-' + id + ' img'); if(img) img.src = reader.result; showToast('תמונה הוחלפה','success'); markDirty(); }
+      if(el) { el.src = reader.result; const img = document.querySelector('#el-' + id + ' img'); if(img) img.src = reader.result; showToast('תמונה הוחלפה','success'); markDirty(); pushHistory(); }
     };
     reader.readAsDataURL(e.target.files[0]);
   };
@@ -1872,51 +2222,39 @@ async function searchPexels() {
       return;
     }
     container.innerHTML = data.photos.map(p=>`
-      <img src="${p.src.medium}" class="pexels-img" onclick="addPexelsImage('${p.src.large}')" title="${p.photographer}">
+      <img src="${p.src.medium}" class="pexels-img" draggable="true" ondragstart="dragPexelsStart(event,'${p.src.large}')" onclick="addPexelsImage('${p.src.large}')" title="${p.photographer}">
     `).join('');
   } catch(e) {
     container.innerHTML = '<div class="col-span-full text-center text-red-400 py-4">שגיאה בטעינת תמונות</div>';
   }
+}
+function dragPexelsStart(e, url) {
+  e.dataTransfer.setData('elementType', 'pexels-image');
+  e.dataTransfer.setData('imageUrl', url);
 }
 function addPexelsImage(url) {
   addImageElement(url);
   showToast('תמונה נוספה מהספרייה','success');
 }
 
-// ==================== LIBRARY PANEL ====================
-function toggleLibrary() {
-  document.getElementById('library-panel').classList.toggle('open');
+// ==================== ELEMENTS SIDEBAR ====================
+function toggleElementsSidebar() {
+  document.getElementById('elements-sidebar').classList.toggle('open');
 }
-function setLibraryTab(tab) {
-  document.getElementById('lib-shapes').classList.add('hidden');
-  document.getElementById('lib-pexels').classList.add('hidden');
-  document.getElementById('lib-logos').classList.add('hidden');
-  document.getElementById('lib-tab-shapes').classList.remove('text-accent-400', 'border-b-2', 'border-accent-500');
-  document.getElementById('lib-tab-pexels').classList.remove('text-accent-400', 'border-b-2', 'border-accent-500');
-  document.getElementById('lib-tab-logos').classList.remove('text-accent-400', 'border-b-2', 'border-accent-500');
-  document.getElementById('lib-tab-shapes').classList.add('text-gray-500');
-  document.getElementById('lib-tab-pexels').classList.add('text-gray-500');
-  document.getElementById('lib-tab-logos').classList.add('text-gray-500');
+function setElementsTab(tab) {
+  document.getElementById('elem-shapes').classList.add('hidden');
+  document.getElementById('elem-logos').classList.add('hidden');
+  document.getElementById('elem-pexels').classList.add('hidden');
+  document.getElementById('elem-tab-shapes').classList.remove('text-accent-400', 'border-b-2', 'border-accent-500');
+  document.getElementById('elem-tab-logos').classList.remove('text-accent-400', 'border-b-2', 'border-accent-500');
+  document.getElementById('elem-tab-pexels').classList.remove('text-accent-400', 'border-b-2', 'border-accent-500');
+  document.getElementById('elem-tab-shapes').classList.add('text-gray-500');
+  document.getElementById('elem-tab-logos').classList.add('text-gray-500');
+  document.getElementById('elem-tab-pexels').classList.add('text-gray-500');
 
-  document.getElementById('lib-' + tab).classList.remove('hidden');
-  document.getElementById('lib-tab-' + tab).classList.remove('text-gray-500');
-  document.getElementById('lib-tab-' + tab).classList.add('text-accent-400', 'border-b-2', 'border-accent-500');
-}
-function addWpLogo() {
-  addWpLogoElement();
-}
-function addLogoHtml(html) {
-  const el = {
-    id: 'el_' + (++App.elementCounter),
-    type: 'html', x: 100, y: 100, width: 100, height: 100,
-    rotation: 0, opacity: 100, zIndex: App.elementCounter,
-    content: '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">' + html + '</div>',
-    styles: {}
-  };
-  App.currentPost.elements.push(el);
-  createElementDOM(el);
-  selectElement(el);
-  markDirty();
+  document.getElementById('elem-' + tab).classList.remove('hidden');
+  document.getElementById('elem-tab-' + tab).classList.remove('text-gray-500');
+  document.getElementById('elem-tab-' + tab).classList.add('text-accent-400', 'border-b-2', 'border-accent-500');
 }
 
 // ==================== PANELS ====================
@@ -1983,7 +2321,7 @@ async function editWPPost(id) {
       title: post.title.rendered.replace(/<[^>]+>/g,''),
       elements: parseHTMLToElements(post.content.rendered),
       featuredImage: post._embedded?.['wp:featuredmedia']?.[0]?.source_url || null,
-      background: {type:'color', value:'#ffffff'},
+      background: {type:'color', value:'#ffffff', opacity: 100},
       status: post.status,
       author: App.currentProfile.id,
       createdAt: Date.now()
@@ -2005,6 +2343,10 @@ async function editWPPost(id) {
 
     renderCanvas();
     closePanel();
+    // Reset history for loaded post
+    App.history = [];
+    App.historyIndex = -1;
+    pushHistory();
     showToast('הפוסט נטען לעריכה','success');
   } catch(e) { showToast(e.message,'error'); }
 }
@@ -2025,7 +2367,8 @@ function parseHTMLToElements(html) {
           type: 'text', x: 50, y: currentY, width: 700, height: 50,
           rotation: 0, opacity: 100, zIndex: counter,
           content: '<p>' + escapeHtml(node.textContent) + '</p>',
-          styles: {fontFamily:'Assistant', fontSize:'18px', color:'#1f2937', textAlign:'right', fontWeight:'400'}
+          styles: {fontFamily:'Assistant', fontSize:'18px', color:'#1f2937', textAlign:'right', fontWeight:'400'},
+          borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
         });
         currentY += 60;
       }
@@ -2041,7 +2384,8 @@ function parseHTMLToElements(html) {
         height: Math.min(500, parseInt(node.getAttribute('height')) || 300),
         rotation: 0, opacity: 100, zIndex: counter,
         src: node.src,
-        styles: {objectFit:'cover', borderRadius:'0'}
+        styles: {objectFit:'cover', borderRadius:'0'},
+        borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
       });
       currentY += 320;
     } else if(tag==='iframe') {
@@ -2049,7 +2393,8 @@ function parseHTMLToElements(html) {
         id: 'el_' + (++counter),
         type: 'embed', x: 50, y: currentY, width: 700, height: 400,
         rotation: 0, opacity: 100, zIndex: counter,
-        src: node.src, styles: {}
+        src: node.src, styles: {},
+        borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
       });
       currentY += 420;
     } else if(['p','h1','h2','h3','h4','h5','h6','div','blockquote','pre','section','article'].includes(tag)) {
@@ -2069,7 +2414,8 @@ function parseHTMLToElements(html) {
           color: node.style.color || '#1f2937',
           textAlign: node.style.textAlign || 'right',
           backgroundColor: 'transparent'
-        }
+        },
+        borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
       });
       currentY += height + 20;
     } else if(tag==='figure') {
@@ -2082,7 +2428,8 @@ function parseHTMLToElements(html) {
           height: Math.min(500, parseInt(img.getAttribute('height')) || 300),
           rotation: 0, opacity: 100, zIndex: counter,
           src: img.src,
-          styles: {objectFit:'cover', borderRadius:'0'}
+          styles: {objectFit:'cover', borderRadius:'0'},
+          borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
         });
         currentY += 320;
       }
@@ -2093,7 +2440,8 @@ function parseHTMLToElements(html) {
           type: 'text', x: 50, y: currentY, width: 700, height: 40,
           rotation: 0, opacity: 100, zIndex: counter,
           content: '<p style="text-align:center;color:#666;font-size:14px;">' + caption.innerHTML + '</p>',
-          styles: {fontFamily:'Assistant', fontSize:'14px', color:'#666', textAlign:'center'}
+          styles: {fontFamily:'Assistant', fontSize:'14px', color:'#666', textAlign:'center'},
+          borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
         });
         currentY += 50;
       }
@@ -2186,6 +2534,10 @@ function loadDraft(id) {
   } else { removeFeaturedImage(); }
   renderCanvas();
   closePanel();
+  // Reset history
+  App.history = [];
+  App.historyIndex = -1;
+  pushHistory();
   showToast('טיוטה נטענה','success');
 }
 function deleteDraft(id) {
@@ -2212,7 +2564,7 @@ async function publishPost() {
 
   showToast('מפרסם...','info');
   try {
-    const htmlContent = generatePostHTML();
+    const htmlContent = generateExactHTML();
     let featuredMediaId = null;
     if(App.currentPost.featuredImage && App.currentPost.featuredImage.startsWith('data:')) {
       const blob = dataURItoBlob(App.currentPost.featuredImage);
@@ -2245,43 +2597,81 @@ async function publishDraft(draftId) {
   document.getElementById('post-title').value = App.currentPost.title || '';
   await publishPost();
 }
-function generatePostHTML() {
+
+// Generate EXACT HTML that preserves the visual layout
+function generateExactHTML() {
   const post = App.currentPost;
   let bgStyle = '';
   if(post.background) {
-    if(post.background.type==='color') bgStyle = 'background:'+post.background.value+';';
-    else if(post.background.type==='image') bgStyle = 'background:url('+post.background.value+');background-size:cover;';
+    const bg = post.background;
+    const opacity = (bg.opacity !== undefined ? bg.opacity : 100) / 100;
+    if(bg.type==='color') bgStyle = 'background-color:'+bg.value+';';
+    else if(bg.type==='gradient') {
+      const gradients = {
+        'grad-1': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        'grad-2': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        'grad-3': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+        'grad-4': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+        'grad-5': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+        'grad-6': 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
+      };
+      bgStyle = 'background:'+(gradients[bg.value]||bg.value)+';';
+    }
+    else if(bg.type==='image') {
+      bgStyle = 'background-image:url('+bg.value+');background-size:'+(bg.imageSize||'cover')+';background-repeat:'+(bg.imageRepeat||'no-repeat')+';background-position:'+(bg.imagePosition||'center')+';';
+    }
+    if(opacity < 1) bgStyle += 'opacity:'+opacity+';';
   }
-  let html = '<div style="position:relative;width:100%;min-height:600px;'+bgStyle+'padding:40px;box-sizing:border-box;">';
+
+  // Use a container with exact pixel positioning like the editor
+  let html = '<div style="position:relative;width:800px;min-height:1000px;margin:0 auto;'+bgStyle+'overflow:hidden;box-sizing:border-box;">';
+
   const sorted = [...post.elements].sort((a,b)=>(a.zIndex||0)-(b.zIndex||0));
   sorted.forEach(el=>{
-    const rot = el.rotation?'transform:rotate('+el.rotation+'deg);':'';
-    const op = el.opacity&&el.opacity!==100?'opacity:'+(el.opacity/100)+';':'';
-    html += '<div style="position:absolute;left:'+el.x+'px;top:'+el.y+'px;width:'+el.width+'px;height:'+el.height+'px;'+rot+op+'z-index:'+(el.zIndex||1)+';">';
+    const rot = el.rotation ? 'transform:rotate('+el.rotation+'deg);transform-origin:center center;' : '';
+    const op = el.opacity && el.opacity!==100 ? 'opacity:'+(el.opacity/100)+';' : '';
+    const br = el.borderRadius && el.borderRadius!=='0px' ? 'border-radius:'+el.borderRadius+';' : '';
+    const bw = el.borderWidth && el.borderWidth!=='0px' ? 'border-width:'+el.borderWidth+';' : '';
+    const bc = el.borderColor && el.borderColor!=='#000000' ? 'border-color:'+el.borderColor+';' : '';
+    const bs = el.borderStyle && el.borderStyle!=='solid' ? 'border-style:'+el.borderStyle+';' : '';
+    const border = (bw || bc || bs) ? 'border:'+(el.borderWidth||'0px')+' '+(el.borderStyle||'solid')+' '+(el.borderColor||'transparent')+';' : '';
+
+    html += '<div style="position:absolute;left:'+el.x+'px;top:'+el.y+'px;width:'+el.width+'px;height:'+el.height+'px;'+rot+op+br+border+'overflow:hidden;z-index:'+(el.zIndex||1)+';">';
+
     if(el.type==='text') {
       const s = el.styles||{};
-      html += '<div style="width:100%;height:100%;overflow:hidden;font-family:'+(s.fontFamily||'Assistant')+',sans-serif;font-size:'+(s.fontSize||'18px')+';color:'+(s.color||'#1f2937')+';background:'+(s.backgroundColor||'transparent')+';text-align:'+(s.textAlign||'right')+';font-weight:'+(s.fontWeight||'400')+';padding:8px;direction:rtl;line-height:1.5;">'+(el.content||'')+'</div>';
+      html += '<div style="width:100%;height:100%;overflow:hidden;font-family:'+(s.fontFamily||'Assistant')+',sans-serif;font-size:'+(s.fontSize||'18px')+';color:'+(s.color||'#1f2937')+';background:'+(s.backgroundColor||'transparent')+';text-align:'+(s.textAlign||'right')+';font-weight:'+(s.fontWeight||'400')+';padding:8px;direction:rtl;line-height:1.5;box-sizing:border-box;">'+(el.content||'')+'</div>';
     } else if(el.type==='image') {
       const s = el.styles||{};
-      html += '<img src="'+el.src+'" style="width:100%;height:100%;object-fit:'+(s.objectFit||'cover')+';border-radius:'+(s.borderRadius||'0')+';'+(s.filter?s.filter:'')+'">';
+      html += '<img src="'+el.src+'" style="width:100%;height:100%;object-fit:'+(s.objectFit||'cover')+';border-radius:'+(s.borderRadius||'0')+';'+(s.filter?s.filter:'')+'display:block;">';
     } else if(el.type==='shape') {
       const s = el.styles||{};
       const bg = s.gradient || s.backgroundColor || '#8b5cf6';
       let clip = '';
+      if(el.shapeType==='circle') clip = 'border-radius:50%;';
       if(el.shapeType==='star') clip = 'clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);';
       if(el.shapeType==='triangle') clip = 'clip-path:polygon(50% 0%,0% 100%,100% 100%);';
       if(el.shapeType==='diamond') clip = 'clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);';
       if(el.shapeType==='arrow-right') clip = 'clip-path:polygon(0% 20%,60% 20%,60% 0%,100% 50%,60% 100%,60% 80%,0% 80%);';
       if(el.shapeType==='heart') clip = 'clip-path:path(\'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z\');';
-      html += '<div style="width:100%;height:100%;background:'+bg+';border-radius:'+(s.borderRadius||'0')+';'+clip+'"></div>';
+      if(el.shapeType==='half-circle') clip = 'border-radius:50% 50% 0 0 / 100% 100% 0 0;height:50%;';
+      if(el.shapeType==='moon') clip = 'border-radius:50%;box-shadow:inset -10px 0 0 '+(s.backgroundColor||'#f59e0b')+';';
+      if(el.shapeType==='oval') clip = 'border-radius:50%;';
+      if(el.shapeType==='pentagon') clip = 'clip-path:polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);';
+      if(el.shapeType==='hexagon') clip = 'clip-path:polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);';
+      if(el.shapeType==='line-h') { html += '<div style="width:100%;height:4px;background:'+(s.backgroundColor||'#94a3b8')+';"></div>'; }
+      else if(el.shapeType==='line-v') { html += '<div style="width:4px;height:100%;background:'+(s.backgroundColor||'#94a3b8')+';"></div>'; }
+      else { html += '<div style="width:100%;height:100%;background:'+bg+';border-radius:'+(s.borderRadius||'0')+';'+clip+'"></div>'; }
     } else if(el.type==='embed') {
-      html += '<iframe src="'+el.src+'" style="width:100%;height:100%;border:none;border-radius:8px;" allowfullscreen></iframe>';
+      html += '<iframe src="'+el.src+'" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>';
     } else if(el.type==='html') {
       html += '<div style="width:100%;height:100%;overflow:auto;">'+(el.content||'')+'</div>';
     } else if(el.type==='video') {
-      html += '<iframe src="'+el.src+'" style="width:100%;height:100%;border:none;border-radius:8px;" allowfullscreen></iframe>';
+      html += '<iframe src="'+el.src+'" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>';
     } else if(el.type==='wp-logo') {
       html += '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:80px;color:#21759b;"><i class="fab fa-wordpress"></i></div>';
+    } else if(el.type==='site-logo') {
+      html += '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><img src="'+(App.siteLogoUrl||'')+'" style="max-width:100%;max-height:100%;object-fit:contain;"></div>';
     }
     html += '</div>';
   });
@@ -2304,7 +2694,7 @@ function togglePreview() {
   const sidebar = document.getElementById('right-sidebar');
   if(previewMode) {
     canvas.style.pointerEvents = 'none';
-    document.querySelectorAll('.resize-handle, .rotate-handle').forEach(e=>e.style.display = 'none !important');
+    document.querySelectorAll('.resize-handle, .rotate-handle').forEach(e=>e.style.display = 'none');
     document.querySelectorAll('.canvas-element').forEach(e=>e.classList.remove('selected'));
     sidebar.classList.add('hidden');
     showToast('מצב תצוגה מקדימה','info');
@@ -2347,12 +2737,21 @@ function handleImport(e) {
 }
 
 document.addEventListener('keydown', (e)=>{
+  // Delete element
   if((e.key==='Delete' || e.key==='Backspace') && App.selectedElement) {
     const active = document.activeElement;
-    if(!active || !active.isContentEditable) deleteSelected();
+    if(!active || !active.isContentEditable) { deleteSelected(); pushHistory(); }
   }
+  // Ctrl+S - Save
   if(e.ctrlKey && e.key==='s') { e.preventDefault(); saveDraftManual(); }
+  // Escape
   if(e.key==='Escape') { deselectAll(); closePanel(); hideInlineToolbar(); }
+  // Ctrl+Z - Undo
+  if(e.ctrlKey && e.key==='z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  // Ctrl+Shift+Z - Redo
+  if(e.ctrlKey && e.shiftKey && e.key==='z') { e.preventDefault(); redo(); }
+  // Ctrl+Y - Redo (alternative)
+  if(e.ctrlKey && e.key==='y') { e.preventDefault(); redo(); }
 });
 
 async function init() {

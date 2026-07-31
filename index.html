@@ -475,12 +475,7 @@ tailwind.config = {
               </div>
               <button onclick="openCropModalForSelected()" class="w-full py-2 rounded-lg bg-dark-900 border border-gray-700 hover:border-accent-500 transition text-sm"><i class="fas fa-crop ml-1"></i> חיתוך</button>
               <button onclick="replaceSelectedImage()" class="w-full py-2 rounded-lg bg-dark-900 border border-gray-700 hover:border-accent-500 transition text-sm"><i class="fas fa-exchange-alt ml-1"></i> החלפת תמונה</button>
-              <div class="mt-3 p-3 rounded-lg bg-dark-900 border border-gray-700">
-                <h4 class="text-xs font-bold text-gray-400 mb-2"><i class="fas fa-magic ml-1"></i> הסרת רקע</h4>
-                <div id="remove-bg-status" class="text-xs text-gray-500 mb-2">נותרו <span id="remove-bg-global-count">100</span> הסרות גלובליות החודש</div>
-                <button onclick="removeBackground()" class="w-full py-2 rounded-lg bg-gradient-to-r from-accent-600 to-primary-600 hover:from-accent-500 hover:to-primary-500 text-white text-sm font-bold transition"><i class="fas fa-wand-magic-sparkles ml-1"></i> הסר רקע</button>
-                <button onclick="showRemoveBgKeyModal()" class="w-full py-1 mt-1 rounded-lg bg-dark-800 border border-gray-700 hover:border-accent-500 transition text-xs text-gray-400"><i class="fas fa-key ml-1"></i> קבל עוד הסרות (מפתח אישי)</button>
-              </div>
+<!-- remove.bg feature removed due to CORS limitations -->
             </div>
           </div>
           <div id="shape-props" class="p-4 border-b border-gray-800" style="display:none;">
@@ -689,7 +684,7 @@ let firebaseEnabled = false;
 function initFirebase() {
   try {
     if(typeof firebase === 'undefined') {
-      console.log('Firebase SDK not loaded');
+      console.log('[Firebase] SDK not loaded - will use localStorage only');
       return false;
     }
     firebase.initializeApp(FIREBASE_CONFIG);
@@ -697,16 +692,18 @@ function initFirebase() {
     // Enable offline persistence
     db.enablePersistence({synchronizeTabs:true}).catch(err => {
       if(err.code === 'failed-precondition') {
-        console.log('Persistence failed: multiple tabs open');
+        console.log('[Firebase] Persistence failed: multiple tabs open');
       } else if(err.code === 'unimplemented') {
-        console.log('Persistence not available in this browser');
+        console.log('[Firebase] Persistence not available');
       }
     });
     firebaseEnabled = true;
-    console.log('Firebase initialized successfully');
+    console.log('[Firebase] Initialized successfully');
     return true;
   } catch(e) {
-    console.log('Firebase init error:', e.message);
+    console.log('[Firebase] Init error:', e.message);
+    firebaseEnabled = false;
+    db = null;
     return false;
   }
 }
@@ -770,50 +767,51 @@ async function decryptData(encrypted, password) {
 
 // ==================== STORAGE ====================
 async function loadDB() {
-  // Always try localStorage first (fastest)
+  // Always try localStorage first (fastest, never hangs)
   let localData = null;
   try { 
     const raw = localStorage.getItem(DB_KEY); 
     if(raw) localData = JSON.parse(raw); 
-  } catch(e){}
+  } catch(e){
+    console.log('[loadDB] localStorage error:', e.message);
+  }
 
-  // Try Firebase
+  // Try Firebase with timeout
   if(firebaseEnabled && db) {
     try {
-      const doc = await db.collection('app').doc('data').get();
+      const timeout = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Firebase timeout')), 3000)
+      );
+      const docPromise = db.collection('app').doc('data').get();
+      const doc = await Promise.race([docPromise, timeout]);
+
       if(doc.exists) {
         const cloudData = doc.data();
-        // If cloud data is newer or local is empty, use cloud
         if(!localData || (cloudData._lastUpdated && localData._lastUpdated && cloudData._lastUpdated > localData._lastUpdated)) {
           localStorage.setItem(DB_KEY, JSON.stringify(cloudData));
-          console.log('Loaded from Firebase (newer data)');
+          console.log('[loadDB] Loaded from Firebase (newer data)');
           return cloudData;
         }
       }
     } catch(e) {
-      console.log('Firebase load failed:', e.message);
-      if(e.message.includes('permission')) {
-        showToast('שגיאת הרשאות ב-Firebase. עדכן את Firestore rules.','error');
-      }
+      console.log('[loadDB] Firebase error:', e.message);
     }
   }
 
+  console.log('[loadDB] Using localStorage data');
   return localData;
 }
 async function saveDB() {
   App.data._lastUpdated = Date.now();
   localStorage.setItem(DB_KEY, JSON.stringify(App.data));
-  // Sync to Firebase if available
+  console.log('[saveDB] Saved to localStorage');
+  // Sync to Firebase in background (don't block)
   if(firebaseEnabled && db) {
-    try {
-      await db.collection('app').doc('data').set(App.data);
-      console.log('Saved to Firebase');
-    } catch(e) {
-      console.log('Firebase save failed:', e.message);
-      if(e.message.includes('permission')) {
-        showToast('שגיאת הרשאות ב-Firebase. עדכן את Firestore rules.','error');
-      }
-    }
+    db.collection('app').doc('data').set(App.data)
+      .then(() => console.log('[saveDB] Saved to Firebase'))
+      .catch(e => {
+        console.log('[saveDB] Firebase error:', e.message);
+      });
   }
 }
 function initDB() {
@@ -836,8 +834,14 @@ function hideAllScreens() {
   });
 }
 function showProfiles() {
+  console.log('[showProfiles] Opening profiles screen');
   hideAllScreens();
-  document.getElementById('screen-profiles').classList.remove('hidden');
+  const screen = document.getElementById('screen-profiles');
+  if(!screen) {
+    console.error('[showProfiles] screen-profiles element not found!');
+    return;
+  }
+  screen.classList.remove('hidden');
   renderProfiles();
 }
 function showCreateProfile() {
@@ -947,14 +951,22 @@ async function createNewProfile() {
     id: 'p_'+Date.now(),
     name, avatar: selectedNewAvatar,
     passHash: hash,
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    sites: []
   };
   if(!App.data) App.data = await loadDB() || {};
   if(!App.data.profiles) App.data.profiles = [];
   App.data.profiles.push(profile);
-  saveDB();
-  showToast('פרופיל נוצר בהצלחה!','success');
-  showProfiles();
+  console.log('[createNewProfile] Saving profile:', profile.name);
+  try {
+    await saveDB();
+    console.log('[createNewProfile] Save successful');
+    showToast('פרופיל נוצר בהצלחה!','success');
+    showProfiles();
+  } catch(e) {
+    console.log('[createNewProfile] Save error:', e.message);
+    showToast('שגיאה בשמירה: ' + e.message, 'error');
+  }
 }
 async function doAuth() {
   const pass = document.getElementById('auth-pass').value;
@@ -2495,144 +2507,7 @@ function replaceSelectedImage() {
   input.click();
 }
 
-// Remove.bg integration
-const REMOVE_BG_GLOBAL_KEY = '7dJKH6PZeY4hJN6HLt13srNY';
-const REMOVE_BG_GLOBAL_LIMIT = 100;
-
-function getRemoveBgUsage() {
-  const usage = JSON.parse(localStorage.getItem('ewolf_removebg_usage') || '{"count":0,"month":""}');
-  const currentMonth = new Date().toISOString().slice(0,7);
-  if(usage.month !== currentMonth) {
-    usage = {count:0, month:currentMonth};
-    localStorage.setItem('ewolf_removebg_usage', JSON.stringify(usage));
-  }
-  return usage;
-}
-
-function getRemoveBgKey() {
-  if(App.currentProfile && App.currentProfile.removeBgKey) return App.currentProfile.removeBgKey;
-  return REMOVE_BG_GLOBAL_KEY;
-}
-
-function getRemoveBgLimit() {
-  if(App.currentProfile && App.currentProfile.removeBgKey) return 100; // Personal key = 100 per month
-  return REMOVE_BG_GLOBAL_LIMIT;
-}
-
-function updateRemoveBgCount() {
-  const usage = getRemoveBgUsage();
-  const limit = getRemoveBgLimit();
-  const remaining = Math.max(0, limit - usage.count);
-  const el = document.getElementById('remove-bg-global-count');
-  if(el) el.textContent = remaining;
-  const status = document.getElementById('remove-bg-status');
-  if(status) {
-    if(remaining <= 0) {
-      status.innerHTML = '<span class="text-red-400">נגמרו ההסרות! השתמש במפתח אישי.</span>';
-    } else {
-      status.innerHTML = 'נותרו <span id="remove-bg-global-count">' + remaining + '</span> הסרות ' + (App.currentProfile?.removeBgKey ? 'אישיות' : 'גלובליות') + ' החודש';
-    }
-  }
-}
-
-let removeBgQueue = [];
-let removeBgProcessing = false;
-
-async function removeBackground() {
-  if(!App.selectedElement || App.selectedElement.type !== 'image') return;
-
-  // Check if image is from data URL (local upload)
-  if(!App.selectedElement.src.startsWith('data:')) {
-    showToast('הסרת רקע עובדת רק על תמונות שהועלו מקומית. הורד את התמונה ועלה אותה מחדש.','info');
-    return;
-  }
-
-  const usage = getRemoveBgUsage();
-  const limit = getRemoveBgLimit();
-  if(usage.count >= limit) {
-    showToast('נגמרו ההסרות החודש! השתמש במפתח אישי.','error');
-    showRemoveBgKeyModal();
-    return;
-  }
-
-  // Check CORS - remove.bg blocks direct browser requests
-  showToast('מנסה להסיר רקע...','info');
-
-  // Add to queue
-  removeBgQueue.push(App.selectedElement);
-  processRemoveBgQueue();
-}
-
-async function processRemoveBgQueue() {
-  if(removeBgProcessing || removeBgQueue.length === 0) return;
-  removeBgProcessing = true;
-
-  const el = removeBgQueue.shift();
-
-  try {
-    const formData = new FormData();
-    const blob = dataURItoBlob(el.src);
-    formData.append('image_file', blob, 'image.png');
-    formData.append('size', 'auto');
-
-    const res = await fetch('https://api.remove.bg/v1.0/removebg', {
-      method: 'POST',
-      headers: {'X-Api-Key': getRemoveBgKey()},
-      body: formData
-    });
-
-    if(!res.ok) {
-      const err = await res.json().catch(()=>({}));
-      throw new Error(err.errors?.[0]?.title || 'HTTP ' + res.status);
-    }
-
-    const resultBlob = await res.blob();
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      el.src = reader.result;
-      const img = document.querySelector('#el-' + el.id + ' img');
-      if(img) img.src = reader.result;
-      showToast('רקע הוסר בהצלחה!','success');
-      markDirty();
-      pushHistory();
-    };
-    reader.readAsDataURL(resultBlob);
-
-    const usage = getRemoveBgUsage();
-    usage.count++;
-    localStorage.setItem('ewolf_removebg_usage', JSON.stringify(usage));
-    updateRemoveBgCount();
-
-  } catch(e) {
-    let msg = e.message;
-    if(e.message.includes('Failed to fetch') || e.message.includes('CORS')) {
-      msg = 'בעיית CORS - remove.bg חוסם בקשות ישירות מהדפדפן. השתמש בשרת proxy או העלה תמונה ללא רקע.';
-    } else if(e.message.includes('401')) {
-      msg = 'מפתח API לא תקין או שגמר';
-    }
-    showToast('שגיאה בהסרת רקע: ' + msg, 'error');
-  } finally {
-    removeBgProcessing = false;
-    setTimeout(() => processRemoveBgQueue(), 800);
-  }
-}
-
-function showRemoveBgKeyModal() {
-  const currentKey = App.currentProfile && App.currentProfile.removeBgKey ? '****' + App.currentProfile.removeBgKey.slice(-4) : 'ללא';
-  const key = prompt('הזן מפתח API אישי מ-remove.bg:' + '\n\nאיך להשיג מפתח:' + '\n1. היכנס ל-remove.bg' + '\n2. צור חשבון' + '\n3. קבל API Key' + '\n4. הזן כאן' + '\n\nמפתח נוכחי: ' + currentKey);
-  if(key === null) return;
-  if(key.trim()) {
-    App.currentProfile.removeBgKey = key.trim();
-    const pIdx = App.data.profiles.findIndex(p => p.id === App.currentProfile.id);
-    if(pIdx > -1) {
-      App.data.profiles[pIdx].removeBgKey = key.trim();
-      saveDB();
-    }
-    showToast('מפתח נשמר! יש לך 100 הסרות אישיות בחודש.','success');
-    updateRemoveBgCount();
-  }
-}
+// Note: remove.bg feature removed - CORS blocks browser requests
 
 // ==================== PEXELS (Commercial-Free) ====================
 async function searchPexels() {
@@ -3280,11 +3155,28 @@ async function searchBrandLogos() {
 }
 
 async function init() {
-  initFirebase();
-  App.data = await loadDB();
+  console.log('[INIT] Starting...');
+  try {
+    initFirebase();
+  } catch(e) {
+    console.log('[INIT] Firebase init error:', e.message);
+  }
+
+  console.log('[INIT] Loading data...');
+  try {
+    App.data = await loadDB();
+    console.log('[INIT] Data loaded:', App.data ? 'yes' : 'no');
+  } catch(e) {
+    console.log('[INIT] loadDB error:', e.message);
+    App.data = null;
+  }
+
   if(!App.data || !App.data.profiles || !Array.isArray(App.data.profiles)) {
+    console.log('[INIT] No valid data, initializing empty DB');
     initDB();
   }
+
+  console.log('[INIT] Showing profiles screen');
   showProfiles();
 }
 init();

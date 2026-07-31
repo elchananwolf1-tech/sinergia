@@ -117,6 +117,7 @@ tailwind.config = {
 </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body class="h-screen w-screen overflow-hidden">
 
@@ -650,6 +651,15 @@ const App = {
 
 // ==================== CRYPTO ====================
 async function hashPassword(password) {
+  if(!window.crypto || !crypto.subtle) {
+    let hash = 0;
+    for(let i = 0; i < password.length; i++) {
+      const char = password.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash;
+    }
+    return 'local_' + Math.abs(hash).toString(16).padStart(64, '0');
+  }
   const enc = new TextEncoder();
   const hash = await crypto.subtle.digest('SHA-256', enc.encode(password));
   return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
@@ -711,9 +721,15 @@ function showProfiles() {
 function showCreateProfile() {
   hideAllScreens();
   document.getElementById('screen-create-profile').classList.remove('hidden');
+  document.getElementById('new-profile-name').value = '';
+  document.getElementById('new-profile-pass').value = '';
+  document.getElementById('new-profile-pass2').value = '';
+  selectedNewAvatar = null;
   renderNewAvatars();
 }
-function showAuth(profile) {
+function showAuth(profileId) {
+  const profile = App.data.profiles.find(p => p.id === profileId);
+  if(!profile) return showToast('פרופיל לא נמצא','error');
   hideAllScreens();
   App.tempProfile = profile;
   document.getElementById('auth-avatar').src = profile.avatar;
@@ -748,6 +764,8 @@ function showEditor() {
 
 // ==================== PROFILES ====================
 let selectedNewAvatar = null;
+const iconifyCache = {};
+let previewMode = false;
 function renderProfiles() {
   const grid = document.getElementById('profiles-grid');
   if(!App.data || !App.data.profiles || App.data.profiles.length===0) {
@@ -755,7 +773,7 @@ function renderProfiles() {
     return;
   }
   grid.innerHTML = App.data.profiles.map(p=>`
-    <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-105 transition" onclick="showAuth(${JSON.stringify(p).replace(/"/g,'&quot;')})">
+    <div class="flex flex-col items-center gap-1 cursor-pointer hover:scale-105 transition" onclick="showAuth('${p.id}')">
       <img src="${p.avatar}" class="w-16 h-16 rounded-full border-2 border-gray-700 hover:border-accent-500 transition">
       <span class="text-xs text-gray-400 truncate w-full text-center">${p.name}</span>
     </div>
@@ -846,7 +864,9 @@ function deleteCurrentProfile() {
   // Remove associated drafts
   if(App.data.drafts) {
     Object.keys(App.data.drafts).forEach(siteUrl => {
-      App.data.drafts[siteUrl] = App.data.drafts[siteUrl].filter(d => d.author !== App.tempProfile.id);
+      if(Array.isArray(App.data.drafts[siteUrl])) {
+        App.data.drafts[siteUrl] = App.data.drafts[siteUrl].filter(d => d.author !== App.tempProfile.id);
+      }
     });
   }
 
@@ -1218,7 +1238,7 @@ function createElementDOM(el) {
     if(el.shapeType==='arrow-right') content.style.clipPath = 'polygon(0% 20%, 60% 20%, 60% 0%, 100% 50%, 60% 100%, 60% 80%, 0% 80%)';
     if(el.shapeType==='heart') content.style.clipPath = 'path("M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z")';
     if(el.shapeType==='half-circle') { content.style.borderRadius = '50% 50% 0 0 / 100% 100% 0 0'; content.style.height = '50%'; }
-    if(el.shapeType==='moon') content.style.borderRadius = '50%'; content.style.boxShadow = 'inset -10px 0 0 ' + (el.styles?.backgroundColor || '#f59e0b');
+    if(el.shapeType==='moon') { content.style.borderRadius = '50%'; content.style.boxShadow = 'inset -10px 0 0 ' + (el.styles?.backgroundColor || '#f59e0b'); }
     if(el.shapeType==='oval') content.style.borderRadius = '50%';
     if(el.shapeType==='pentagon') content.style.clipPath = 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)';
     if(el.shapeType==='hexagon') content.style.clipPath = 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)';
@@ -1798,7 +1818,10 @@ function handleDrop(e) {
   if(type==='shape') addShape(subtype, x, y);
   else if(type==='wp-logo') addWpLogoAt(x, y);
   else if(type==='site-logo') addSiteLogoAt(x, y);
-  else if(type==='iconify') addIconifyElement(subtype, '');
+  else if(type==='iconify') {
+    const svg = iconifyCache[subtype];
+    if(svg) addIconifyElement(svg, subtype);
+  }
   else if(type==='brand-logo') addBrandLogoElement(subtype, '');
   else if(type==='image') {
     const files = e.dataTransfer.files;
@@ -2606,7 +2629,7 @@ function generateExactHTML() {
       if(el.shapeType==='triangle') clip = 'clip-path:polygon(50% 0%,0% 100%,100% 100%);';
       if(el.shapeType==='diamond') clip = 'clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);';
       if(el.shapeType==='arrow-right') clip = 'clip-path:polygon(0% 20%,60% 20%,60% 0%,100% 50%,60% 100%,60% 80%,0% 80%);';
-      if(el.shapeType==='heart') clip = 'clip-path:path('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z');';
+      if(el.shapeType==='heart') clip = "clip-path:path('M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z');";
       if(el.shapeType==='half-circle') clip = 'border-radius:50% 50% 0 0 / 100% 100% 0 0;height:50%;';
       if(el.shapeType==='moon') clip = 'border-radius:50%;box-shadow:inset -10px 0 0 '+(s.backgroundColor||'#f59e0b')+';';
       if(el.shapeType==='oval') clip = 'border-radius:50%;';
@@ -2644,7 +2667,6 @@ function dataURItoBlob(dataURI) {
   return new Blob([ab], {type: mimeString});
 }
 
-let previewMode = false;
 function togglePreview() {
   previewMode = !previewMode;
   const canvas = document.getElementById('editor-canvas');
@@ -2719,24 +2741,28 @@ async function searchIconify() {
       container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-4">לא נמצאו אייקונים</div>';
       return;
     }
-    // Fetch SVGs for each icon
     const iconPromises = data.icons.slice(0, 32).map(async (iconName) => {
       try {
         const svgRes = await fetch('https://api.iconify.design/' + iconName + '.svg');
         const svgText = await svgRes.text();
+        iconifyCache[iconName] = svgText;
         return {name: iconName, svg: svgText};
       } catch(e) { return null; }
     });
     const icons = (await Promise.all(iconPromises)).filter(i => i !== null);
 
     container.innerHTML = icons.map(icon => `
-      <div class="iconify-result" draggable="true" ondragstart="dragElementStart(event,'iconify','${encodeURIComponent(icon.svg)}')" onclick="addIconifyElement('${encodeURIComponent(icon.svg).replace(/'/g, "\'")}', '${icon.name}')" title="${icon.name}">
+      <div class="iconify-result" draggable="true" ondragstart="dragElementStart(event,'iconify','${icon.name}')" onclick="addIconifyFromCache('${icon.name}')" title="${icon.name}">
         ${icon.svg}
       </div>
     `).join('');
   } catch(e) {
     container.innerHTML = '<div class="col-span-full text-center text-red-400 py-4">שגיאה בטעינת אייקונים</div>';
   }
+}
+function addIconifyFromCache(iconName) {
+  const svg = iconifyCache[iconName];
+  if(svg) addIconifyElement(svg, iconName);
 }
 
 // ==================== BRAND SEARCH API (Logos) ====================
@@ -2782,7 +2808,9 @@ async function searchBrandLogos() {
 
 async function init() {
   App.data = loadDB();
-  if(!App.data) initDB();
+  if(!App.data || !App.data.profiles || !Array.isArray(App.data.profiles)) {
+    initDB();
+  }
   showProfiles();
 }
 init();

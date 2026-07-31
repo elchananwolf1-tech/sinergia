@@ -189,7 +189,7 @@ tailwind.config = {
     <div class="glass rounded-2xl p-6 animate-fadeIn">
       <h2 class="text-xl font-bold mb-4 text-center">בחר פרופיל</h2>
       <div id="profiles-grid" class="grid grid-cols-4 gap-4 mb-6"></div>
-      <button onclick="showCreateProfile()" class="w-full py-3 rounded-xl border-2 border-dashed border-gray-700 hover:border-accent-500 text-gray-400 hover:text-accent-400 transition flex items-center justify-center gap-2">
+      <button id="btn-create-profile" class="w-full py-3 rounded-xl border-2 border-dashed border-gray-700 hover:border-accent-500 text-gray-400 hover:text-accent-400 transition flex items-center justify-center gap-2">
         <i class="fas fa-plus"></i> יצירת פרופיל חדש
       </button>
     </div>
@@ -829,9 +829,16 @@ function showToast(msg, type='info') {
 
 // ==================== SCREEN MANAGEMENT ====================
 function hideAllScreens() {
+  console.log('[hideAllScreens] Hiding all screens...');
   ['screen-profiles','screen-create-profile','screen-auth','screen-sites','screen-add-site','screen-editor'].forEach(id=>{
-    document.getElementById(id).classList.add('hidden');
+    const el = document.getElementById(id);
+    if(el) {
+      el.classList.add('hidden');
+    } else {
+      console.log('[hideAllScreens] WARNING: element not found:', id);
+    }
   });
+  console.log('[hideAllScreens] Done');
 }
 function showProfiles() {
   console.log('[showProfiles] Opening profiles screen');
@@ -845,13 +852,24 @@ function showProfiles() {
   renderProfiles();
 }
 function showCreateProfile() {
+  alert('showCreateProfile called!');
+  console.log('[showCreateProfile] Called!');
+  console.log('[showCreateProfile] Calling hideAllScreens...');
   hideAllScreens();
-  document.getElementById('screen-create-profile').classList.remove('hidden');
+  console.log('[showCreateProfile] Getting screen element...');
+  const screen = document.getElementById('screen-create-profile');
+  console.log('[showCreateProfile] Screen element:', screen ? 'found' : 'NOT FOUND');
+  if(screen) {
+    screen.classList.remove('hidden');
+    console.log('[showCreateProfile] Screen shown');
+  }
   document.getElementById('new-profile-name').value = '';
   document.getElementById('new-profile-pass').value = '';
   document.getElementById('new-profile-pass2').value = '';
   selectedNewAvatar = null;
+  console.log('[showCreateProfile] Rendering avatars...');
   renderNewAvatars();
+  console.log('[showCreateProfile] DONE');
 }
 function showAuth(profileId) {
   const profile = App.data.profiles.find(p => p.id === profileId);
@@ -3155,31 +3173,55 @@ async function searchBrandLogos() {
 }
 
 async function init() {
-  console.log('[INIT] Starting...');
+  console.log('[INIT] === STARTING ===');
   try {
+    console.log('[INIT] Step 1: Firebase...');
     initFirebase();
+    console.log('[INIT] Step 1: DONE');
   } catch(e) {
-    console.log('[INIT] Firebase init error:', e.message);
+    console.log('[INIT] Step 1 ERROR:', e.message);
   }
 
-  console.log('[INIT] Loading data...');
+  console.log('[INIT] Step 2: Loading DB...');
   try {
     App.data = await loadDB();
-    console.log('[INIT] Data loaded:', App.data ? 'yes' : 'no');
+    console.log('[INIT] Step 2: DONE, data=', App.data ? 'exists' : 'null');
   } catch(e) {
-    console.log('[INIT] loadDB error:', e.message);
+    console.log('[INIT] Step 2 ERROR:', e.message);
     App.data = null;
   }
 
+  console.log('[INIT] Step 3: Validating data...');
   if(!App.data || !App.data.profiles || !Array.isArray(App.data.profiles)) {
-    console.log('[INIT] No valid data, initializing empty DB');
+    console.log('[INIT] Step 3: Invalid data, calling initDB()');
     initDB();
+  } else {
+    console.log('[INIT] Step 3: Data valid');
   }
 
-  console.log('[INIT] Showing profiles screen');
+  console.log('[INIT] Step 4: Showing profiles...');
   showProfiles();
+  console.log('[INIT] === COMPLETE ===');
 }
-init();
+// Wait for DOM to be fully loaded before initializing
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('[DOM] DOMContentLoaded fired');
+  init();
+
+  // Attach create profile button handler
+  const createBtn = document.getElementById('btn-create-profile');
+  if(createBtn) {
+    console.log('[DOM] Attaching create profile button handler');
+    createBtn.addEventListener('click', function(e) {
+      console.log('[btn-create-profile] CLICKED!');
+      e.preventDefault();
+      e.stopPropagation();
+      showCreateProfile();
+    });
+  } else {
+    console.log('[DOM] ERROR: btn-create-profile not found!');
+  }
+});
 </script>
 </body>
 </html>

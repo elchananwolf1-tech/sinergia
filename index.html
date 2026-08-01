@@ -95,10 +95,18 @@ tailwind.config = {
   .canvas-element.flow-mode {
     position: relative !important;
     float: left;
-    margin: 10px;
+    margin: 8px 16px 8px 0;
     left: auto !important;
     top: auto !important;
     clear: none;
+  }
+  .canvas-element.flow-mode.image-element {
+    margin: 4px 12px 4px 0;
+    max-width: 50%;
+  }
+  .canvas-element.flow-mode.image-element img {
+    display: block;
+    border-radius: 8px;
   }
   .text-element.flow-text {
     position: relative !important;
@@ -108,15 +116,16 @@ tailwind.config = {
     margin-bottom: 8px;
     float: none;
     border: none !important;
+    background: transparent !important;
     min-height: 1.6em;
   }
   .text-element.flow-text:hover {
     border: none !important;
-    background: rgba(139,92,246,0.03);
+    background: rgba(139,92,246,0.03) !important;
   }
   .text-element.flow-text.selected {
     border: none !important;
-    background: rgba(139,92,246,0.05);
+    background: rgba(139,92,246,0.05) !important;
   }
   .text-element.flow-text .element-content {
     cursor: text;
@@ -208,6 +217,7 @@ tailwind.config = {
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 </head>
@@ -487,7 +497,7 @@ tailwind.config = {
               <div class="w-10 h-10 rounded-lg bg-green-900/50 flex items-center justify-center"><i class="fas fa-magic text-green-400"></i></div>
               <div>
                 <h4 class="font-bold text-sm">שכתוב טקסט</h4>
-                <p class="text-xs text-gray-500">TinyLlama-Chat</p>
+                <p class="text-xs text-gray-500">Phi-3-mini</p>
               </div>
             </div>
             <p class="text-xs text-gray-400 mb-3">שינוי סגנון הכתיבה ב-AI</p>
@@ -824,7 +834,7 @@ tailwind.config = {
   <div class="p-4 border-t border-gray-800">
     <div class="flex gap-2">
       <select id="ai-model-select" class="px-2 py-1 rounded-lg bg-dark-900 border border-gray-700 text-sm text-xs">
-        <option value="rewrite">TinyLlama שכתוב</option>
+        <option value="rewrite">Phi-3-mini שכתוב</option>
       </select>
       <input type="text" id="ai-chat-input" placeholder="שאל משהו..." class="flex-1 px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm focus:border-accent-500 focus:outline-none" onkeydown="if(event.key==='Enter')sendAiChat()">
       <button onclick="sendAiChat()" class="px-3 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-white"><i class="fas fa-paper-plane"></i></button>
@@ -1389,9 +1399,9 @@ function loadDraftFromHome(id) {
 // ==================== AI INSTALL & HARDWARE CHECK ====================
 let pendingAiModel = null;
 function checkHardware() {
-  const mem = navigator.deviceMemory || 'לא ידוע';
-  const cores = navigator.hardwareConcurrency || 'לא ידוע';
-  return { memory: mem, cores: cores, isWeak: (navigator.deviceMemory && navigator.deviceMemory < 8) };
+  const mem = navigator.deviceMemory || 4;
+  const cores = navigator.hardwareConcurrency || 2;
+  return { memory: mem, cores: cores, isWeak: (mem < 6) };
 }
 function installAiModel(modelId) {
   const hw = checkHardware();
@@ -1449,7 +1459,12 @@ function updateAiInstallButtons() {
       if(App.aiModels[id].installed) {
         btn.textContent = 'מותקן ✓';
         btn.className = 'w-full py-2 rounded-lg bg-green-600 text-white text-sm font-medium transition cursor-default';
+        btn.disabled = true;
         btn.onclick = null;
+      } else {
+        btn.textContent = 'התקנה';
+        btn.className = 'w-full py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-white text-sm font-medium transition';
+        btn.disabled = false;
       }
     }
   });
@@ -2048,7 +2063,7 @@ async function aiRewriteSelection() {
   showToast('משכתב...','info');
   try {
     const pipeline = App.aiModels['rewrite'].pipeline;
-    const generator = await pipeline('text-generation', 'Xenova/tinyllama-chat-v1.0', { quantized: false });
+    const generator = await pipeline('text-generation', 'Xenova/Phi-3-mini-4k-instruct', { quantized: false });
     const messages = [
       { role: 'system', content: 'אתה עוזר כתיבה. תשתמש בעברית.' },
       { role: 'user', content: `${promptText}: "${text}"` }
@@ -2109,7 +2124,7 @@ function toggleAiPanel() {
 function updateAiPanelModels() {
   const sel = document.getElementById('ai-model-select');
   let html = '';
-  if(App.aiModels['rewrite'].installed) html += '<option value="rewrite">TinyLlama שכתוב</option>';
+  if(App.aiModels['rewrite'].installed) html += '<option value="rewrite">Phi-3-mini שכתוב</option>';
   sel.innerHTML = html || '<option>אין מודלים מותקנים</option>';
 }
 async function sendAiChat() {
@@ -2124,7 +2139,7 @@ async function sendAiChat() {
 
   try {
     const pipeline = App.aiModels['rewrite'].pipeline;
-    const generator = await pipeline('text-generation', 'Xenova/tinyllama-chat-v1.0', { quantized: false });
+    const generator = await pipeline('text-generation', 'Xenova/Phi-3-mini-4k-instruct', { quantized: false });
     const messages = [
       { role: 'system', content: 'אתה עוזר יצירתי. תענה בעברית.' },
       { role: 'user', content: msg }

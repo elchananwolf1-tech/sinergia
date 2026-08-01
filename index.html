@@ -2162,7 +2162,7 @@ function setTool(tool, evt) {
     setTimeout(()=>{
       App.currentTool = 'select';
       document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
-      document.querySelector('.tool-btn[onclick*="setTool('select')"]').classList.add('active');
+      document.querySelector('.tool-btn[onclick*="setTool(\'select\')"]').classList.add('active');
     }, 100);
   }
 }

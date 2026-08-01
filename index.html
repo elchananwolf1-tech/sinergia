@@ -107,7 +107,20 @@ tailwind.config = {
     top: auto !important;
     margin-bottom: 8px;
     float: none;
-    clear: both;
+    border: none !important;
+    min-height: 1.6em;
+  }
+  .text-element.flow-text:hover {
+    border: none !important;
+    background: rgba(139,92,246,0.03);
+  }
+  .text-element.flow-text.selected {
+    border: none !important;
+    background: rgba(139,92,246,0.05);
+  }
+  .text-element.flow-text .element-content {
+    cursor: text;
+    padding: 4px 8px;
   }
 
   .resize-handle { display: none; position: absolute; width: 10px; height: 10px; background: #8b5cf6; border: 2px solid white; border-radius: 50%; z-index: 10001; }
@@ -474,7 +487,7 @@ tailwind.config = {
               <div class="w-10 h-10 rounded-lg bg-green-900/50 flex items-center justify-center"><i class="fas fa-magic text-green-400"></i></div>
               <div>
                 <h4 class="font-bold text-sm">שכתוב טקסט</h4>
-                <p class="text-xs text-gray-500">Llama-3.2-1B</p>
+                <p class="text-xs text-gray-500">TinyLlama-Chat</p>
               </div>
             </div>
             <p class="text-xs text-gray-400 mb-3">שינוי סגנון הכתיבה ב-AI</p>
@@ -593,7 +606,7 @@ tailwind.config = {
           </div>
           <div id="editor-canvas" onclick="deselectAll(event)" ondblclick="handleCanvasClick(event)">
             <div class="absolute top-2 left-2 text-gray-300 text-xs pointer-events-none select-none opacity-20" style="z-index:0;">
-              <i class="fas fa-info-circle ml-1"></i> לחץ פעמיים להוספת טקסט. גרור להזזה.
+              <i class="fas fa-info-circle ml-1"></i> לחץ להקלדה חופשית. גרור תמונות לשבירת טקסט.
             </div>
           </div>
         </div>
@@ -708,6 +721,12 @@ tailwind.config = {
               <div><label class="text-xs text-gray-500 mb-1 block">קישור YouTube / Vimeo</label><input type="url" id="video-url" class="w-full px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm focus:border-accent-500 focus:outline-none" onchange="updateVideoUrl(this.value)"></div>
             </div>
           </div>
+          <div id="icon-props" class="p-4 border-b border-gray-800" style="display:none;">
+            <h3 class="font-bold text-sm mb-3">אייקון</h3>
+            <div class="space-y-3">
+              <div><label class="text-xs text-gray-500 mb-1 block">צבע אייקון</label><input type="color" id="icon-color" value="#8b5cf6" oninput="updateIconColor(this.value)"></div>
+            </div>
+          </div>
           <div class="p-4 border-b border-gray-800">
             <h3 class="font-bold text-sm mb-3">שכבות</h3>
             <div class="flex gap-2">
@@ -805,7 +824,7 @@ tailwind.config = {
   <div class="p-4 border-t border-gray-800">
     <div class="flex gap-2">
       <select id="ai-model-select" class="px-2 py-1 rounded-lg bg-dark-900 border border-gray-700 text-sm text-xs">
-        <option value="rewrite">Llama שכתוב</option>
+        <option value="rewrite">TinyLlama שכתוב</option>
       </select>
       <input type="text" id="ai-chat-input" placeholder="שאל משהו..." class="flex-1 px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm focus:border-accent-500 focus:outline-none" onkeydown="if(event.key==='Enter')sendAiChat()">
       <button onclick="sendAiChat()" class="px-3 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-white"><i class="fas fa-paper-plane"></i></button>
@@ -1397,7 +1416,7 @@ async function doInstallAiModel(modelId) {
   showToast('מתקין מודל AI...','info');
   try {
     if(modelId === 'bg-removal') {
-      const module = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/background-removal.esm.js');
+      const module = await import('https://esm.sh/@imgly/background-removal@1.5.5');
       App.aiModels['bg-removal'].module = module;
       App.aiModels['bg-removal'].installed = true;
       showToast('מודל הסרת רקע הותקן בהצלחה!','success');
@@ -1412,6 +1431,10 @@ async function doInstallAiModel(modelId) {
       App.aiModels['rewrite'].installed = true;
       showToast('מודל שכתוב הותקן בהצלחה!','success');
     }
+    // Persist installation state
+    if(!App.data.aiModels) App.data.aiModels = {};
+    App.data.aiModels[modelId] = { installed: true, installedAt: Date.now() };
+    saveDB();
     updateAiInstallButtons();
     updateAiPanelModels();
   } catch(e) {
@@ -1580,6 +1603,7 @@ function createElementDOM(el) {
   // FLOW MODE (text wrap)
   if(el.textWrap) {
     div.classList.add('flow-mode');
+    if(el.type === 'text') div.classList.add('flow-text');
   } else {
     div.style.left = el.x + 'px';
     div.style.top = el.y + 'px';
@@ -1694,13 +1718,19 @@ function createElementDOM(el) {
 
   } else if(el.type==='iconify') {
     const svgHtml = el.svgContent || '';
-    const coloredSvg = svgHtml.replace(/fill="[^"]*"/g, '').replace(/stroke="[^"]*"/g, '');
+    const iconColor = el.styles?.color || '#8b5cf6';
+    // Replace fills in SVG with the chosen color, preserving 'none' fills
+    const coloredSvg = svgHtml.replace(/fill="([^"]*)"/g, (match, p1) => {
+      return p1 === 'none' ? 'fill="none"' : 'fill="' + iconColor + '"';
+    }).replace(/stroke="([^"]*)"/g, (match, p1) => {
+      return p1 === 'none' ? 'stroke="none"' : 'stroke="' + iconColor + '"';
+    });
     content.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">' + coloredSvg + '</div>';
     content.style.pointerEvents = 'none';
     const svgEl = content.querySelector('svg');
     if(svgEl) {
       svgEl.setAttribute('width', '100%'); svgEl.setAttribute('height', '100%');
-      svgEl.style.fill = el.styles?.color || '#8b5cf6';
+      svgEl.style.fill = iconColor;
       svgEl.setAttribute('viewBox', svgEl.getAttribute('viewBox') || '0 0 24 24');
     }
 
@@ -1734,13 +1764,18 @@ function autoResizeText(div, el) {
   content.style.height = 'auto';
   const newHeight = content.scrollHeight + 8;
   el.height = newHeight;
-  if(!el.textWrap) div.style.height = newHeight + 'px';
+  if(!el.textWrap) {
+    div.style.height = newHeight + 'px';
+  } else {
+    // For flow text, update height but don't set absolute positioning
+    div.style.height = 'auto';
+  }
 }
 
 // ==================== MOUSE INTERACTIONS ====================
 function onElementMouseDown(e, el) {
   if(App.currentTool !== 'select') return;
-  if(el.textWrap) return; // Can't drag flow elements
+  if(el.textWrap && el.type === 'text') return; // Text in flow mode is not draggable - editable directly
   const target = e.target;
   const div = document.getElementById('el-' + el.id);
 
@@ -1867,15 +1902,44 @@ function handleCanvasClick(e) {
   const y = e.clientY - rect.top;
   const canvasWidth = parseInt(canvas.style.width) || 800;
 
+  // Find nearest text element to click Y, or create new flow text
+  const flowTexts = App.currentPost.elements.filter(e => e.type === 'text' && e.textWrap);
+  let insertY = Math.max(20, y - 10);
+  if(flowTexts.length > 0) {
+    // Find the text block that contains this Y, or place at end
+    const sorted = flowTexts.sort((a,b) => a.y - b.y);
+    let target = sorted[sorted.length - 1];
+    for(const t of sorted) {
+      if(y >= t.y && y <= t.y + t.height) {
+        target = t;
+        break;
+      }
+    }
+    // Focus existing text instead of creating new one if clicking inside it
+    if(y >= target.y && y <= target.y + target.height) {
+      const div = document.getElementById('el-' + target.id);
+      if(div) {
+        const contentDiv = div.querySelector('.element-content');
+        if(contentDiv) {
+          contentDiv.focus();
+          selectElement(target);
+          return;
+        }
+      }
+    }
+    insertY = target.y + target.height + 8;
+  }
+
   const el = {
     id: 'el_' + (++App.elementCounter),
-    type: 'text', x: Math.max(20, x - 100), y: Math.max(20, y - 10),
-    width: Math.min(600, canvasWidth - 40), height: 40,
+    type: 'text', x: 0, y: insertY,
+    width: canvasWidth, height: 40,
     rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     content: '<p></p>',
     styles: {fontFamily:'Assistant', fontSize:'18px', color:'#1f2937', textAlign:'right', fontWeight:'400', lineHeight:'1.6'},
     borderRadius: '0px', borderWidth: '0px', borderColor: 'transparent', borderStyle: 'solid',
-    bgColor: 'transparent'
+    bgColor: 'transparent',
+    textWrap: true  // Flow mode - document style
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -1984,7 +2048,7 @@ async function aiRewriteSelection() {
   showToast('משכתב...','info');
   try {
     const pipeline = App.aiModels['rewrite'].pipeline;
-    const generator = await pipeline('text-generation', 'Xenova/Llama-3.2-1B-Instruct', { dtype: 'q4' });
+    const generator = await pipeline('text-generation', 'Xenova/tinyllama-chat-v1.0', { quantized: false });
     const messages = [
       { role: 'system', content: 'אתה עוזר כתיבה. תשתמש בעברית.' },
       { role: 'user', content: `${promptText}: "${text}"` }
@@ -2045,7 +2109,7 @@ function toggleAiPanel() {
 function updateAiPanelModels() {
   const sel = document.getElementById('ai-model-select');
   let html = '';
-  if(App.aiModels['rewrite'].installed) html += '<option value="rewrite">Llama שכתוב</option>';
+  if(App.aiModels['rewrite'].installed) html += '<option value="rewrite">TinyLlama שכתוב</option>';
   sel.innerHTML = html || '<option>אין מודלים מותקנים</option>';
 }
 async function sendAiChat() {
@@ -2060,7 +2124,7 @@ async function sendAiChat() {
 
   try {
     const pipeline = App.aiModels['rewrite'].pipeline;
-    const generator = await pipeline('text-generation', 'Xenova/Llama-3.2-1B-Instruct', { dtype: 'q4' });
+    const generator = await pipeline('text-generation', 'Xenova/tinyllama-chat-v1.0', { quantized: false });
     const messages = [
       { role: 'system', content: 'אתה עוזר יצירתי. תענה בעברית.' },
       { role: 'user', content: msg }
@@ -2162,7 +2226,7 @@ function setTool(tool, evt) {
     setTimeout(()=>{
       App.currentTool = 'select';
       document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
-      document.querySelector('.tool-btn[onclick*="setTool(\'select\')"]').classList.add('active');
+      const _selBtn = document.querySelector('.tool-btn[onclick*="setTool"]'); if(_selBtn) _selBtn.classList.add('active');
     }, 100);
   }
 }
@@ -2170,25 +2234,25 @@ function setTool(tool, evt) {
 function addTextElement() {
   const canvas = document.getElementById('editor-canvas');
   const canvasWidth = parseInt(canvas.style.width) || 800;
-  let startY = 40;
-  let startX = 50;
 
-  const textElements = App.currentPost.elements.filter(e => e.type === 'text' && !e.textWrap);
-  if(textElements.length > 0) {
-    const lastText = textElements[textElements.length - 1];
-    startY = lastText.y + lastText.height + 20;
-    startX = lastText.x;
+  // Calculate Y position based on existing flow text elements
+  let startY = 40;
+  const flowTexts = App.currentPost.elements.filter(e => e.type === 'text' && e.textWrap);
+  if(flowTexts.length > 0) {
+    const last = flowTexts[flowTexts.length - 1];
+    startY = last.y + last.height + 8;
   }
 
   const el = {
     id: 'el_' + (++App.elementCounter),
-    type: 'text', x: startX, y: startY,
-    width: Math.min(600, canvasWidth - 100), height: 40,
+    type: 'text', x: 0, y: startY,
+    width: canvasWidth, height: 40,
     rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     content: '<p>התחל לכתוב כאן...</p>',
     styles: {fontFamily:'Assistant', fontSize:'18px', color:'#1f2937', textAlign:'right', fontWeight:'400', lineHeight:'1.6'},
     borderRadius: '0px', borderWidth: '0px', borderColor: 'transparent', borderStyle: 'solid',
-    bgColor: 'transparent'
+    bgColor: 'transparent',
+    textWrap: true  // Flow mode by default - like a real document
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -2467,6 +2531,8 @@ function updatePropsPanel() {
     document.getElementById('html-code').value = el.content || '';
   } else if(el.type==='video') {
     document.getElementById('video-url').value = el.src || '';
+  } else if(el.type==='iconify') {
+    document.getElementById('icon-color').value = el.styles?.color || '#8b5cf6';
   }
 
   // Show bg removal button if applicable
@@ -2589,6 +2655,25 @@ function updateVideoUrl(url) {
   if(iframe) iframe.src = embedUrl;
   markDirty();
 }
+function updateIconColor(color) {
+  if(!App.selectedElement || App.selectedElement.type !== 'iconify') return;
+  if(!App.selectedElement.styles) App.selectedElement.styles = {};
+  App.selectedElement.styles.color = color;
+  const div = document.getElementById('el-' + App.selectedElement.id);
+  if(div) {
+    const svg = div.querySelector('svg');
+    if(svg) {
+      svg.style.fill = color;
+      // Also update all path/circle/rect fills
+      svg.querySelectorAll('*').forEach(el => {
+        if(el.getAttribute('fill') && el.getAttribute('fill') !== 'none') {
+          el.setAttribute('fill', color);
+        }
+      });
+    }
+  }
+  markDirty();
+}
 function execCmd(cmd, val=null) {
   document.execCommand(cmd, false, val);
   if(App.selectedElement && App.selectedElement.type==='text') {
@@ -2598,7 +2683,16 @@ function execCmd(cmd, val=null) {
   markDirty();
 }
 function rgbToHex(color) {
-  if(!color || color.startsWith('#')) return color || '#000000';
+  if(!color) return '#000000';
+  if(color.startsWith('#')) return color;
+  // Handle rgba
+  const rgba = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+  if(rgba) {
+    const r = parseInt(rgba[1]).toString(16).padStart(2,'0');
+    const g = parseInt(rgba[2]).toString(16).padStart(2,'0');
+    const b = parseInt(rgba[3]).toString(16).padStart(2,'0');
+    return '#' + r + g + b;
+  }
   const ctx = document.createElement('canvas').getContext('2d');
   ctx.fillStyle = color;
   return ctx.fillStyle;
@@ -2616,12 +2710,20 @@ function toggleTextWrap(checked) {
   if(div) {
     if(checked) {
       div.classList.add('flow-mode');
+      if(el.type === 'text') div.classList.add('flow-text');
       div.style.left = 'auto';
       div.style.top = 'auto';
+      if(el.type !== 'text') {
+        div.style.width = (el.width || 200) + 'px';
+        div.style.height = (el.height || 200) + 'px';
+      }
     } else {
       div.classList.remove('flow-mode');
+      if(el.type === 'text') div.classList.remove('flow-text');
       div.style.left = el.x + 'px';
       div.style.top = el.y + 'px';
+      div.style.width = el.width + 'px';
+      div.style.height = el.height + 'px';
     }
   }
   markDirty();
@@ -3226,7 +3328,7 @@ function parseHTMLToElements(html) {
       const height = isHeading?60:Math.max(50, node.textContent.length/25*24);
       elements.push({
         id: 'el_' + (++counter),
-        type: 'text', x: 50, y: currentY, width: 700, height: height,
+        type: 'text', x: 0, y: currentY, width: 700, height: height,
         rotation: 0, opacity: 100, zIndex: counter,
         content: node.innerHTML || '<p></p>',
         styles: {
@@ -3239,7 +3341,8 @@ function parseHTMLToElements(html) {
           lineHeight: '1.6'
         },
         borderRadius: '0px', borderWidth: '0px', borderColor: 'transparent', borderStyle: 'solid',
-        bgColor: 'transparent'
+        bgColor: 'transparent',
+        textWrap: true
       });
       currentY += height + 20;
     } else if(tag==='figure') {
@@ -3306,6 +3409,11 @@ function saveDraftQuiet() {
     if(el.type==='text') {
       const content = div.querySelector('.element-content');
       if(content) el.content = content.innerHTML;
+    }
+    // Update Y position for flow elements based on DOM order
+    if(el.textWrap && el.type === 'text') {
+      el.x = 0;
+      el.width = parseInt(document.getElementById('editor-canvas').style.width) || 800;
     }
   });
   App.currentPost.savedAt = Date.now();
@@ -3488,7 +3596,9 @@ function renderElementHTML(el) {
   } else if(el.type==='site-logo') {
     inner = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><img src="'+(App.siteLogoUrl||'')+'" style="max-width:100%;max-height:100%;object-fit:contain;"></div>';
   } else if(el.type==='iconify') {
-    inner = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">' + (el.svgContent || '') + '</div>';
+    const iconColor = el.styles?.color || '#8b5cf6';
+    const svgHtml = (el.svgContent || '').replace(/fill="([^"]*)"/g, (m, p1) => p1 === 'none' ? 'fill="none"' : 'fill="' + iconColor + '"').replace(/stroke="([^"]*)"/g, (m, p1) => p1 === 'none' ? 'stroke="none"' : 'stroke="' + iconColor + '"');
+    inner = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">' + svgHtml + '</div>';
   } else if(el.type==='brand-logo') {
     inner = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><img src="'+(el.src||'')+'" style="max-width:100%;max-height:100%;object-fit:contain;"></div>';
   }
@@ -3644,6 +3754,14 @@ async function init() {
   try { App.data = await loadDB(); } catch(e) { App.data = null; }
   if(!App.data || !App.data.profiles || !Array.isArray(App.data.profiles)) {
     initDB();
+  }
+  // Restore AI model installation states
+  if(App.data && App.data.aiModels) {
+    Object.keys(App.aiModels).forEach(key => {
+      if(App.data.aiModels[key] && App.data.aiModels[key].installed) {
+        App.aiModels[key].installed = true;
+      }
+    });
   }
   showProfiles();
   console.log('[INIT] Complete');

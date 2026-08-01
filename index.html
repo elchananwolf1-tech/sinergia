@@ -3685,7 +3685,6 @@ function generateExactHTML() {
   const margin = App.currentPost.pageMargin || 40;
   const width = App.currentPost.pageWidth || 800;
 
-  // Separate flow images from text elements and merge them
   const flowImages = [];
   const textElements = [];
   const otherElements = [];
@@ -3700,31 +3699,20 @@ function generateExactHTML() {
     }
   });
 
-  // Build HTML - start with container
-  let html = '<div style="direction:rtl;text-align:right;max-width:'+width+'px;margin:0 auto;padding:'+margin+'px;box-sizing:border-box;">
-';
+  let html = '<div style="direction:rtl;text-align:right;max-width:'+width+'px;margin:0 auto;padding:'+margin+'px;box-sizing:border-box;">';
 
-  // Process flow text with embedded images
   textElements.forEach(textEl => {
     const s = textEl.styles || {};
     const textStyle = 'font-family:'+(s.fontFamily||'Assistant')+',sans-serif;font-size:'+(s.fontSize||'18px')+';color:'+(s.color||'#1f2937')+';line-height:'+(s.lineHeight||'1.6')+';text-align:'+(s.textAlign||'right')+';font-weight:'+(s.fontWeight||'400')+';';
-
-    // Find flow images that should be embedded in this text block
-    // (images that are vertically close to this text element)
     let textContent = textEl.content || '<p></p>';
 
-    // Check if text already contains embedded images (from drag-drop)
     if(!textContent.includes('data-embedded-image')) {
-      // Find nearby flow images and prepend them to allow text wrapping
       const nearbyImages = flowImages.filter(img => {
-        // Simple proximity check - image is near this text block
         return Math.abs((img.y || 0) - (textEl.y || 0)) < 100;
       });
-
       nearbyImages.forEach(img => {
         const imgStyle = 'float:right;display:inline-block;margin:4px 0 4px 12px;max-width:50%;border-radius:8px;';
         const imgTag = '<img src="'+img.src+'" style="'+imgStyle+'" alt="">';
-        // Prepend image to first paragraph or content
         if(textContent.includes('<p')) {
           textContent = textContent.replace(/<p([^>]*)>/, '<p$1>' + imgTag);
         } else {
@@ -3733,21 +3721,16 @@ function generateExactHTML() {
       });
     }
 
-    html += '<div style="'+textStyle+'margin-bottom:16px;overflow:hidden;">'+textContent+'</div>
-';
+    html += '<div style="'+textStyle+'margin-bottom:16px;overflow:hidden;">'+textContent+'</div>';
   });
 
-  // Add remaining flow images that weren't merged
   flowImages.forEach(img => {
     const imgStyle = 'float:right;display:inline-block;margin:4px 0 4px 12px;max-width:50%;border-radius:8px;';
-    html += '<img src="'+img.src+'" style="'+imgStyle+'" alt="">
-';
+    html += '<img src="'+img.src+'" style="'+imgStyle+'" alt="">';
   });
 
-  // Add non-flow elements (absolute positioned)
   otherElements.forEach(el => {
-    html += renderElementHTML(el) + '
-';
+    html += renderElementHTML(el);
   });
 
   html += '</div>';

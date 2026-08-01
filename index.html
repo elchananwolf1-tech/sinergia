@@ -94,14 +94,14 @@ tailwind.config = {
   /* FLOW MODE - TEXT WRAP */
   .canvas-element.flow-mode {
     position: relative !important;
-    float: left;
-    margin: 8px 16px 8px 0;
+    float: right;
+    margin: 8px 0 8px 16px;
     left: auto !important;
     top: auto !important;
     clear: none;
   }
   .canvas-element.flow-mode.image-element {
-    margin: 4px 12px 4px 0;
+    margin: 4px 0 4px 12px;
     max-width: 50%;
   }
   .canvas-element.flow-mode.image-element img {
@@ -110,7 +110,7 @@ tailwind.config = {
   }
   .text-element.flow-text {
     position: relative !important;
-    width: 100% !important;
+    width: auto !important;
     left: auto !important;
     top: auto !important;
     margin-bottom: 8px;
@@ -118,6 +118,7 @@ tailwind.config = {
     border: none !important;
     background: transparent !important;
     min-height: 1.6em;
+    overflow: hidden;
   }
   .text-element.flow-text:hover {
     border: none !important;
@@ -126,6 +127,11 @@ tailwind.config = {
   .text-element.flow-text.selected {
     border: none !important;
     background: rgba(139,92,246,0.05) !important;
+  }
+  .text-element.flow-text::after {
+    content: "";
+    display: table;
+    clear: both;
   }
   .text-element.flow-text .element-content {
     cursor: text;
@@ -173,12 +179,12 @@ tailwind.config = {
   .grad-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
   .grad-6 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
 
-  .inline-toolbar { position: absolute; background: #1e1e2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 6px; display: none; gap: 4px; z-index: 100000; box-shadow: 0 10px 40px rgba(0,0,0,0.5); flex-wrap: wrap; max-width: 320px; }
+  .inline-toolbar { position: fixed; background: #1e1e2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 6px; display: none; gap: 4px; z-index: 100000; box-shadow: 0 10px 40px rgba(0,0,0,0.5); flex-wrap: wrap; max-width: 320px; }
   .inline-toolbar.show { display: flex; }
   .inline-toolbar button { width: 32px; height: 32px; border-radius: 6px; background: transparent; border: 1px solid transparent; color: #cbd5e1; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
   .inline-toolbar button:hover { background: rgba(139,92,246,0.2); color: #a78bfa; border-color: rgba(139,92,246,0.3); }
 
-  .text-selection-popup { position: absolute; background: #1e1e2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 6px; display: none; gap: 4px; z-index: 100001; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+  .text-selection-popup { position: fixed; background: #1e1e2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 6px; display: none; gap: 4px; z-index: 100001; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
   .text-selection-popup.show { display: flex; }
   .text-selection-popup button { padding: 4px 10px; border-radius: 6px; background: transparent; border: 1px solid transparent; color: #cbd5e1; cursor: pointer; transition: all 0.15s; font-size: 12px; white-space: nowrap; }
   .text-selection-popup button:hover { background: rgba(139,92,246,0.2); color: #a78bfa; border-color: rgba(139,92,246,0.3); }
@@ -789,6 +795,10 @@ tailwind.config = {
                   <option value="1000">רחב (1000px)</option>
                   <option value="1200">מלא (1200px)</option>
                 </select>
+              </div>
+              <div><label class="text-xs text-gray-500 mb-1 block">שוליים (px)</label>
+                <input type="range" id="post-margin" min="0" max="100" value="40" oninput="updatePageMargin(this.value)">
+                <span id="post-margin-val" class="text-xs text-gray-500">40px</span>
               </div>
             </div>
           </div>
@@ -1567,7 +1577,8 @@ function newPost() {
   App.currentPost = {
     id: null, wpId: null, title: '', elements: [],
     featuredImage: null, background: {type:'color', value:'#ffffff', opacity: 100},
-    status: 'draft', author: App.currentProfile.id, createdAt: Date.now()
+    status: 'draft', author: App.currentProfile.id, createdAt: Date.now(),
+    pageMargin: 40, pageWidth: 800
   };
   App.elementCounter = 0;
   App.nextZIndex = 1;
@@ -1587,6 +1598,10 @@ function renderCanvas() {
   const hint = canvas.querySelector('.absolute.top-2');
   canvas.innerHTML = '';
   if(hint) canvas.appendChild(hint);
+  // Apply page margin
+  const margin = App.currentPost?.pageMargin || 40;
+  canvas.style.padding = margin + 'px';
+  canvas.style.boxSizing = 'border-box';
 
   if(App.currentPost.background) {
     canvas.style.background = '';
@@ -1653,12 +1668,19 @@ function createElementDOM(el) {
 
     content.addEventListener('input', ()=>{ el.content = content.innerHTML; autoResizeText(div, el); markDirty(); });
     content.addEventListener('blur', ()=>{ el.content = content.innerHTML; autoResizeText(div, el); });
-    content.addEventListener('mouseup', ()=>{ showInlineToolbar(); checkTextSelection(); });
-    content.addEventListener('keyup', ()=>{ showInlineToolbar(); checkTextSelection(); });
+    content.addEventListener('mouseup', ()=>{ setTimeout(()=>{ showInlineToolbar(); checkTextSelection(); }, 50); });
+    content.addEventListener('keyup', ()=>{ setTimeout(()=>{ showInlineToolbar(); checkTextSelection(); }, 50); });
     content.addEventListener('keydown', (e)=>{
       if(e.key==='Enter' && !e.shiftKey) {
         setTimeout(()=>{ autoResizeText(div, el); }, 0);
       }
+    });
+    // Handle paste to strip unwanted formatting
+    content.addEventListener('paste', (e)=>{
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text/html') || (e.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertHTML', false, text);
+      setTimeout(()=>{ el.content = content.innerHTML; autoResizeText(div, el); markDirty(); }, 0);
     });
     setTimeout(()=>autoResizeText(div, el), 0);
 
@@ -1675,10 +1697,10 @@ function createElementDOM(el) {
     div.addEventListener('dblclick', ()=>openCropModal(el));
 
   } else if(el.type==='shape') {
-    content.style.backgroundColor = el.styles?.backgroundColor || '#8b5cf6';
+    const shapeBg = el.styles?.backgroundColor || el.bgColor || '#8b5cf6';
+    content.style.backgroundColor = shapeBg;
     content.style.borderRadius = el.styles?.borderRadius || '0';
     if(el.styles?.gradient) content.style.background = el.styles.gradient;
-    if(el.bgColor) content.style.backgroundColor = el.bgColor;
     if(el.shapeType==='circle') content.style.borderRadius = '50%';
     if(el.shapeType==='star') content.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
     if(el.shapeType==='triangle') content.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
@@ -1981,27 +2003,28 @@ function handleCanvasClick(e) {
 // ==================== TEXT SELECTION AI POPUP ====================
 let selectedTextRange = null;
 function checkTextSelection() {
+  // Now handled inside showInlineToolbar
   const sel = window.getSelection();
-  if(!sel.rangeCount || sel.isCollapsed) { hideTextSelectionPopup(); return; }
+  if(!sel.rangeCount || sel.isCollapsed) { hideTextSelectionPopup(); selectedTextRange = null; return; }
   const range = sel.getRangeAt(0);
-  const rect = range.getBoundingClientRect();
-  if(rect.width === 0) { hideTextSelectionPopup(); return; }
-
-  selectedTextRange = range;
-  const popup = document.getElementById('text-selection-popup');
-  popup.style.left = (rect.left + rect.width/2 - 80) + 'px';
-  popup.style.top = (rect.top - 40) + 'px';
-  popup.classList.add('show');
+  if(range.toString().trim().length > 0) {
+    selectedTextRange = range;
+  }
 }
 function hideTextSelectionPopup() {
   document.getElementById('text-selection-popup').classList.remove('show');
-  selectedTextRange = null;
+  // Don't clear selectedTextRange immediately to allow AI operations
+  setTimeout(() => { if(!document.getElementById('text-selection-popup').classList.contains('show')) selectedTextRange = null; }, 300);
 }
 
 // ==================== AI TRANSLATE SELECTION ====================
 async function aiTranslateSelection() {
-  if(!selectedTextRange || !App.aiModels['translate'].installed) {
-    showToast('מודל התרגום לא מותקן','error');
+  if(!selectedTextRange) {
+    showToast('יש לסמן טקסט קודם','error');
+    return;
+  }
+  if(!App.aiModels['translate'].installed) {
+    showToast('מודל התרגום לא מותקן. לחץ על התקנה במסך הבית.','error');
     return;
   }
   const text = selectedTextRange.toString();
@@ -2025,16 +2048,22 @@ async function aiTranslateSelection() {
       if(content) App.selectedElement.content = content.innerHTML;
     }
     markDirty();
+    pushHistory();
     showToast('תורגם בהצלחה!','success');
   } catch(e) {
-    showToast('שגיאה בתרגום: ' + e.message,'error');
+    console.error('Translation error:', e);
+    showToast('שגיאה בתרגום: ' + (e.message || 'בעיה בטעינת המודל'),'error');
   }
 }
 
 // ==================== AI REWRITE SELECTION ====================
 async function aiRewriteSelection() {
-  if(!selectedTextRange || !App.aiModels['rewrite'].installed) {
-    showToast('מודל השכתוב לא מותקן','error');
+  if(!selectedTextRange) {
+    showToast('יש לסמן טקסט קודם','error');
+    return;
+  }
+  if(!App.aiModels['rewrite'].installed) {
+    showToast('מודל השכתוב לא מותקן. לחץ על התקנה במסך הבית.','error');
     return;
   }
   const text = selectedTextRange.toString();
@@ -2069,7 +2098,11 @@ async function aiRewriteSelection() {
       { role: 'user', content: `${promptText}: "${text}"` }
     ];
     const result = await generator(messages, { max_new_tokens: 128, temperature: 0.7 });
-    const rewritten = result[0]?.generated_text?.pop()?.content || text;
+    let rewritten = text;
+    if(result && result[0] && result[0].generated_text) {
+      const lastMsg = result[0].generated_text.pop();
+      rewritten = lastMsg?.content || text;
+    }
 
     selectedTextRange.deleteContents();
     selectedTextRange.insertNode(document.createTextNode(rewritten));
@@ -2078,9 +2111,11 @@ async function aiRewriteSelection() {
       if(content) App.selectedElement.content = content.innerHTML;
     }
     markDirty();
+    pushHistory();
     showToast('שוכתב בהצלחה!','success');
   } catch(e) {
-    showToast('שגיאה בשכתוב: ' + e.message,'error');
+    console.error('Rewrite error:', e);
+    showToast('שגיאה בשכתוב: ' + (e.message || 'בעיה בטעינת המודל'),'error');
   }
 }
 
@@ -2279,7 +2314,12 @@ function addTextElement() {
   markDirty();
   pushHistory();
 }
-function addImageElement(src) {
+function addImageElement(src, targetTextEl) {
+  // If target text element provided, embed image in text instead of separate element
+  if(targetTextEl) {
+    insertImageIntoText(targetTextEl, src);
+    return;
+  }
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'image', x: 100, y: 100, width: 300, height: 200,
@@ -2603,7 +2643,13 @@ function updateStyle(prop, value) {
   if(!el.styles) el.styles = {};
   el.styles[prop] = value;
   const content = document.querySelector('#el-' + el.id + ' .element-content');
-  if(content) content.style[prop] = value;
+  if(content) {
+    content.style[prop] = value;
+    // Also apply to all child elements to ensure full coverage
+    content.querySelectorAll('*').forEach(child => {
+      child.style[prop] = value;
+    });
+  }
   if(prop==='fontFamily') loadFont(value);
   markDirty();
 }
@@ -2693,9 +2739,19 @@ function execCmd(cmd, val=null) {
   document.execCommand(cmd, false, val);
   if(App.selectedElement && App.selectedElement.type==='text') {
     const content = document.querySelector('#el-' + App.selectedElement.id + ' .element-content');
-    if(content) App.selectedElement.content = content.innerHTML;
+    if(content) {
+      App.selectedElement.content = content.innerHTML;
+      // Sync styles from content back to element
+      const computed = window.getComputedStyle(content);
+      if(!App.selectedElement.styles) App.selectedElement.styles = {};
+      if(cmd === 'foreColor') App.selectedElement.styles.color = val;
+      if(cmd === 'hiliteColor') App.selectedElement.styles.backgroundColor = val;
+      if(cmd === 'fontSize') App.selectedElement.styles.fontSize = val;
+    }
   }
   markDirty();
+  // Refresh toolbar after command
+  setTimeout(showInlineToolbar, 100);
 }
 function rgbToHex(color) {
   if(!color) return '#000000';
@@ -2749,14 +2805,39 @@ function toggleTextWrap(checked) {
 // ==================== INLINE TOOLBAR ====================
 function showInlineToolbar() {
   const sel = window.getSelection();
-  if(!sel.rangeCount || sel.isCollapsed) { hideInlineToolbar(); return; }
+  if(!sel.rangeCount || sel.isCollapsed) { hideInlineToolbar(); hideTextSelectionPopup(); return; }
   const range = sel.getRangeAt(0);
   const rect = range.getBoundingClientRect();
-  if(rect.width===0) { hideInlineToolbar(); return; }
+  if(rect.width===0 || rect.height===0) { hideInlineToolbar(); hideTextSelectionPopup(); return; }
+
+  // Check if selection is inside editor canvas
+  const container = document.getElementById('editor-canvas');
+  if(!container || !container.contains(range.commonAncestorContainer)) { hideInlineToolbar(); hideTextSelectionPopup(); return; }
+
   const toolbar = document.getElementById('inline-toolbar');
-  toolbar.style.left = (rect.left + rect.width/2 - 160) + 'px';
-  toolbar.style.top = (rect.top - 50) + 'px';
+  const popup = document.getElementById('text-selection-popup');
+
+  // Position toolbar
+  let left = rect.left + rect.width/2 - 160;
+  let top = rect.top - 55;
+  if(left < 10) left = 10;
+  if(top < 10) top = rect.bottom + 10;
+  toolbar.style.left = left + 'px';
+  toolbar.style.top = top + 'px';
   toolbar.classList.add('show');
+
+  // Show AI popup for text selection
+  if(sel.toString().trim().length > 2) {
+    let pleft = rect.left + rect.width/2 - 80;
+    let ptop = rect.top - 42;
+    if(pleft < 10) pleft = 10;
+    if(ptop < 10) ptop = rect.bottom + 5;
+    popup.style.left = pleft + 'px';
+    popup.style.top = ptop + 'px';
+    popup.classList.add('show');
+  } else {
+    popup.classList.remove('show');
+  }
 }
 function hideInlineToolbar() {
   document.getElementById('inline-toolbar').classList.remove('show');
@@ -2788,13 +2869,74 @@ function handleDrop(e) {
   else if(type==='brand-logo') addBrandLogoElement(subtype, '');
   else if(type==='image') {
     const files = e.dataTransfer.files;
-    if(files.length > 0) handleImageFile(files[0], x, y);
+    if(files.length > 0) {
+      // Check if dropped on a text element - if so, embed image in text
+      const textEl = findTextElementAt(x, y);
+      if(textEl) {
+        const reader = new FileReader();
+        reader.onload = () => insertImageIntoText(textEl, reader.result);
+        reader.readAsDataURL(files[0]);
+      } else {
+        handleImageFile(files[0], x, y);
+      }
+    }
   }
   else if(type==='pexels-image') {
     const url = e.dataTransfer.getData('imageUrl');
-    if(url) addImageElement(url);
+    if(url) {
+      const textEl = findTextElementAt(x, y);
+      if(textEl) insertImageIntoText(textEl, url);
+      else addImageElement(url);
+    }
   }
   document.querySelectorAll('.element-thumb.dragging').forEach(el=>el.classList.remove('dragging'));
+}
+
+// Find text element at coordinates
+function findTextElementAt(x, y) {
+  const texts = App.currentPost.elements.filter(e => e.type === 'text' && e.textWrap);
+  for(const el of texts) {
+    const div = document.getElementById('el-' + el.id);
+    if(div) {
+      const r = div.getBoundingClientRect();
+      const canvasR = document.getElementById('editor-canvas').getBoundingClientRect();
+      const ex = r.left - canvasR.left;
+      const ey = r.top - canvasR.top;
+      const ew = r.width;
+      const eh = r.height;
+      if(x >= ex && x <= ex + ew && y >= ey && y <= ey + eh) return el;
+    }
+  }
+  return null;
+}
+
+// Insert image into text element content
+function insertImageIntoText(textEl, src) {
+  const div = document.getElementById('el-' + textEl.id);
+  if(!div) return;
+  const content = div.querySelector('.element-content');
+  if(!content) return;
+
+  const imgHtml = '<img src="' + src + '" style="float:right; display:inline-block; margin:4px 0 4px 12px; max-width:50%; border-radius:8px;" data-embedded-image="true">';
+
+  // Insert at cursor position or at end
+  const sel = window.getSelection();
+  if(sel.rangeCount > 0 && content.contains(sel.getRangeAt(0).commonAncestorContainer)) {
+    const range = sel.getRangeAt(0);
+    const imgNode = document.createElement('div');
+    imgNode.innerHTML = imgHtml;
+    range.insertNode(imgNode.firstChild);
+  } else {
+    // Append to content
+    const p = content.querySelector('p:last-child') || content;
+    p.innerHTML += imgHtml;
+  }
+
+  textEl.content = content.innerHTML;
+  autoResizeText(div, textEl);
+  markDirty();
+  pushHistory();
+  showToast('תמונה הוטמעה בטקסט','success');
 }
 function addWpLogoAt(x, y) {
   const el = {
@@ -2923,6 +3065,20 @@ function updatePageWidth(val) {
   const canvas = document.getElementById('editor-canvas');
   canvas.style.width = val + 'px';
   App.currentPost.pageWidth = parseInt(val);
+  // Update all flow text elements to match new width
+  App.currentPost.elements.forEach(el => {
+    if(el.type === 'text' && el.textWrap) {
+      el.width = parseInt(val);
+    }
+  });
+  renderCanvas();
+  markDirty();
+}
+function updatePageMargin(val) {
+  const canvas = document.getElementById('editor-canvas');
+  canvas.style.padding = val + 'px';
+  App.currentPost.pageMargin = parseInt(val);
+  document.getElementById('post-margin-val').textContent = val + 'px';
   markDirty();
 }
 function updatePostStatus(status) {
@@ -3300,12 +3456,13 @@ function parseHTMLToElements(html) {
       if(node.textContent?.trim()) {
         elements.push({
           id: 'el_' + (++counter),
-          type: 'text', x: 50, y: currentY, width: 700, height: 50,
+          type: 'text', x: 0, y: currentY, width: 700, height: 50,
           rotation: 0, opacity: 100, zIndex: counter,
           content: '<p>' + escapeHtml(node.textContent) + '</p>',
           styles: {fontFamily:'Assistant', fontSize:'18px', color:'#1f2937', textAlign:'right', fontWeight:'400', lineHeight:'1.6'},
           borderRadius: '0px', borderWidth: '0px', borderColor: 'transparent', borderStyle: 'solid',
-          bgColor: 'transparent'
+          bgColor: 'transparent',
+          textWrap: true
         });
         currentY += 60;
       }
@@ -3314,18 +3471,30 @@ function parseHTMLToElements(html) {
     if(tag==='script' || tag==='style') return;
 
     if(tag==='img') {
-      elements.push({
-        id: 'el_' + (++counter),
-        type: 'image', x: 50, y: currentY,
-        width: Math.min(700, parseInt(node.getAttribute('width')) || 400),
-        height: Math.min(500, parseInt(node.getAttribute('height')) || 300),
-        rotation: 0, opacity: 100, zIndex: counter,
-        src: node.src,
-        styles: {objectFit:'cover', borderRadius:'0'},
-        borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
-        bgColor: 'transparent'
-      });
-      currentY += 320;
+      // Check if image has float style - if so, embed in previous text or create flow image
+      const style = node.getAttribute('style') || '';
+      const isFloated = style.includes('float') || node.classList.contains('alignright') || node.classList.contains('alignleft');
+
+      if(isFloated && elements.length > 0 && elements[elements.length-1].type === 'text') {
+        // Embed in previous text element
+        const textEl = elements[elements.length-1];
+        const imgHtml = node.outerHTML;
+        textEl.content = textEl.content.replace(/<p([^>]*)>/, '<p$1>' + imgHtml);
+        textEl.height += 100; // Approximate
+      } else {
+        elements.push({
+          id: 'el_' + (++counter),
+          type: 'image', x: 50, y: currentY,
+          width: Math.min(700, parseInt(node.getAttribute('width')) || 400),
+          height: Math.min(500, parseInt(node.getAttribute('height')) || 300),
+          rotation: 0, opacity: 100, zIndex: counter,
+          src: node.src,
+          styles: {objectFit:'cover', borderRadius:'0'},
+          borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+          bgColor: 'transparent'
+        });
+        currentY += 320;
+      }
     } else if(tag==='iframe') {
       elements.push({
         id: 'el_' + (++counter),
@@ -3500,11 +3669,10 @@ function deleteDraft(id) {
   if(App.currentPost.id===id) newPost();
 }
 
-async function publishPost() {
-  if(!App.currentPost) return;
-  const title = document.getElementById('post-title').value.trim();
-  if(!title) return showToast('יש להזין כותרת','error');
+function generateExactHTML() {
+  if(!App.currentPost) return '';
 
+  // Sync text content from DOM
   App.currentPost.elements.forEach(el=>{
     const div = document.getElementById('el-' + el.id);
     if(!div) return;
@@ -3513,6 +3681,83 @@ async function publishPost() {
       if(content) el.content = content.innerHTML;
     }
   });
+
+  const margin = App.currentPost.pageMargin || 40;
+  const width = App.currentPost.pageWidth || 800;
+
+  // Separate flow images from text elements and merge them
+  const flowImages = [];
+  const textElements = [];
+  const otherElements = [];
+
+  App.currentPost.elements.forEach(el => {
+    if(el.type === 'image' && el.textWrap) {
+      flowImages.push(el);
+    } else if(el.type === 'text' && el.textWrap) {
+      textElements.push(el);
+    } else {
+      otherElements.push(el);
+    }
+  });
+
+  // Build HTML - start with container
+  let html = '<div style="direction:rtl;text-align:right;max-width:'+width+'px;margin:0 auto;padding:'+margin+'px;box-sizing:border-box;">
+';
+
+  // Process flow text with embedded images
+  textElements.forEach(textEl => {
+    const s = textEl.styles || {};
+    const textStyle = 'font-family:'+(s.fontFamily||'Assistant')+',sans-serif;font-size:'+(s.fontSize||'18px')+';color:'+(s.color||'#1f2937')+';line-height:'+(s.lineHeight||'1.6')+';text-align:'+(s.textAlign||'right')+';font-weight:'+(s.fontWeight||'400')+';';
+
+    // Find flow images that should be embedded in this text block
+    // (images that are vertically close to this text element)
+    let textContent = textEl.content || '<p></p>';
+
+    // Check if text already contains embedded images (from drag-drop)
+    if(!textContent.includes('data-embedded-image')) {
+      // Find nearby flow images and prepend them to allow text wrapping
+      const nearbyImages = flowImages.filter(img => {
+        // Simple proximity check - image is near this text block
+        return Math.abs((img.y || 0) - (textEl.y || 0)) < 100;
+      });
+
+      nearbyImages.forEach(img => {
+        const imgStyle = 'float:right;display:inline-block;margin:4px 0 4px 12px;max-width:50%;border-radius:8px;';
+        const imgTag = '<img src="'+img.src+'" style="'+imgStyle+'" alt="">';
+        // Prepend image to first paragraph or content
+        if(textContent.includes('<p')) {
+          textContent = textContent.replace(/<p([^>]*)>/, '<p$1>' + imgTag);
+        } else {
+          textContent = imgTag + textContent;
+        }
+      });
+    }
+
+    html += '<div style="'+textStyle+'margin-bottom:16px;overflow:hidden;">'+textContent+'</div>
+';
+  });
+
+  // Add remaining flow images that weren't merged
+  flowImages.forEach(img => {
+    const imgStyle = 'float:right;display:inline-block;margin:4px 0 4px 12px;max-width:50%;border-radius:8px;';
+    html += '<img src="'+img.src+'" style="'+imgStyle+'" alt="">
+';
+  });
+
+  // Add non-flow elements (absolute positioned)
+  otherElements.forEach(el => {
+    html += renderElementHTML(el) + '
+';
+  });
+
+  html += '</div>';
+  return html;
+}
+
+async function publishPost() {
+  if(!App.currentPost) return;
+  const title = document.getElementById('post-title').value.trim();
+  if(!title) return showToast('יש להזין כותרת','error');
 
   showToast('מפרסם...','info');
   try {
@@ -3564,7 +3809,7 @@ function renderElementHTML(el) {
 
   let style = '';
   if(el.textWrap) {
-    style = 'float:left;margin:10px;' + rot + op + br + border + bg;
+    style = 'float:right;margin:8px 0 8px 16px;' + rot + op + br + border + bg;
   } else {
     style = 'position:absolute;left:'+el.x+'px;top:'+el.y+'px;width:'+el.width+'px;height:'+el.height+'px;' + rot + op + br + border + bg + 'overflow:hidden;z-index:'+(el.zIndex||1)+';';
   }
@@ -3572,9 +3817,15 @@ function renderElementHTML(el) {
   let inner = '';
   if(el.type==='text') {
     const s = el.styles||{};
-    inner = '<div style="width:100%;height:auto;overflow:visible;font-family:'+(s.fontFamily||'Assistant')+',sans-serif;font-size:'+(s.fontSize||'18px')+';color:'+(s.color||'#1f2937')+';background:'+(s.backgroundColor||'transparent')+';text-align:'+(s.textAlign||'right')+';font-weight:'+(s.fontWeight||'400')+';padding:4px;direction:rtl;line-height:'+(s.lineHeight||'1.6')+';box-sizing:border-box;word-wrap:break-word;">'+(el.content||'')+'</div>';
+    // For flow text, output as a paragraph that can wrap around floated images
+    const wrapStyle = el.textWrap ? 'overflow:hidden;' : '';
+    inner = '<div style="width:100%;height:auto;overflow:visible;font-family:'+(s.fontFamily||'Assistant')+',sans-serif;font-size:'+(s.fontSize||'18px')+';color:'+(s.color||'#1f2937')+';background:'+(s.backgroundColor||'transparent')+';text-align:'+(s.textAlign||'right')+';font-weight:'+(s.fontWeight||'400')+';padding:4px;direction:rtl;line-height:'+(s.lineHeight||'1.6')+';box-sizing:border-box;word-wrap:break-word;'+wrapStyle+'">'+(el.content||'')+'</div>';
   } else if(el.type==='image') {
     const s = el.styles||{};
+    // For flow images, render as inline floated image NOT wrapped in a div
+    if(el.textWrap) {
+      return '<img src="'+el.src+'" style="float:right;display:inline-block;margin:4px 0 4px 12px;max-width:50%;border-radius:'+(s.borderRadius||'8px')+';'+(s.filter?s.filter:'')+'">';
+    }
     inner = '<img src="'+el.src+'" style="width:100%;height:100%;object-fit:'+(s.objectFit||'cover')+';border-radius:'+(s.borderRadius||'0')+';'+(s.filter?s.filter:'')+'display:block;">';
   } else if(el.type==='shape') {
     const s = el.styles||{};
@@ -3792,6 +4043,30 @@ document.addEventListener('DOMContentLoaded', function() {
       showCreateProfile();
     });
   }
+
+  // Global selection change listener for toolbar
+  document.addEventListener('selectionchange', function() {
+    setTimeout(function() {
+      if(document.getElementById('screen-editor') && !document.getElementById('screen-editor').classList.contains('hidden')) {
+        showInlineToolbar();
+      }
+    }, 50);
+  });
+
+  // Double-click on canvas to select all text in element
+  document.getElementById('editor-canvas').addEventListener('dblclick', function(e) {
+    const target = e.target;
+    const textContent = target.closest('.text-element .element-content');
+    if(textContent) {
+      const range = document.createRange();
+      range.selectNodeContents(textContent);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      showInlineToolbar();
+      e.stopPropagation();
+    }
+  });
 });
 </script>
 </body>

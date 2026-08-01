@@ -31,94 +31,168 @@ tailwind.config = {
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
   @keyframes pulse-glow { 0%,100% { box-shadow: 0 0 5px rgba(139,92,246,0.3); } 50% { box-shadow: 0 0 20px rgba(139,92,246,0.6); } }
-  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
   .animate-fadeIn { animation: fadeIn 0.4s ease-out; }
   .animate-slideIn { animation: slideIn 0.3s ease-out; }
   .animate-pulse-glow { animation: pulse-glow 2s infinite; }
-  .animate-float { animation: float 3s ease-in-out infinite; }
   .glass { background: rgba(30,30,46,0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); }
   .glass-strong { background: rgba(17,17,27,0.9); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.1); }
-  #editor-canvas { position: relative; width: 800px; min-height: 1000px; margin: 0 auto; background: white; box-shadow: 0 20px 60px rgba(0,0,0,0.5); overflow: visible; }
-  .canvas-element { position: absolute; cursor: move; user-select: none; border: 2px solid transparent; transition: border-color 0.15s; }
+
+  /* ===== CANVAS - NO BOX TEXT ===== */
+  #editor-canvas { 
+    position: relative; 
+    width: 800px; 
+    min-height: 1000px; 
+    margin: 0 auto; 
+    background: white; 
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5); 
+    overflow: hidden;
+    color: #1f2937;
+  }
+
+  .canvas-element { 
+    position: absolute; 
+    cursor: move; 
+    user-select: none; 
+    border: 2px solid transparent; 
+    transition: border-color 0.15s; 
+  }
   .canvas-element:hover { border-color: rgba(139,92,246,0.4); }
-  .canvas-element.selected { border-color: #8b5cf6; z-index: 9999 !important; }
-  .canvas-element.selected .resize-handle, .canvas-element.selected .rotate-handle { display: block; }
-  .resize-handle { display: none; position: absolute; width: 10px; height: 10px; background: #8b5cf6; border: 2px solid white; border-radius: 50%; z-index: 10001; }
-  .resize-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
-  .resize-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
-  .resize-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
-  .resize-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
-  .rotate-handle { display: none; position: absolute; top: -25px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; background: #f59e0b; border: 2px solid white; border-radius: 50%; cursor: grab; z-index: 10001; }
-  .element-content { width: 100%; height: 100%; overflow: hidden; outline: none; }
-  .element-content img { pointer-events: none; }
-  .text-element .element-content { padding: 8px 12px; cursor: text; direction: rtl; line-height: 1.6; font-size: 18px; color: #1f2937; border: none; background: transparent; }
+  .canvas-element.selected { border-color: #8b5cf6; }
+  .canvas-element.selected .resize-handle, 
+  .canvas-element.selected .rotate-handle { display: block; }
+
+  /* TEXT ELEMENT - DIRECT TYPING, NO BOX */
+  .text-element { 
+    border: 2px solid transparent;
+    height: auto !important;
+    min-height: 1.6em;
+  }
+  .text-element .element-content {
+    width: 100%;
+    min-height: 1.6em;
+    outline: none;
+    direction: rtl;
+    line-height: 1.6;
+    font-size: 18px;
+    color: #1f2937;
+    background: transparent;
+    border: none;
+    padding: 2px 4px;
+    cursor: text;
+    height: auto;
+    overflow: visible;
+  }
   .text-element .element-content:focus { outline: none; }
-  .text-element .element-content p { margin: 0 0 12px 0; min-height: 1.4em; }
+  .text-element .element-content p { margin: 0 0 8px 0; min-height: 1.4em; }
   .text-element .element-content p:last-child { margin-bottom: 0; }
   .text-element .element-content h1 { font-size: 32px; font-weight: 800; margin: 8px 0; line-height: 1.3; }
   .text-element .element-content h2 { font-size: 26px; font-weight: 700; margin: 8px 0; line-height: 1.3; }
   .text-element .element-content h3 { font-size: 22px; font-weight: 600; margin: 8px 0; line-height: 1.3; }
   .text-element .element-content ul { margin: 8px 0; padding-right: 20px; }
   .text-element .element-content blockquote { border-right: 4px solid #8b5cf6; margin: 12px 0; padding: 8px 16px; background: rgba(139,92,246,0.05); font-style: italic; }
-  .text-element { border: 2px solid transparent; transition: border-color 0.15s; }
-  .text-element:hover { border-color: rgba(139,92,246,0.15); }
-  .text-element.selected { border-color: #8b5cf6; background: rgba(139,92,246,0.02); }
-  .image-element .element-content img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* FLOW MODE - TEXT WRAP */
+  .canvas-element.flow-mode {
+    position: relative !important;
+    float: left;
+    margin: 10px;
+    left: auto !important;
+    top: auto !important;
+    clear: none;
+  }
+  .text-element.flow-text {
+    position: relative !important;
+    width: 100% !important;
+    left: auto !important;
+    top: auto !important;
+    margin-bottom: 8px;
+    float: none;
+    clear: both;
+  }
+
+  .resize-handle { display: none; position: absolute; width: 10px; height: 10px; background: #8b5cf6; border: 2px solid white; border-radius: 50%; z-index: 10001; }
+  .resize-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
+  .resize-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
+  .resize-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+  .resize-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
+  .rotate-handle { display: none; position: absolute; top: -25px; left: 50%; transform: translateX(-50%); width: 12px; height: 12px; background: #f59e0b; border: 2px solid white; border-radius: 50%; cursor: grab; z-index: 10001; }
+
+  .image-element .element-content img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .shape-element .element-content { width: 100%; height: 100%; }
+
   .tool-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; color: #94a3b8; transition: all 0.2s; cursor: pointer; }
   .tool-btn:hover { background: rgba(139,92,246,0.15); color: #a78bfa; }
   .tool-btn.active { background: rgba(139,92,246,0.25); color: #a78bfa; }
+
   input[type="color"] { -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; padding: 0; overflow: hidden; }
   input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
   input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
   input[type="range"] { -webkit-appearance: none; width: 100%; height: 4px; border-radius: 2px; background: #374151; outline: none; }
   input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #8b5cf6; cursor: pointer; border: 2px solid white; }
+
   .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px); padding: 12px 24px; border-radius: 12px; font-size: 14px; z-index: 99999; transition: transform 0.3s ease; backdrop-filter: blur(12px); }
   .toast.show { transform: translateX(-50%) translateY(0); }
   .toast.success { background: rgba(34,197,94,0.95); color: white; }
   .toast.error { background: rgba(239,68,68,0.95); color: white; }
   .toast.info { background: rgba(139,92,246,0.95); color: white; }
+
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 99998; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .modal-overlay.active { opacity: 1; pointer-events: all; }
-  .avatar-option { width: 64px; height: 64px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.2s; overflow: hidden; }
-  .avatar-option:hover { transform: scale(1.1); }
-  .avatar-option.selected { border-color: #8b5cf6; box-shadow: 0 0 15px rgba(139,92,246,0.4); }
+
   .post-card { background: rgba(30,30,46,0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s; }
   .post-card:hover { background: rgba(30,30,46,0.9); border-color: rgba(139,92,246,0.3); transform: translateY(-2px); }
   .site-card { background: rgba(30,30,46,0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px; cursor: pointer; transition: all 0.2s; }
   .site-card:hover { background: rgba(30,30,46,0.9); border-color: #f59e0b; transform: translateY(-2px); }
+
   .grad-1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
   .grad-2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
   .grad-3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
   .grad-4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
   .grad-5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
   .grad-6 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
-  input[type="file"] { display: none; }
-  .shape-thumb { width: 60px; height: 60px; cursor: grab; transition: transform 0.2s; display:flex;align-items:center;justify-content:center; border-radius: 8px; background: rgba(30,30,46,0.8); border: 1px solid rgba(255,255,255,0.06); }
-  .shape-thumb:hover { transform: scale(1.1); border-color: rgba(139,92,246,0.4); }
-  .font-item { padding: 8px 12px; cursor: pointer; font-size: 14px; border-radius: 6px; transition: all 0.15s; }
-  .font-item:hover { background: rgba(139,92,246,0.15); }
-  .font-item.selected { background: rgba(139,92,246,0.25); color: #a78bfa; }
+
   .inline-toolbar { position: absolute; background: #1e1e2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 6px; display: none; gap: 4px; z-index: 100000; box-shadow: 0 10px 40px rgba(0,0,0,0.5); flex-wrap: wrap; max-width: 320px; }
   .inline-toolbar.show { display: flex; }
   .inline-toolbar button { width: 32px; height: 32px; border-radius: 6px; background: transparent; border: 1px solid transparent; color: #cbd5e1; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
   .inline-toolbar button:hover { background: rgba(139,92,246,0.2); color: #a78bfa; border-color: rgba(139,92,246,0.3); }
-  .pexels-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; cursor: pointer; transition: transform 0.2s; }
-  .pexels-img:hover { transform: scale(1.05); }
+
+  .text-selection-popup { position: absolute; background: #1e1e2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 6px; display: none; gap: 4px; z-index: 100001; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+  .text-selection-popup.show { display: flex; }
+  .text-selection-popup button { padding: 4px 10px; border-radius: 6px; background: transparent; border: 1px solid transparent; color: #cbd5e1; cursor: pointer; transition: all 0.15s; font-size: 12px; white-space: nowrap; }
+  .text-selection-popup button:hover { background: rgba(139,92,246,0.2); color: #a78bfa; border-color: rgba(139,92,246,0.3); }
+
   .elements-sidebar { position: fixed; right: 0; top: 0; bottom: 0; width: 320px; background: rgba(17,17,27,0.95); backdrop-filter: blur(16px); border-right: 1px solid rgba(255,255,255,0.1); transform: translateX(100%); transition: transform 0.3s ease; z-index: 45; display: flex; flex-direction: column; }
   .elements-sidebar.open { transform: translateX(0); }
-  .crop-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 99997; display: flex; align-items: center; justify-content: center; }
-  .element-thumb { width: 60px; height: 60px; cursor: grab; transition: all 0.2s; display:flex;align-items:center;justify-content:center; border-radius: 8px; background: rgba(30,30,46,0.8); border: 1px solid rgba(255,255,255,0.06); }
-  .element-thumb:hover { transform: scale(1.05); border-color: rgba(139,92,246,0.4); }
-  .element-thumb.dragging { opacity: 0.5; }
+
+  .ai-panel { position: fixed; left: 0; top: 0; bottom: 0; width: 380px; background: rgba(17,17,27,0.95); backdrop-filter: blur(16px); border-left: 1px solid rgba(255,255,255,0.1); transform: translateX(-100%); transition: transform 0.3s ease; z-index: 45; display: flex; flex-direction: column; }
+  .ai-panel.open { transform: translateX(0); }
+
+  .progress-bar { width: 100%; height: 8px; background: #374151; border-radius: 4px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, #8b5cf6, #f59e0b); transition: width 0.3s; }
+
+  .home-section { background: rgba(30,30,46,0.4); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px; }
+
+  .avatar-option { width: 64px; height: 64px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: all 0.2s; overflow: hidden; }
+  .avatar-option:hover { transform: scale(1.1); }
+  .avatar-option.selected { border-color: #8b5cf6; box-shadow: 0 0 15px rgba(139,92,246,0.4); }
+
+  input[type="file"] { display: none; }
+  .shape-thumb { width: 60px; height: 60px; cursor: grab; transition: transform 0.2s; display:flex;align-items:center;justify-content:center; border-radius: 8px; background: rgba(30,30,46,0.8); border: 1px solid rgba(255,255,255,0.06); }
+  .shape-thumb:hover { transform: scale(1.1); border-color: rgba(139,92,246,0.4); }
+
+  .pexels-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; cursor: pointer; transition: transform 0.2s; }
+  .pexels-img:hover { transform: scale(1.05); }
+
   .iconify-result { width: 60px; height: 60px; cursor: pointer; transition: all 0.2s; display:flex;align-items:center;justify-content:center; border-radius: 8px; background: rgba(30,30,46,0.8); border: 1px solid rgba(255,255,255,0.06); }
   .iconify-result:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.15); }
   .iconify-result svg { width: 32px; height: 32px; }
+
   .brand-logo-result { padding: 8px; cursor: pointer; border-radius: 8px; background: rgba(30,30,46,0.6); border: 1px solid rgba(255,255,255,0.06); transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
   .brand-logo-result:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.15); }
   .brand-logo-result img { width: 40px; height: 40px; object-fit: contain; }
+
   @media (max-width: 900px) { #editor-canvas { width: 100% !important; } }
 </style>
-
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 <base target="_blank">
@@ -151,22 +225,46 @@ tailwind.config = {
   <button onclick="execCmd('removeFormat')" title="Clear"><i class="fas fa-eraser"></i></button>
 </div>
 
-<!-- Crop Modal -->
-<div id="crop-modal" class="crop-overlay hidden">
-  <div class="glass-strong rounded-2xl p-6 max-w-4xl w-full mx-4 flex flex-col" style="max-height:90vh;">
+<!-- Text Selection AI Popup -->
+<div id="text-selection-popup" class="text-selection-popup">
+  <button onclick="aiTranslateSelection()" title="תרגום"><i class="fas fa-language"></i> תרגום</button>
+  <button onclick="aiRewriteSelection()" title="שכתוב"><i class="fas fa-magic"></i> שכתוב AI</button>
+</div>
+
+<!-- BG Removal Modal -->
+<div id="bg-removal-modal" class="modal-overlay">
+  <div class="glass-strong rounded-2xl p-6 max-w-lg w-full mx-4">
     <div class="flex items-center justify-between mb-4">
-      <h3 class="text-lg font-bold">חיתוך תמונה</h3>
-      <button onclick="closeCrop()" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center"><i class="fas fa-times"></i></button>
+      <h3 class="text-lg font-bold">הסרת רקע</h3>
+      <button onclick="closeBgRemoval()" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center"><i class="fas fa-times"></i></button>
     </div>
-    <div class="relative bg-black rounded-lg overflow-hidden flex-1 flex items-center justify-center" style="min-height:300px;" id="crop-wrapper">
-      <div id="crop-container" style="position:relative;display:inline-block;">
-        <canvas id="crop-underlay" style="display:block;"></canvas>
-        <canvas id="crop-overlay-canvas" style="position:absolute;top:0;left:0;cursor:crosshair;"></canvas>
+    <div id="bg-removal-content">
+      <img id="bg-removal-preview" src="" class="w-full rounded-lg mb-4 hidden">
+      <div id="bg-removal-progress" class="hidden mb-4">
+        <p class="text-sm mb-2">מעבד תמונה...</p>
+        <div class="progress-bar"><div id="bg-removal-bar" class="progress-bar-fill" style="width:0%"></div></div>
+      </div>
+      <div id="bg-removal-actions" class="hidden flex gap-2">
+        <button onclick="bgRemovalDownload()" class="flex-1 py-2 bg-accent-600 hover:bg-accent-500 rounded-lg text-sm font-bold"><i class="fas fa-download ml-1"></i> הורדה</button>
+        <button onclick="bgRemovalReplace()" class="flex-1 py-2 bg-primary-600 hover:bg-primary-500 rounded-lg text-sm font-bold"><i class="fas fa-exchange-alt ml-1"></i> החלפה</button>
+        <button onclick="bgRemovalImport()" class="flex-1 py-2 bg-green-600 hover:bg-green-500 rounded-lg text-sm font-bold"><i class="fas fa-plus ml-1"></i> ייבוא חדש</button>
       </div>
     </div>
-    <div class="flex justify-center gap-3 mt-4">
-      <button onclick="applyCrop()" class="px-6 py-2 bg-accent-600 hover:bg-accent-500 rounded-lg font-bold text-white transition">אישור חיתוך</button>
-      <button onclick="closeCrop()" class="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition">ביטול</button>
+  </div>
+</div>
+
+<!-- AI Install Warning Modal -->
+<div id="ai-warning-modal" class="modal-overlay">
+  <div class="glass-strong rounded-2xl p-6 max-w-md w-full mx-4">
+    <div class="text-center mb-4">
+      <i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-2"></i>
+      <h3 class="text-xl font-bold">אזהרת ביצועים</h3>
+    </div>
+    <p class="text-sm text-gray-300 mb-4 text-center">המודל שבחרת דורש משאבי מחשוב ניכרים. במכשירים חלשים הדפדפן עלול להיתקע או להאט משמעותית. מומלץ להשתמש במחשב עם לפחות 8GB RAM.</p>
+    <div id="ai-hardware-info" class="text-xs text-gray-500 mb-4 text-center"></div>
+    <div class="flex gap-3">
+      <button onclick="confirmAiInstall()" class="flex-1 py-3 bg-accent-600 hover:bg-accent-500 rounded-xl font-bold text-white">התקן בכל זאת</button>
+      <button onclick="closeAiWarning()" class="flex-1 py-3 bg-gray-700 hover:bg-gray-600 rounded-xl font-medium">ביטול</button>
     </div>
   </div>
 </div>
@@ -292,9 +390,109 @@ tailwind.config = {
           <li>לחצו על <b>"הוסף סיסמת אפליקציה חדשה"</b></li>
           <li>העתיקו את הסיסמה המוצגת - <b>היא תופיע פעם אחת בלבד!</b></li>
         </ol>
-        <p class="text-xs text-orange-300/60 mt-2">הערה: יש לוודא שהאתר מאפשר גישת REST API ושאין חסימת CORS.</p>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- ==================== SCREEN: HOME (NEW) ==================== -->
+<div id="screen-home" class="fixed inset-0 flex flex-col z-50 hidden" style="background: #0b0b12;">
+  <div class="h-16 glass-strong border-b border-gray-800 flex items-center px-6 justify-between">
+    <div class="flex items-center gap-3">
+      <img id="home-avatar" src="" class="w-10 h-10 rounded-full border-2 border-accent-500">
+      <div>
+        <p id="home-username" class="font-bold text-sm"></p>
+        <p class="text-xs text-gray-500">עמוד הבית</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="showAiTools()" class="px-4 py-2 rounded-xl bg-purple-900/50 border border-purple-700 text-purple-300 hover:bg-purple-800/50 transition text-sm flex items-center gap-2">
+        <i class="fas fa-robot"></i> בינה מלאכותית
+      </button>
+      <button onclick="logoutProfile()" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-red-900/50 hover:text-red-400 transition text-sm"><i class="fas fa-sign-out-alt ml-1"></i> התנתק</button>
+    </div>
+  </div>
+  <div class="flex-1 overflow-y-auto p-6">
+    <div class="max-w-5xl mx-auto space-y-6">
+      <!-- Quick Actions -->
+      <div class="flex gap-4 mb-6">
+        <button onclick="newPostFromHome()" class="flex-1 py-4 rounded-2xl bg-gradient-to-r from-accent-600 to-primary-600 hover:from-accent-500 hover:to-primary-500 text-white font-bold transition flex items-center justify-center gap-3 text-lg">
+          <i class="fas fa-plus-circle text-2xl"></i> עיצוב חדש
+        </button>
+        <button onclick="showSites()" class="flex-1 py-4 rounded-2xl bg-dark-800 border border-gray-700 hover:border-accent-500 text-white font-medium transition flex items-center justify-center gap-3 text-lg">
+          <i class="fas fa-globe text-2xl text-accent-400"></i> ניהול אתרים
+        </button>
+      </div>
+
+      <!-- Posts from Site -->
+      <div class="home-section">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold flex items-center gap-2"><i class="fas fa-file-alt text-primary-500"></i> פוסטים מהאתר</h3>
+          <button onclick="refreshHomePosts()" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition"><i class="fas fa-sync-alt text-sm"></i></button>
+        </div>
+        <div id="home-posts-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </div>
+
+      <!-- Local Drafts -->
+      <div class="home-section">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-bold flex items-center gap-2"><i class="fas fa-save text-accent-400"></i> טיוטות מקומיות</h3>
+          <span id="home-draft-count" class="text-xs bg-accent-600 px-2 py-0.5 rounded-full hidden">0</span>
+        </div>
+        <div id="home-drafts-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </div>
+
+      <!-- AI Tools Section -->
+      <div class="home-section">
+        <h3 class="text-lg font-bold flex items-center gap-2 mb-4"><i class="fas fa-brain text-purple-400"></i> כלי בינה מלאכותית</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="bg-dark-900 rounded-xl p-4 border border-gray-800">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-lg bg-purple-900/50 flex items-center justify-center"><i class="fas fa-image text-purple-400"></i></div>
+              <div>
+                <h4 class="font-bold text-sm">הסרת רקע</h4>
+                <p class="text-xs text-gray-500">@imgly/background-removal</p>
+              </div>
+            </div>
+            <p class="text-xs text-gray-400 mb-3">הסרת רקע מתמונות באמצעות AI מקומי</p>
+            <button onclick="installAiModel('bg-removal')" id="btn-install-bg" class="w-full py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-white text-sm font-medium transition">התקנה</button>
+          </div>
+          <div class="bg-dark-900 rounded-xl p-4 border border-gray-800">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-lg bg-blue-900/50 flex items-center justify-center"><i class="fas fa-language text-blue-400"></i></div>
+              <div>
+                <h4 class="font-bold text-sm">תרגום</h4>
+                <p class="text-xs text-gray-500">NLLB-200</p>
+              </div>
+            </div>
+            <p class="text-xs text-gray-400 mb-3">תרגום טקסט בין שפות שונות</p>
+            <button onclick="installAiModel('translate')" id="btn-install-translate" class="w-full py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-white text-sm font-medium transition">התקנה</button>
+          </div>
+          <div class="bg-dark-900 rounded-xl p-4 border border-gray-800">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-lg bg-green-900/50 flex items-center justify-center"><i class="fas fa-magic text-green-400"></i></div>
+              <div>
+                <h4 class="font-bold text-sm">שכתוב טקסט</h4>
+                <p class="text-xs text-gray-500">Llama-3.2-1B</p>
+              </div>
+            </div>
+            <p class="text-xs text-gray-400 mb-3">שינוי סגנון הכתיבה ב-AI</p>
+            <button onclick="installAiModel('rewrite')" id="btn-install-rewrite" class="w-full py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-white text-sm font-medium transition">התקנה</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AI Tools Modal -->
+<div id="ai-tools-modal" class="modal-overlay">
+  <div class="glass-strong rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-robot text-purple-400"></i> כלי בינה מלאכותית</h3>
+      <button onclick="closeAiTools()" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="ai-tools-list" class="space-y-4"></div>
   </div>
 </div>
 
@@ -327,6 +525,7 @@ tailwind.config = {
         <div class="tool-btn" onclick="setTool('embed', event)" title="אתר מוטמע"><i class="fas fa-globe"></i></div>
         <div class="tool-btn" onclick="setTool('html', event)" title="קוד HTML"><i class="fas fa-code"></i></div>
         <div class="tool-btn" onclick="setTool('video', event)" title="סרטון"><i class="fas fa-video"></i></div>
+        <div class="tool-btn" onclick="toggleAiPanel()" title="AI"><i class="fas fa-robot text-purple-400"></i></div>
       </div>
     </div>
     <div class="flex-1 overflow-y-auto p-3">
@@ -339,6 +538,9 @@ tailwind.config = {
       </button>
       <button onclick="showPanel('settings')" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition text-right mb-1">
         <i class="fas fa-cog text-gray-400 w-5"></i><span class="text-sm">הגדרות</span>
+      </button>
+      <button onclick="backToHome()" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-white/5 transition text-right mb-1">
+        <i class="fas fa-home text-gray-400 w-5"></i><span class="text-sm">עמוד הבית</span>
       </button>
     </div>
     <div class="p-3 border-b border-gray-800">
@@ -355,7 +557,7 @@ tailwind.config = {
           <p id="sidebar-name" class="text-sm font-medium truncate"></p>
           <p class="text-xs text-gray-500">מחובר</p>
         </div>
-        <button onclick="backToSites()" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition" title="חזרה לאתרים"><i class="fas fa-exchange-alt text-sm"></i></button>
+        <button onclick="backToHome()" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition" title="חזרה לבית"><i class="fas fa-home text-sm"></i></button>
       </div>
     </div>
   </div>
@@ -368,6 +570,7 @@ tailwind.config = {
         <span id="save-status" class="text-xs text-gray-500 whitespace-nowrap"></span>
       </div>
       <div class="flex items-center gap-2">
+        <button onclick="translateFullPost()" id="btn-translate-post" class="px-3 py-2 rounded-xl bg-blue-900/30 border border-blue-800 text-blue-400 hover:bg-blue-800/50 text-sm transition hidden" title="תרגום פוסט"><i class="fas fa-language"></i></button>
         <button onclick="saveDraftManual()" class="px-4 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-sm font-medium transition flex items-center gap-2"><i class="fas fa-save"></i> שמירה</button>
         <button onclick="publishPost()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-accent-600 to-primary-600 hover:from-accent-500 hover:to-primary-500 text-sm font-bold text-white transition flex items-center gap-2"><i class="fas fa-paper-plane"></i> פרסום</button>
         <button onclick="newPost()" class="px-3 py-2 rounded-xl bg-gray-800 hover:bg-gray-700 text-sm transition" title="חדש"><i class="fas fa-plus"></i></button>
@@ -388,8 +591,8 @@ tailwind.config = {
             <input type="file" id="featured-upload" accept="image/*" onchange="handleFeaturedUpload(event)">
           </div>
           <div id="editor-canvas" onclick="deselectAll(event)" ondblclick="handleCanvasClick(event)">
-            <div class="absolute top-4 left-4 text-gray-400 text-sm pointer-events-none select-none opacity-30" style="z-index:0;">
-              <i class="fas fa-info-circle ml-1"></i> לחץ על הכלים כדי להוסיף אלמנטים. גרור להזזה. גרור פינות לשינוי גודל.
+            <div class="absolute top-2 left-2 text-gray-300 text-xs pointer-events-none select-none opacity-20" style="z-index:0;">
+              <i class="fas fa-info-circle ml-1"></i> לחץ פעמיים להוספת טקסט. גרור להזזה.
             </div>
           </div>
         </div>
@@ -418,6 +621,10 @@ tailwind.config = {
                   </select>
                 </div>
               </div>
+              <div class="flex gap-2">
+                <div class="flex-1"><label class="text-xs text-gray-500 mb-1 block">צבע רקע</label><input type="color" id="prop-bg-color" value="#ffffff" oninput="updateElementBgColor(this.value)"></div>
+              </div>
+              <div class="flex items-center gap-2"><input type="checkbox" id="prop-wrap" onchange="toggleTextWrap(this.checked)" class="rounded bg-dark-900 border-gray-700"><label class="text-sm text-gray-400">שבירת טקסט (מופעל)</label></div>
               <div class="flex items-center gap-2"><input type="checkbox" id="prop-snap" onchange="toggleSnap()" class="rounded bg-dark-900 border-gray-700"><label class="text-sm text-gray-400">הצמדה לרשת (10px)</label></div>
             </div>
           </div>
@@ -430,8 +637,8 @@ tailwind.config = {
               </div>
               <div><label class="text-xs text-gray-500 mb-1 block">גודל גופן</label><input type="number" id="prop-fontsize" class="w-full px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm focus:border-accent-500 focus:outline-none" oninput="updateStyle('fontSize',this.value+'px')"></div>
               <div class="flex gap-2">
-                <div class="flex-1"><label class="text-xs text-gray-500 mb-1 block">צבע</label><input type="color" id="prop-color" oninput="updateStyle('color',this.value)"></div>
-                <div class="flex-1"><label class="text-xs text-gray-500 mb-1 block">רקע</label><input type="color" id="prop-bg" value="#ffffff" oninput="updateStyle('backgroundColor',this.value)"></div>
+                <div class="flex-1"><label class="text-xs text-gray-500 mb-1 block">צבע טקסט</label><input type="color" id="prop-color" oninput="updateStyle('color',this.value)"></div>
+                <div class="flex-1"><label class="text-xs text-gray-500 mb-1 block">רקע טקסט</label><input type="color" id="prop-text-bg" value="#ffffff" oninput="updateStyle('backgroundColor',this.value)"></div>
               </div>
               <div><label class="text-xs text-gray-500 mb-1 block">יישור</label>
                 <div class="flex gap-1">
@@ -460,21 +667,15 @@ tailwind.config = {
                   <option value="cover">כיסוי</option><option value="contain">התאמה</option><option value="fill">מילוי</option>
                 </select>
               </div>
-              <div><label class="text-xs text-gray-500 mb-1 block">גלישת טקסט</label>
-                <select id="prop-text-wrap" class="w-full px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm focus:border-accent-500 focus:outline-none" onchange="updateImageTextWrap(this.value)">
-                  <option value="none">ללא (מעל/מתחת)</option>
-                  <option value="left">טקסט מימין (תמונה שמאלה)</option>
-                  <option value="right">טקסט משמאל (תמונה ימינה)</option>
-                </select>
-              </div>
               <div><label class="text-xs text-gray-500 mb-1 block">פילטר</label>
                 <select id="prop-filter" class="w-full px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm" onchange="updateImageStyle('filter',this.value)">
                   <option value="">ללא</option><option value="grayscale(100%)">שחור-לבן</option><option value="sepia(100%)">ספיה</option><option value="blur(4px)">טשטוש</option><option value="brightness(150%)">בהירות</option><option value="contrast(150%)">ניגודיות</option><option value="invert(100%)">היפוך</option>
                 </select>
               </div>
+              <div><label class="text-xs text-gray-500 mb-1 block">צבע רקע</label><input type="color" id="prop-img-bg" value="#ffffff" oninput="updateImageBgColor(this.value)"></div>
               <button onclick="openCropModalForSelected()" class="w-full py-2 rounded-lg bg-dark-900 border border-gray-700 hover:border-accent-500 transition text-sm"><i class="fas fa-crop ml-1"></i> חיתוך</button>
               <button onclick="replaceSelectedImage()" class="w-full py-2 rounded-lg bg-dark-900 border border-gray-700 hover:border-accent-500 transition text-sm"><i class="fas fa-exchange-alt ml-1"></i> החלפת תמונה</button>
-<!-- remove.bg feature removed due to CORS limitations -->
+              <button onclick="startBgRemoval()" id="btn-bg-removal" class="w-full py-2 rounded-lg bg-purple-900/30 border border-purple-700 text-purple-400 hover:bg-purple-800/50 transition text-sm hidden"><i class="fas fa-magic ml-1"></i> הסר רקע</button>
             </div>
           </div>
           <div id="shape-props" class="p-4 border-b border-gray-800" style="display:none;">
@@ -484,13 +685,6 @@ tailwind.config = {
               <div><label class="text-xs text-gray-500 mb-1 block">מילוי מעבר צבע</label>
                 <select id="shape-gradient" class="w-full px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm" onchange="updateShapeGradient(this.value)">
                   <option value="">ללא</option><option value="grad-1">סגול-כחול</option><option value="grad-2">ורוד-אדום</option><option value="grad-3">כחול-טורקיז</option><option value="grad-4">ירוק</option><option value="grad-5">ורוד-צהוב</option><option value="grad-6">טורקיז-סגול</option>
-                </select>
-              </div>
-              <div><label class="text-xs text-gray-500 mb-1 block">שבירת טקסט</label>
-                <select id="shape-text-wrap" class="w-full px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm" onchange="updateShapeTextWrap(this.value)">
-                  <option value="none">ללא</option>
-                  <option value="left">טקסט מימין</option>
-                  <option value="right">טקסט משמאל</option>
                 </select>
               </div>
             </div>
@@ -600,6 +794,24 @@ tailwind.config = {
   </div>
 </div>
 
+<!-- AI Side Panel -->
+<div id="ai-panel" class="ai-panel">
+  <div class="h-12 border-b border-gray-800 flex items-center px-4 justify-between">
+    <h3 class="font-bold text-sm flex items-center gap-2"><i class="fas fa-robot text-purple-400"></i> AI צ'אט</h3>
+    <button onclick="toggleAiPanel()" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center"><i class="fas fa-times"></i></button>
+  </div>
+  <div id="ai-chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3"></div>
+  <div class="p-4 border-t border-gray-800">
+    <div class="flex gap-2">
+      <select id="ai-model-select" class="px-2 py-1 rounded-lg bg-dark-900 border border-gray-700 text-sm text-xs">
+        <option value="rewrite">Llama שכתוב</option>
+      </select>
+      <input type="text" id="ai-chat-input" placeholder="שאל משהו..." class="flex-1 px-3 py-2 rounded-lg bg-dark-900 border border-gray-700 text-sm focus:border-accent-500 focus:outline-none" onkeydown="if(event.key==='Enter')sendAiChat()">
+      <button onclick="sendAiChat()" class="px-3 py-2 rounded-lg bg-accent-600 hover:bg-accent-500 text-white"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
+
 <!-- Elements Sidebar (Right side) -->
 <div id="elements-sidebar" class="elements-sidebar">
   <div class="h-12 border-b border-gray-800 flex items-center px-4 justify-between">
@@ -614,30 +826,30 @@ tailwind.config = {
   <div class="flex-1 overflow-y-auto p-4">
     <!-- Shapes Tab -->
     <div id="elem-shapes" class="grid grid-cols-3 gap-3">
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','rect')" onclick="addShape('rect')" title="מרובע"><div class="w-8 h-8 bg-accent-500 rounded"></div></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','circle')" onclick="addShape('circle')" title="עיגול"><div class="w-8 h-8 bg-accent-500 rounded-full"></div></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','rounded')" onclick="addShape('rounded')" title="מעוגל"><div class="w-8 h-8 bg-accent-500 rounded-xl"></div></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','star')" onclick="addShape('star')" title="כוכב"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#8b5cf6"/></svg></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','triangle')" onclick="addShape('triangle')" title="משולש"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 4L2 20h20L12 4z" fill="#8b5cf6"/></svg></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','diamond')" onclick="addShape('diamond')" title="יהלום"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 2L2 12l10 10 10-10L12 2z" fill="#0ea5e9"/></svg></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','heart')" onclick="addShape('heart')" title="לב"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ec4899"/></svg></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','arrow-right')" onclick="addShape('arrow-right')" title="חץ"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" fill="#8b5cf6"/></svg></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','half-circle')" onclick="addShape('half-circle')" title="חצי עיגול"><div style="width:32px;height:16px;background:#8b5cf6;border-radius:32px 32px 0 0;"></div></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','moon')" onclick="addShape('moon')" title="ירח"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="#f59e0b"/></svg></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','oval')" onclick="addShape('oval')" title="אליפסה"><div style="width:28px;height:18px;background:#8b5cf6;border-radius:50%;"></div></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','pentagon')" onclick="addShape('pentagon')" title="מחומש"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 2l10 7-4 13H6L2 9z" fill="#10b981"/></svg></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','hexagon')" onclick="addShape('hexagon')" title="משושה"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z" fill="#6366f1"/></svg></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','line-h')" onclick="addShape('line-h')" title="קו אופקי"><div class="w-8 h-1 bg-gray-400 rounded"></div></div>
-      <div class="element-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','line-v')" onclick="addShape('line-v')" title="קו אנכי"><div class="w-1 h-8 bg-gray-400 rounded"></div></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','rect')" onclick="addShape('rect')" title="מרובע"><div class="w-8 h-8 bg-accent-500 rounded"></div></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','circle')" onclick="addShape('circle')" title="עיגול"><div class="w-8 h-8 bg-accent-500 rounded-full"></div></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','rounded')" onclick="addShape('rounded')" title="מעוגל"><div class="w-8 h-8 bg-accent-500 rounded-xl"></div></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','star')" onclick="addShape('star')" title="כוכב"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="#8b5cf6"/></svg></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','triangle')" onclick="addShape('triangle')" title="משולש"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 4L2 20h20L12 4z" fill="#8b5cf6"/></svg></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','diamond')" onclick="addShape('diamond')" title="יהלום"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 2L2 12l10 10 10-10L12 2z" fill="#0ea5e9"/></svg></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','heart')" onclick="addShape('heart')" title="לב"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#ec4899"/></svg></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','arrow-right')" onclick="addShape('arrow-right')" title="חץ"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" fill="#8b5cf6"/></svg></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','half-circle')" onclick="addShape('half-circle')" title="חצי עיגול"><div style="width:32px;height:16px;background:#8b5cf6;border-radius:32px 32px 0 0;"></div></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','moon')" onclick="addShape('moon')" title="ירח"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="#f59e0b"/></svg></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','oval')" onclick="addShape('oval')" title="אליפסה"><div style="width:28px;height:18px;background:#8b5cf6;border-radius:50%;"></div></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','pentagon')" onclick="addShape('pentagon')" title="מחומש"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 2l10 7-4 13H6L2 9z" fill="#10b981"/></svg></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','hexagon')" onclick="addShape('hexagon')" title="משושה"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M12 2l8.66 5v10L12 22l-8.66-5V7L12 2z" fill="#6366f1"/></svg></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','line-h')" onclick="addShape('line-h')" title="קו אופקי"><div class="w-8 h-1 bg-gray-400 rounded"></div></div>
+      <div class="shape-thumb" draggable="true" ondragstart="dragElementStart(event,'shape','line-v')" onclick="addShape('line-v')" title="קו אנכי"><div class="w-1 h-8 bg-gray-400 rounded"></div></div>
     </div>
     <!-- Icons Tab (Iconify) -->
     <div id="elem-icons" class="hidden">
       <div class="flex gap-2 mb-4">
-        <input type="text" id="iconify-search" placeholder="חיפוש אייקונים... (לדוג' arrow, home, user)" class="flex-1 px-4 py-2 rounded-xl bg-dark-900 border border-gray-700 text-white placeholder-gray-500 focus:border-accent-500 focus:outline-none text-sm" onkeydown="if(event.key==='Enter')searchIconify()">
+        <input type="text" id="iconify-search" placeholder="חיפוש אייקונים..." class="flex-1 px-4 py-2 rounded-xl bg-dark-900 border border-gray-700 text-white placeholder-gray-500 focus:border-accent-500 focus:outline-none text-sm" onkeydown="if(event.key==='Enter')searchIconify()">
         <button onclick="searchIconify()" class="px-4 py-2 rounded-xl bg-accent-600 hover:bg-accent-500 text-white font-medium"><i class="fas fa-search"></i></button>
       </div>
       <div id="iconify-results" class="grid grid-cols-4 gap-2"></div>
-      <p class="text-xs text-gray-500 mt-2 text-center">האייקונים מגיעים מ-Iconify API - רישיון חופשי, ללא צורך בקרדיט</p>
+      <p class="text-xs text-gray-500 mt-2 text-center">האייקונים מגיעים מ-Iconify API</p>
     </div>
     <!-- Logos Tab (Brand Search) -->
     <div id="elem-logos" class="hidden">
@@ -655,19 +867,38 @@ tailwind.config = {
         <button onclick="searchPexels()" class="px-4 py-2 rounded-xl bg-accent-600 hover:bg-accent-500 text-white font-medium"><i class="fas fa-search"></i></button>
       </div>
       <div id="pexels-results" class="grid grid-cols-2 gap-3"></div>
-      <p class="text-xs text-gray-500 mt-2 text-center">תמונות מ-Pexels - רישיון חופשי מסחרי, ללא צורך בקרדיט</p>
+      <p class="text-xs text-gray-500 mt-2 text-center">תמונות מ-Pexels - רישיון חופשי מסחרי</p>
+    </div>
+  </div>
+</div>
+
+<!-- Crop Modal -->
+<div id="crop-modal" class="crop-overlay hidden">
+  <div class="glass-strong rounded-2xl p-6 max-w-4xl w-full mx-4 flex flex-col" style="max-height:90vh;">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-lg font-bold">חיתוך תמונה</h3>
+      <button onclick="closeCrop()" class="w-8 h-8 rounded-lg bg-gray-800 hover:bg-gray-700 flex items-center justify-center"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="relative bg-black rounded-lg overflow-hidden flex-1 flex items-center justify-center" style="min-height:300px;" id="crop-wrapper">
+      <div id="crop-container" style="position:relative;display:inline-block;">
+        <canvas id="crop-underlay" style="display:block;"></canvas>
+        <canvas id="crop-overlay-canvas" style="position:absolute;top:0;left:0;cursor:crosshair;"></canvas>
+      </div>
+    </div>
+    <div class="flex justify-center gap-3 mt-4">
+      <button onclick="applyCrop()" class="px-6 py-2 bg-accent-600 hover:bg-accent-500 rounded-lg font-bold text-white transition">אישור חיתוך</button>
+      <button onclick="closeCrop()" class="px-6 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition">ביטול</button>
     </div>
   </div>
 </div>
 
 <script>
 // ==================== CONFIG ====================
-const DB_KEY = 'ewolf_editor_pro_v5';
+const DB_KEY = 'ewolf_editor_pro_v6';
 const PEXELS_KEY = 'GN2dKIz3gxA7DMYnRXdyxbZwhRbeNtzhwsWAkUrE4vrRqy45WgBwRVC3';
 const BRAND_SEARCH_KEY = '1id8RlM6U1EKkHr7j2u';
 const GOOGLE_FONTS = ['Assistant','Alef','Rubik','Heebo','Suez One','Varela Round','Roboto','Open Sans','Lato','Montserrat','Poppins','Oswald','Raleway','Merriweather','Playfair Display','Nunito','Ubuntu','Noto Sans','Inter','Fira Sans','Crimson Text','IBM Plex Sans','Josefin Sans','Lora','Manrope','Pacifico','Space Grotesk','Bebas Neue','Cairo','Comfortaa','DM Sans','Exo 2','Lobster','Orbitron','Tajawal','Amiri','Cinzel','Dancing Script','Great Vibes','Indie Flower','Kaushan Script','Teko','Righteous','MuseoModerno','Noto Serif','Overpass','Barlow','Hind','Arimo','Libre Franklin','Bitter','Domine','Literata','Spectral','Jost','Karla','Cabin','Quicksand','Source Sans Pro','Dosis','Titillium Web','Work Sans','M PLUS Rounded 1c'];
 
-// Firebase config - using a demo project (replace with your own)
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyCG9WYRbckHlAF5MqdYtgGmU9d4j2egtjo",
   authDomain: "wpposteditor.firebaseapp.com",
@@ -682,29 +913,13 @@ let firebaseEnabled = false;
 
 function initFirebase() {
   try {
-    if(typeof firebase === 'undefined') {
-      console.log('[Firebase] SDK not loaded - will use localStorage only');
-      return false;
-    }
+    if(typeof firebase === 'undefined') { console.log('[Firebase] SDK not loaded'); return false; }
     firebase.initializeApp(FIREBASE_CONFIG);
     db = firebase.firestore();
-    // Enable offline persistence
-    db.enablePersistence({synchronizeTabs:true}).catch(err => {
-      if(err.code === 'failed-precondition') {
-        console.log('[Firebase] Persistence failed: multiple tabs open');
-      } else if(err.code === 'unimplemented') {
-        console.log('[Firebase] Persistence not available');
-      }
-    });
+    db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
     firebaseEnabled = true;
-    console.log('[Firebase] Initialized successfully');
     return true;
-  } catch(e) {
-    console.log('[Firebase] Init error:', e.message);
-    firebaseEnabled = false;
-    db = null;
-    return false;
-  }
+  } catch(e) { firebaseEnabled = false; return false; }
 }
 
 // ==================== STATE ====================
@@ -717,25 +932,24 @@ const App = {
   currentTool: 'select',
   isDragging: false, isResizing: false, isRotating: false,
   dragOffset: {x:0,y:0}, dragStart: {}, resizeHandle: null, rotateCenter: {}, startAngle: 0, startRotation: 0,
-  elementCounter: 0, loadedFonts: new Set(['Assistant']),
+  elementCounter: 0, nextZIndex: 1, loadedFonts: new Set(['Assistant']),
   dirty: false, autoSaveTimer: null,
   settings: {autoSave:true, snapGrid:0},
   cropState: {active:false, element:null, img:null, underlay:null, overlay:null, ctx:null, cropX:0, cropY:0, cropW:0, cropH:0, scaleX:1, scaleY:1, dragging:false, handle:null},
   tempProfile: null,
   tempProfilePass: null,
   history: [], historyIndex: -1, historyMax: 50,
-  siteLogoUrl: null
+  siteLogoUrl: null,
+  aiModels: { 'bg-removal': {installed:false, loading:false, module:null}, 'translate': {installed:false, loading:false, pipeline:null}, 'rewrite': {installed:false, loading:false, pipeline:null} },
+  bgRemovalQueue: [],
+  previewMode: false
 };
 
 // ==================== CRYPTO ====================
 async function hashPassword(password) {
   if(!window.crypto || !crypto.subtle) {
     let hash = 0;
-    for(let i = 0; i < password.length; i++) {
-      const char = password.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
+    for(let i = 0; i < password.length; i++) { const char = password.charCodeAt(i); hash = ((hash << 5) - hash) + char; hash = hash & hash; }
     return 'local_' + Math.abs(hash).toString(16).padStart(64, '0');
   }
   const enc = new TextEncoder();
@@ -766,55 +980,33 @@ async function decryptData(encrypted, password) {
 
 // ==================== STORAGE ====================
 async function loadDB() {
-  // Always try localStorage first (fastest, never hangs)
   let localData = null;
-  try { 
-    const raw = localStorage.getItem(DB_KEY); 
-    if(raw) localData = JSON.parse(raw); 
-  } catch(e){
-    console.log('[loadDB] localStorage error:', e.message);
-  }
-
-  // Try Firebase with timeout
+  try { const raw = localStorage.getItem(DB_KEY); if(raw) localData = JSON.parse(raw); } catch(e){}
   if(firebaseEnabled && db) {
     try {
-      const timeout = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Firebase timeout')), 3000)
-      );
+      const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('Firebase timeout')), 3000));
       const docPromise = db.collection('app').doc('data').get();
       const doc = await Promise.race([docPromise, timeout]);
-
       if(doc.exists) {
         const cloudData = doc.data();
         if(!localData || (cloudData._lastUpdated && localData._lastUpdated && cloudData._lastUpdated > localData._lastUpdated)) {
           localStorage.setItem(DB_KEY, JSON.stringify(cloudData));
-          console.log('[loadDB] Loaded from Firebase (newer data)');
           return cloudData;
         }
       }
-    } catch(e) {
-      console.log('[loadDB] Firebase error:', e.message);
-    }
+    } catch(e) {}
   }
-
-  console.log('[loadDB] Using localStorage data');
   return localData;
 }
 async function saveDB() {
   App.data._lastUpdated = Date.now();
   localStorage.setItem(DB_KEY, JSON.stringify(App.data));
-  console.log('[saveDB] Saved to localStorage');
-  // Sync to Firebase in background (don't block)
   if(firebaseEnabled && db) {
-    db.collection('app').doc('data').set(App.data)
-      .then(() => console.log('[saveDB] Saved to Firebase'))
-      .catch(e => {
-        console.log('[saveDB] Firebase error:', e.message);
-      });
+    db.collection('app').doc('data').set(App.data).catch(()=>{});
   }
 }
 function initDB() {
-  App.data = { version:5, profiles:[], sites:[], drafts:{}, settings:{autoSave:true, snapGrid:0} };
+  App.data = { version:6, profiles:[], sites:[], drafts:{}, settings:{autoSave:true, snapGrid:0}, aiModels:{} };
   saveDB();
 }
 
@@ -828,46 +1020,24 @@ function showToast(msg, type='info') {
 
 // ==================== SCREEN MANAGEMENT ====================
 function hideAllScreens() {
-  console.log('[hideAllScreens] Hiding all screens...');
-  ['screen-profiles','screen-create-profile','screen-auth','screen-sites','screen-add-site','screen-editor'].forEach(id=>{
-    try {
-      const el = document.getElementById(id);
-      if(el) el.classList.add('hidden');
-    } catch(e) {
-      console.log('[hideAllScreens] WARNING: element not found:', id);
-    }
+  ['screen-profiles','screen-create-profile','screen-auth','screen-sites','screen-add-site','screen-editor','screen-home'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.classList.add('hidden');
   });
-  console.log('[hideAllScreens] Done');
 }
 function showProfiles() {
-  console.log('[showProfiles] Opening profiles screen');
   hideAllScreens();
-  const screen = document.getElementById('screen-profiles');
-  if(!screen) {
-    console.error('[showProfiles] screen-profiles element not found!');
-    return;
-  }
-  screen.classList.remove('hidden');
+  document.getElementById('screen-profiles').classList.remove('hidden');
   renderProfiles();
 }
 function showCreateProfile() {
-  console.log('[showCreateProfile] Called!');
-  console.log('[showCreateProfile] Calling hideAllScreens...');
   hideAllScreens();
-  console.log('[showCreateProfile] Getting screen element...');
-  const screen = document.getElementById('screen-create-profile');
-  console.log('[showCreateProfile] Screen element:', screen ? 'found' : 'NOT FOUND');
-  if(screen) {
-    screen.classList.remove('hidden');
-    console.log('[showCreateProfile] Screen shown');
-  }
+  document.getElementById('screen-create-profile').classList.remove('hidden');
   document.getElementById('new-profile-name').value = '';
   document.getElementById('new-profile-pass').value = '';
   document.getElementById('new-profile-pass2').value = '';
   selectedNewAvatar = null;
-  console.log('[showCreateProfile] Rendering avatars...');
   renderNewAvatars();
-  console.log('[showCreateProfile] DONE');
 }
 function showAuth(profileId) {
   const profile = App.data.profiles.find(p => p.id === profileId);
@@ -895,6 +1065,15 @@ function showAddSite() {
   document.getElementById('site-test-result').classList.add('hidden');
   document.getElementById('screen-add-site').classList.remove('hidden');
 }
+function showHome() {
+  hideAllScreens();
+  document.getElementById('screen-home').classList.remove('hidden');
+  document.getElementById('home-avatar').src = App.currentProfile.avatar;
+  document.getElementById('home-username').textContent = App.currentProfile.name;
+  refreshHomePosts();
+  loadHomeDrafts();
+  updateAiInstallButtons();
+}
 function showEditor() {
   hideAllScreens();
   document.getElementById('screen-editor').classList.remove('hidden');
@@ -903,11 +1082,13 @@ function showEditor() {
   updateSiteSwitcher();
   newPost();
 }
+function backToHome() {
+  if(App.currentPost && App.dirty) saveDraftQuiet();
+  showHome();
+}
 
 // ==================== PROFILES ====================
 let selectedNewAvatar = null;
-const iconifyCache = {};
-let previewMode = false;
 function renderProfiles() {
   const grid = document.getElementById('profiles-grid');
   if(!App.data || !App.data.profiles || App.data.profiles.length===0) {
@@ -946,61 +1127,35 @@ function handleNewAvatarUpload(e) {
   const file = e.target.files[0];
   if(!file) return;
   const reader = new FileReader();
-  reader.onload = ()=>{
-    selectedNewAvatar = reader.result;
-    document.querySelectorAll('#new-avatar-grid .avatar-option').forEach(a=>a.classList.remove('selected'));
-    showToast('תמונת פרופיל נטענה','success');
-  };
+  reader.onload = ()=>{ selectedNewAvatar = reader.result; document.querySelectorAll('#new-avatar-grid .avatar-option').forEach(a=>a.classList.remove('selected')); showToast('תמונת פרופיל נטענה','success'); };
   reader.readAsDataURL(file);
 }
 async function createNewProfile() {
-  var nameEl = document.getElementById('new-profile-name');
-  var passEl = document.getElementById('new-profile-pass');
-  var pass2El = document.getElementById('new-profile-pass2');
-  if(!nameEl || !passEl || !pass2El) {
-    showToast('שגיאה בטעינת הטופס','error');
-    return;
-  }
-  const name = nameEl.value.trim();
-  const pass = passEl.value;
-  const pass2 = pass2El.value;
+  const name = document.getElementById('new-profile-name').value.trim();
+  const pass = document.getElementById('new-profile-pass').value;
+  const pass2 = document.getElementById('new-profile-pass2').value;
   if(!name) return showToast('יש להזין שם','error');
   if(!pass || pass.length<4) return showToast('סיסמה חייבת להיות לפחות 4 תווים','error');
   if(pass!==pass2) return showToast('הסיסמאות אינן תואמות','error');
   if(!selectedNewAvatar) return showToast('יש לבחור תמונת פרופיל','error');
-
   const hash = await hashPassword(pass);
-  const profile = {
-    id: 'p_'+Date.now(),
-    name, avatar: selectedNewAvatar,
-    passHash: hash,
-    createdAt: Date.now(),
-    sites: []
-  };
+  const profile = { id: 'p_'+Date.now(), name, avatar: selectedNewAvatar, passHash: hash, createdAt: Date.now(), sites: [] };
   if(!App.data) App.data = await loadDB() || {};
   if(!App.data.profiles) App.data.profiles = [];
   App.data.profiles.push(profile);
-  console.log('[createNewProfile] Saving profile:', profile.name);
-  try {
-    await saveDB();
-    console.log('[createNewProfile] Save successful');
-    showToast('פרופיל נוצר בהצלחה!','success');
-    showProfiles();
-  } catch(e) {
-    console.log('[createNewProfile] Save error:', e.message);
-    showToast('שגיאה בשמירה: ' + e.message, 'error');
-  }
+  await saveDB();
+  showToast('פרופיל נוצר בהצלחה!','success');
+  showProfiles();
 }
 async function doAuth() {
   const pass = document.getElementById('auth-pass').value;
   if(!pass) return showToast('יש להזין סיסמה','error');
   const hash = await hashPassword(pass);
   if(hash !== App.tempProfile.passHash) return showToast('סיסמה שגויה','error');
-
   App.currentProfile = App.tempProfile;
   App.tempProfilePass = pass;
   App.data = await loadDB() || {};
-  showSites();
+  showHome();
 }
 function logoutProfile() {
   App.currentProfile = null;
@@ -1010,15 +1165,9 @@ function logoutProfile() {
 }
 function deleteCurrentProfile() {
   if(!App.tempProfile) return;
-  if(!confirm('האם אתה בטוח שברצונך למחוק את הפרופיל "' + App.tempProfile.name + '"? פעולה זו תמחק גם את כל האתרים והטיוטות המשויכים לפרופיל.')) return;
-
-  // Remove profile
+  if(!confirm('האם אתה בטוח שברצונך למחוק את הפרופיל "' + App.tempProfile.name + '"?')) return;
   App.data.profiles = App.data.profiles.filter(p => p.id !== App.tempProfile.id);
-
-  // Remove associated sites
   App.data.sites = App.data.sites.filter(s => s.profileId !== App.tempProfile.id);
-
-  // Remove associated drafts
   if(App.data.drafts) {
     Object.keys(App.data.drafts).forEach(siteUrl => {
       if(Array.isArray(App.data.drafts[siteUrl])) {
@@ -1026,7 +1175,6 @@ function deleteCurrentProfile() {
       }
     });
   }
-
   saveDB();
   showToast('הפרופיל נמחק בהצלחה','success');
   showProfiles();
@@ -1062,53 +1210,27 @@ async function testAndAddSite() {
   const user = document.getElementById('site-user').value.trim();
   const pass = document.getElementById('site-pass').value.trim().replace(/\s+/g,'');
   const resultDiv = document.getElementById('site-test-result');
-
-  if(!url || !user || !pass) {
-    resultDiv.className = 'text-sm mb-4 text-red-400';
-    resultDiv.textContent = 'יש למלא את כל השדות';
-    resultDiv.classList.remove('hidden');
-    return;
-  }
-  if(!url.startsWith('http')) {
-    resultDiv.className = 'text-sm mb-4 text-red-400';
-    resultDiv.textContent = 'כתובת האתר חייבת להתחיל ב-http:// או https://';
-    resultDiv.classList.remove('hidden');
-    return;
-  }
-
-  resultDiv.className = 'text-sm mb-4 text-yellow-400';
-  resultDiv.textContent = 'בודק חיבור...';
-  resultDiv.classList.remove('hidden');
-
+  if(!url || !user || !pass) { resultDiv.className = 'text-sm mb-4 text-red-400'; resultDiv.textContent = 'יש למלא את כל השדות'; resultDiv.classList.remove('hidden'); return; }
+  if(!url.startsWith('http')) { resultDiv.className = 'text-sm mb-4 text-red-400'; resultDiv.textContent = 'כתובת האתר חייבת להתחיל ב-http:// או https://'; resultDiv.classList.remove('hidden'); return; }
+  resultDiv.className = 'text-sm mb-4 text-yellow-400'; resultDiv.textContent = 'בודק חיבור...'; resultDiv.classList.remove('hidden');
   try {
     const auth = 'Basic ' + btoa(user + ':' + pass);
     const apiUrl = url + '/wp-json/wp/v2/users/me';
     const res = await fetch(apiUrl, {headers:{'Authorization':auth}});
     if(!res.ok) throw new Error('שגיאת אימות - בדוק את הפרטים');
     const userData = await res.json();
-
     const encrypted = await encryptData({user, pass}, App.tempProfilePass);
-
     if(!App.data.sites) App.data.sites = [];
     App.data.sites = App.data.sites.filter(s => !(s.profileId===App.currentProfile.id && s.url===url));
-    App.data.sites.push({
-      url, name: userData.name || url,
-      profileId: App.currentProfile.id,
-      encryptedCreds: encrypted,
-      addedAt: Date.now()
-    });
+    App.data.sites.push({ url, name: userData.name || url, profileId: App.currentProfile.id, encryptedCreds: encrypted, addedAt: Date.now() });
     saveDB();
-
     resultDiv.className = 'text-sm mb-4 text-green-400';
     resultDiv.textContent = '✓ מחובר בהצלחה! שלום ' + userData.name;
     setTimeout(()=>{ showSites(); }, 800);
   } catch(e) {
     let msg = e.message;
-    if(e.message.includes('Failed to fetch') || e.message.includes('CORS')) {
-      msg = 'בעיית CORS או חיבור. ודא שהאתר נגיש ושה-REST API פעול.';
-    }
-    resultDiv.className = 'text-sm mb-4 text-red-400';
-    resultDiv.textContent = '✗ שגיאה: ' + msg;
+    if(e.message.includes('Failed to fetch') || e.message.includes('CORS')) msg = 'בעיית CORS או חיבור. ודא שהאתר נגיש ושה-REST API פעול.';
+    resultDiv.className = 'text-sm mb-4 text-red-400'; resultDiv.textContent = '✗ שגיאה: ' + msg;
   }
 }
 function deleteSite(url) {
@@ -1121,22 +1243,14 @@ function deleteSite(url) {
 async function enterSite(url) {
   const site = App.data.sites.find(s => s.profileId===App.currentProfile.id && s.url===url);
   if(!site) return showToast('אתר לא נמצא','error');
-
   const creds = await decryptData(site.encryptedCreds, App.tempProfilePass);
   if(!creds) return showToast('שגיאה בפענוח פרטי האתר','error');
-
   App.currentSite = {url: site.url, name: site.name, user: creds.user, pass: creds.pass};
-
-  // Try to fetch site logo
   try {
     const auth = 'Basic ' + btoa(creds.user + ':' + creds.pass);
     const res = await fetch(site.url + '/wp-json/wp/v2/settings', {headers:{'Authorization':auth}});
-    if(res.ok) {
-      const settings = await res.json();
-      App.siteLogoUrl = settings.site_logo || settings.site_icon || null;
-    }
+    if(res.ok) { const settings = await res.json(); App.siteLogoUrl = settings.site_logo || settings.site_icon || null; }
   } catch(e) { App.siteLogoUrl = null; }
-
   showEditor();
   refreshPosts();
 }
@@ -1182,9 +1296,7 @@ async function refreshPosts() {
     App.lastPosts = posts;
     renderPostsList(posts);
     showToast('הפוסטים נטענו','success');
-  } catch(e) {
-    showToast(e.message,'error');
-  }
+  } catch(e) { showToast(e.message,'error'); }
 }
 async function createWPPost(title, content, status='draft', featuredMedia=null) {
   const body = {title, content, status};
@@ -1206,6 +1318,152 @@ async function uploadMedia(file) {
   return wpFetch('/media', {method:'POST', body:formData});
 }
 
+// ==================== HOME SCREEN ====================
+async function refreshHomePosts() {
+  const list = document.getElementById('home-posts-list');
+  if(!App.currentSite) { list.innerHTML = '<p class="text-center text-gray-500 text-sm py-4">אין אתר מחובר</p>'; return; }
+  try {
+    const posts = await wpFetch('/posts?per_page=12&_embed');
+    App.lastPosts = posts;
+    if(!posts || posts.length===0) { list.innerHTML = '<p class="text-center text-gray-500 text-sm py-4">אין פוסטים</p>'; return; }
+    list.innerHTML = posts.map(p=>{
+      const img = p._embedded?.['wp:featuredmedia']?.[0]?.source_url;
+      const isPublished = p.status === 'publish';
+      return `
+      <div class="post-card" onclick="editWPPostFromHome(${p.id})">
+        ${img ? `<img src="${img}" class="w-full h-24 object-cover rounded-lg mb-2">` : ''}
+        <h4 class="font-medium text-sm mb-1 truncate">${p.title.rendered}</h4>
+        <p class="text-xs text-gray-500">${new Date(p.date).toLocaleDateString('he-IL')}</p>
+        <span class="text-xs px-2 py-0.5 rounded ${isPublished?'bg-green-900 text-green-400':'bg-gray-800 text-gray-400'}">${isPublished?'פורסם':'טיוטה'}</span>
+      </div>`;
+    }).join('');
+  } catch(e) { list.innerHTML = '<p class="text-center text-gray-500 text-sm py-4">שגיאה בטעינת פוסטים</p>'; }
+}
+function loadHomeDrafts() {
+  const list = document.getElementById('home-drafts-list');
+  const drafts = (App.data.drafts?.[App.currentSite?.url] || []).filter(d=>d.author===App.currentProfile.id);
+  const countEl = document.getElementById('home-draft-count');
+  countEl.textContent = drafts.length;
+  countEl.classList.toggle('hidden', drafts.length===0);
+  if(drafts.length===0) { list.innerHTML = '<p class="text-center text-gray-500 text-sm py-4">אין טיוטות</p>'; return; }
+  list.innerHTML = drafts.map(d=>`
+    <div class="post-card" onclick="loadDraftFromHome('${d.id}')">
+      <h4 class="font-medium text-sm mb-1 truncate">${d.title || 'ללא כותרת'}</h4>
+      <p class="text-xs text-gray-500">${new Date(d.savedAt).toLocaleString('he-IL')}</p>
+    </div>
+  `).join('');
+}
+function newPostFromHome() {
+  showEditor();
+  newPost();
+}
+function editWPPostFromHome(id) {
+  showEditor();
+  editWPPost(id);
+}
+function loadDraftFromHome(id) {
+  showEditor();
+  loadDraft(id);
+}
+
+// ==================== AI INSTALL & HARDWARE CHECK ====================
+let pendingAiModel = null;
+function checkHardware() {
+  const mem = navigator.deviceMemory || 'לא ידוע';
+  const cores = navigator.hardwareConcurrency || 'לא ידוע';
+  return { memory: mem, cores: cores, isWeak: (navigator.deviceMemory && navigator.deviceMemory < 8) };
+}
+function installAiModel(modelId) {
+  const hw = checkHardware();
+  if(hw.isWeak) {
+    pendingAiModel = modelId;
+    document.getElementById('ai-hardware-info').textContent = `זיכרון: ${hw.memory}GB | ליבות: ${hw.cores}`;
+    document.getElementById('ai-warning-modal').classList.add('active');
+    return;
+  }
+  doInstallAiModel(modelId);
+}
+function confirmAiInstall() {
+  document.getElementById('ai-warning-modal').classList.remove('active');
+  if(pendingAiModel) doInstallAiModel(pendingAiModel);
+  pendingAiModel = null;
+}
+function closeAiWarning() {
+  document.getElementById('ai-warning-modal').classList.remove('active');
+  pendingAiModel = null;
+}
+async function doInstallAiModel(modelId) {
+  showToast('מתקין מודל AI...','info');
+  try {
+    if(modelId === 'bg-removal') {
+      const module = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/background-removal.esm.js');
+      App.aiModels['bg-removal'].module = module;
+      App.aiModels['bg-removal'].installed = true;
+      showToast('מודל הסרת רקע הותקן בהצלחה!','success');
+    } else if(modelId === 'translate') {
+      const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js');
+      App.aiModels['translate'].pipeline = pipeline;
+      App.aiModels['translate'].installed = true;
+      showToast('מודל תרגום הותקן בהצלחה!','success');
+    } else if(modelId === 'rewrite') {
+      const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2/dist/transformers.min.js');
+      App.aiModels['rewrite'].pipeline = pipeline;
+      App.aiModels['rewrite'].installed = true;
+      showToast('מודל שכתוב הותקן בהצלחה!','success');
+    }
+    updateAiInstallButtons();
+    updateAiPanelModels();
+  } catch(e) {
+    showToast('שגיאה בהתקנה: ' + e.message,'error');
+    console.error(e);
+  }
+}
+function updateAiInstallButtons() {
+  ['bg-removal','translate','rewrite'].forEach(id => {
+    const btn = document.getElementById('btn-install-' + id);
+    if(btn) {
+      if(App.aiModels[id].installed) {
+        btn.textContent = 'מותקן ✓';
+        btn.className = 'w-full py-2 rounded-lg bg-green-600 text-white text-sm font-medium transition cursor-default';
+        btn.onclick = null;
+      }
+    }
+  });
+}
+function showAiTools() {
+  document.getElementById('ai-tools-modal').classList.add('active');
+  renderAiToolsList();
+}
+function closeAiTools() {
+  document.getElementById('ai-tools-modal').classList.remove('active');
+}
+function renderAiToolsList() {
+  const list = document.getElementById('ai-tools-list');
+  list.innerHTML = `
+    <div class="bg-dark-900 rounded-xl p-4 border border-gray-800">
+      <div class="flex items-center justify-between mb-2">
+        <h4 class="font-bold">הסרת רקע</h4>
+        ${App.aiModels['bg-removal'].installed ? '<span class="text-xs text-green-400">✓ מותקן</span>' : '<button onclick="installAiModel('bg-removal'); closeAiTools();" class="px-3 py-1 rounded-lg bg-accent-600 text-white text-xs">התקנה</button>'}
+      </div>
+      <p class="text-xs text-gray-500">מסיר רקע מתמונות באמצעות AI מקומי</p>
+    </div>
+    <div class="bg-dark-900 rounded-xl p-4 border border-gray-800">
+      <div class="flex items-center justify-between mb-2">
+        <h4 class="font-bold">תרגום (NLLB-200)</h4>
+        ${App.aiModels['translate'].installed ? '<span class="text-xs text-green-400">✓ מותקן</span>' : '<button onclick="installAiModel('translate'); closeAiTools();" class="px-3 py-1 rounded-lg bg-accent-600 text-white text-xs">התקנה</button>'}
+      </div>
+      <p class="text-xs text-gray-500">תרגום טקסט בין שפות שונות</p>
+    </div>
+    <div class="bg-dark-900 rounded-xl p-4 border border-gray-800">
+      <div class="flex items-center justify-between mb-2">
+        <h4 class="font-bold">שכתוב (Llama-3.2-1B)</h4>
+        ${App.aiModels['rewrite'].installed ? '<span class="text-xs text-green-400">✓ מותקן</span>' : '<button onclick="installAiModel('rewrite'); closeAiTools();" class="px-3 py-1 rounded-lg bg-accent-600 text-white text-xs">התקנה</button>'}
+      </div>
+      <p class="text-xs text-gray-500">שינוי סגנון כתיבה ב-AI</p>
+    </div>
+  `;
+}
+
 // ==================== UNDO / REDO ====================
 function pushHistory() {
   if(App.historyIndex < App.history.length - 1) {
@@ -1214,16 +1472,15 @@ function pushHistory() {
   const state = JSON.stringify({
     elements: App.currentPost.elements,
     elementCounter: App.elementCounter,
+    nextZIndex: App.nextZIndex,
     title: App.currentPost.title,
     featuredImage: App.currentPost.featuredImage,
     background: App.currentPost.background
   });
   if(App.history.length > 0 && App.history[App.history.length - 1] === state) return;
-
   App.history.push(state);
   if(App.history.length > App.historyMax) App.history.shift();
   else App.historyIndex++;
-
   updateUndoRedoButtons();
 }
 function undo() {
@@ -1244,19 +1501,17 @@ function restoreHistory(stateStr) {
   const state = JSON.parse(stateStr);
   App.currentPost.elements = state.elements;
   App.elementCounter = state.elementCounter;
+  App.nextZIndex = state.nextZIndex || 1;
   App.currentPost.title = state.title;
   App.currentPost.featuredImage = state.featuredImage;
   App.currentPost.background = state.background;
-
   document.getElementById('post-title').value = state.title || '';
   if(state.featuredImage) {
     document.getElementById('featured-image').src = state.featuredImage;
     document.getElementById('featured-image').classList.remove('hidden');
     document.getElementById('featured-image-placeholder').style.display = 'none';
     document.getElementById('featured-remove').style.display = 'flex';
-  } else {
-    removeFeaturedImage();
-  }
+  } else { removeFeaturedImage(); }
   renderCanvas();
 }
 function updateUndoRedoButtons() {
@@ -1276,6 +1531,7 @@ function newPost() {
     status: 'draft', author: App.currentProfile.id, createdAt: Date.now()
   };
   App.elementCounter = 0;
+  App.nextZIndex = 1;
   App.dirty = false;
   App.history = [];
   App.historyIndex = -1;
@@ -1285,10 +1541,11 @@ function newPost() {
   deselectAll();
   document.getElementById('save-status').textContent = '';
   updateUndoRedoButtons();
+  document.getElementById('btn-translate-post').classList.add('hidden');
 }
 function renderCanvas() {
   const canvas = document.getElementById('editor-canvas');
-  const hint = canvas.querySelector('.absolute.top-4');
+  const hint = canvas.querySelector('.absolute.top-2');
   canvas.innerHTML = '';
   if(hint) canvas.appendChild(hint);
 
@@ -1297,15 +1554,8 @@ function renderCanvas() {
     canvas.className = '';
     const bg = App.currentPost.background;
     const opacity = (bg.opacity !== undefined ? bg.opacity : 100) / 100;
-
-    if(bg.type==='color') {
-      canvas.style.background = bg.value;
-      canvas.style.opacity = opacity;
-    }
-    else if(bg.type==='gradient') {
-      canvas.classList.add(bg.value);
-      canvas.style.opacity = opacity;
-    }
+    if(bg.type==='color') { canvas.style.background = bg.value; canvas.style.opacity = opacity; }
+    else if(bg.type==='gradient') { canvas.classList.add(bg.value); canvas.style.opacity = opacity; }
     else if(bg.type==='image') {
       canvas.style.backgroundImage = 'url('+bg.value+')';
       canvas.style.backgroundSize = bg.imageSize || 'cover';
@@ -1314,7 +1564,10 @@ function renderCanvas() {
       canvas.style.opacity = opacity;
     }
   }
-  App.currentPost.elements.forEach(el => createElementDOM(el));
+
+  // Sort by zIndex for rendering
+  const sorted = [...App.currentPost.elements].sort((a,b)=>(a.zIndex||0)-(b.zIndex||0));
+  sorted.forEach(el => createElementDOM(el));
 }
 function createElementDOM(el) {
   const canvas = document.getElementById('editor-canvas');
@@ -1322,25 +1575,33 @@ function createElementDOM(el) {
   div.className = 'canvas-element ' + el.type + '-element';
   div.id = 'el-' + el.id;
   div.dataset.id = el.id;
-  div.style.left = el.x + 'px';
-  div.style.top = el.y + 'px';
-  div.style.width = el.width + 'px';
-  div.style.height = el.height + 'px';
+
+  // FLOW MODE (text wrap)
+  if(el.textWrap) {
+    div.classList.add('flow-mode');
+  } else {
+    div.style.left = el.x + 'px';
+    div.style.top = el.y + 'px';
+    div.style.width = el.width + 'px';
+    div.style.height = el.height + 'px';
+  }
+
   div.style.transform = 'rotate(' + (el.rotation||0) + 'deg)';
   div.style.opacity = (el.opacity||100)/100;
   div.style.zIndex = el.zIndex || 1;
 
   if(el.borderRadius) div.style.borderRadius = el.borderRadius;
-  if(el.borderWidth) div.style.borderWidth = el.borderWidth;
-  if(el.borderColor) div.style.borderColor = el.borderColor;
-  if(el.borderStyle) div.style.borderStyle = el.borderStyle;
+  if(el.borderWidth && el.borderWidth !== '0px') div.style.borderWidth = el.borderWidth;
+  if(el.borderColor && el.borderColor !== '#000000') div.style.borderColor = el.borderColor;
+  if(el.borderStyle && el.borderStyle !== 'solid') div.style.borderStyle = el.borderStyle;
+  if(el.bgColor) div.style.backgroundColor = el.bgColor;
 
   const content = document.createElement('div');
   content.className = 'element-content';
 
   if(el.type==='text') {
     content.contentEditable = true;
-    content.innerHTML = el.content || '<p>טקסט חדש</p>';
+    content.innerHTML = el.content || '<p></p>';
     content.style.fontFamily = el.styles?.fontFamily || 'Assistant';
     content.style.fontSize = el.styles?.fontSize || '18px';
     content.style.color = el.styles?.color || '#1f2937';
@@ -1349,52 +1610,18 @@ function createElementDOM(el) {
     content.style.fontWeight = el.styles?.fontWeight || '400';
     content.style.lineHeight = el.styles?.lineHeight || '1.6';
     content.style.direction = 'rtl';
-    content.style.height = 'auto';
-    content.style.minHeight = '40px';
-    content.style.overflow = 'visible';
 
-    // Auto-resize height based on content
-    const autoResize = () => {
-      content.style.height = 'auto';
-      const newHeight = content.scrollHeight + 24; // padding
-      el.height = newHeight;
-      div.style.height = newHeight + 'px';
-      updatePropsPanel();
-    };
-
-    content.addEventListener('input', ()=>{ 
-      el.content = content.innerHTML; 
-      autoResize();
-      markDirty(); 
-    });
-    content.addEventListener('blur', ()=>{ 
-      el.content = content.innerHTML; 
-      autoResize();
-    });
-    content.addEventListener('mouseup', showInlineToolbar);
-    content.addEventListener('keyup', showInlineToolbar);
+    content.addEventListener('input', ()=>{ el.content = content.innerHTML; autoResizeText(div, el); markDirty(); });
+    content.addEventListener('blur', ()=>{ el.content = content.innerHTML; autoResizeText(div, el); });
+    content.addEventListener('mouseup', ()=>{ showInlineToolbar(); checkTextSelection(); });
+    content.addEventListener('keyup', ()=>{ showInlineToolbar(); checkTextSelection(); });
     content.addEventListener('keydown', (e)=>{
       if(e.key==='Enter' && !e.shiftKey) {
-        setTimeout(()=>{
-          autoResize();
-          const sel = window.getSelection();
-          if(sel.rangeCount) {
-            let node = sel.getRangeAt(0).startContainer;
-            while(node && node!==content) {
-              if(node.nodeType===1 && !['P','DIV','H1','H2','H3','BLOCKQUOTE','LI'].includes(node.tagName)) {
-                const p = document.createElement('p');
-                node.parentNode.insertBefore(p, node);
-                p.appendChild(node);
-              }
-              node = node.parentNode;
-            }
-          }
-        }, 0);
+        setTimeout(()=>{ autoResizeText(div, el); }, 0);
       }
     });
+    setTimeout(()=>autoResizeText(div, el), 0);
 
-    // Initial resize
-    setTimeout(autoResize, 0);
   } else if(el.type==='image') {
     const img = document.createElement('img');
     img.src = el.src;
@@ -1403,15 +1630,15 @@ function createElementDOM(el) {
     img.style.borderRadius = el.styles?.borderRadius || '0';
     img.style.objectFit = el.styles?.objectFit || 'cover';
     if(el.styles?.filter) img.style.filter = el.styles.filter;
+    if(el.bgColor) content.style.backgroundColor = el.bgColor;
     content.appendChild(img);
     div.addEventListener('dblclick', ()=>openCropModal(el));
+
   } else if(el.type==='shape') {
     content.style.backgroundColor = el.styles?.backgroundColor || '#8b5cf6';
     content.style.borderRadius = el.styles?.borderRadius || '0';
     if(el.styles?.gradient) content.style.background = el.styles.gradient;
-    if(el.styles?.borderWidth) content.style.borderWidth = el.styles.borderWidth;
-    if(el.styles?.borderColor) content.style.borderColor = el.styles.borderColor;
-    if(el.styles?.borderStyle) content.style.borderStyle = el.styles.borderStyle;
+    if(el.bgColor) content.style.backgroundColor = el.bgColor;
     if(el.shapeType==='circle') content.style.borderRadius = '50%';
     if(el.shapeType==='star') content.style.clipPath = 'polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%)';
     if(el.shapeType==='triangle') content.style.clipPath = 'polygon(50% 0%, 0% 100%, 100% 100%)';
@@ -1431,39 +1658,39 @@ function createElementDOM(el) {
     if(el.shapeType==='hexagon') content.style.clipPath = 'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)';
     if(el.shapeType==='line-h') { content.style.height='4px'; content.style.backgroundColor = el.styles?.backgroundColor || '#94a3b8'; }
     if(el.shapeType==='line-v') { content.style.width='4px'; content.style.backgroundColor = el.styles?.backgroundColor || '#94a3b8'; }
+
   } else if(el.type==='embed') {
     const iframe = document.createElement('iframe');
     iframe.src = el.src || 'about:blank';
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.style.border = 'none';
-    iframe.style.borderRadius = '8px';
+    iframe.style.width = '100%'; iframe.style.height = '100%';
+    iframe.style.border = 'none'; iframe.style.borderRadius = '8px';
     iframe.style.pointerEvents = 'none';
     content.appendChild(iframe);
+
   } else if(el.type==='html') {
     content.innerHTML = el.content || '<div style="padding:20px;color:#666;">HTML Block</div>';
     content.style.pointerEvents = 'none';
+
   } else if(el.type==='video') {
     const iframe = document.createElement('iframe');
     iframe.src = el.src || '';
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.style.border = 'none';
-    iframe.style.borderRadius = '8px';
+    iframe.style.width = '100%'; iframe.style.height = '100%';
+    iframe.style.border = 'none'; iframe.style.borderRadius = '8px';
     iframe.allowFullscreen = true;
     iframe.style.pointerEvents = 'none';
     content.appendChild(iframe);
+
   } else if(el.type==='wp-logo') {
     content.innerHTML = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="fab fa-wordpress" style="font-size:80px;color:#21759b;"></i></div>';
     content.style.pointerEvents = 'none';
+
   } else if(el.type==='site-logo') {
     const img = document.createElement('img');
     img.src = App.siteLogoUrl || 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" fill="#8b5cf6"/></svg>');
-    img.style.width = '100%';
-    img.style.height = '100%';
-    img.style.objectFit = 'contain';
+    img.style.width = '100%'; img.style.height = '100%'; img.style.objectFit = 'contain';
     content.appendChild(img);
     content.style.pointerEvents = 'none';
+
   } else if(el.type==='iconify') {
     const svgHtml = el.svgContent || '';
     const coloredSvg = svgHtml.replace(/fill="[^"]*"/g, '').replace(/stroke="[^"]*"/g, '');
@@ -1471,23 +1698,22 @@ function createElementDOM(el) {
     content.style.pointerEvents = 'none';
     const svgEl = content.querySelector('svg');
     if(svgEl) {
-      svgEl.setAttribute('width', '100%');
-      svgEl.setAttribute('height', '100%');
+      svgEl.setAttribute('width', '100%'); svgEl.setAttribute('height', '100%');
       svgEl.style.fill = el.styles?.color || '#8b5cf6';
       svgEl.setAttribute('viewBox', svgEl.getAttribute('viewBox') || '0 0 24 24');
     }
+
   } else if(el.type==='brand-logo') {
     const img = document.createElement('img');
     img.src = el.src || '';
-    img.style.width = '100%';
-    img.style.height = '100%';
-    img.style.objectFit = 'contain';
+    img.style.width = '100%'; img.style.height = '100%'; img.style.objectFit = 'contain';
     content.appendChild(img);
     content.style.pointerEvents = 'none';
   }
 
   div.appendChild(content);
 
+  // Resize handles
   ['nw','ne','sw','se'].forEach(pos=>{
     const h = document.createElement('div');
     h.className = 'resize-handle ' + pos;
@@ -1501,10 +1727,19 @@ function createElementDOM(el) {
   div.addEventListener('mousedown', (e)=>onElementMouseDown(e, el));
   canvas.appendChild(div);
 }
+function autoResizeText(div, el) {
+  const content = div.querySelector('.element-content');
+  if(!content) return;
+  content.style.height = 'auto';
+  const newHeight = content.scrollHeight + 8;
+  el.height = newHeight;
+  if(!el.textWrap) div.style.height = newHeight + 'px';
+}
 
 // ==================== MOUSE INTERACTIONS ====================
 function onElementMouseDown(e, el) {
   if(App.currentTool !== 'select') return;
+  if(el.textWrap) return; // Can't drag flow elements
   const target = e.target;
   const div = document.getElementById('el-' + el.id);
 
@@ -1527,12 +1762,11 @@ function onElementMouseDown(e, el) {
     return;
   }
 
-  // For text elements: click on content enters edit mode, click on border selects for drag
+  // For text: clicking on content enters edit mode
   if(el.type === 'text') {
     const contentDiv = div.querySelector('.element-content');
     const isContentClick = contentDiv && (target === contentDiv || contentDiv.contains(target));
     if(isContentClick && !e.shiftKey) {
-      // Enter edit mode
       selectElement(el);
       contentDiv.focus();
       e.stopPropagation();
@@ -1551,7 +1785,7 @@ document.addEventListener('mousemove', (e)=>{
   if(!App.selectedElement) return;
   const el = App.selectedElement;
   const div = document.getElementById('el-' + el.id);
-  if(!div) return;
+  if(!div || el.textWrap) return;
 
   if(App.isDragging) {
     let dx = e.clientX - App.dragOffset.x;
@@ -1608,55 +1842,55 @@ function selectElement(el) {
   if(div) div.classList.add('selected');
   showPropsPanel();
   updatePropsPanel();
+  // Show bg removal button if image and model installed
+  const bgBtn = document.getElementById('btn-bg-removal');
+  if(bgBtn) bgBtn.classList.toggle('hidden', !(el.type==='image' && App.aiModels['bg-removal'].installed));
 }
 function deselectAll(e) {
   if(e && e.target.id !== 'editor-canvas') return;
   document.querySelectorAll('.canvas-element').forEach(d=>d.classList.remove('selected'));
   App.selectedElement = null;
   hideInlineToolbar();
+  hideTextSelectionPopup();
   showPostProps();
 }
 
-// Click on canvas background creates new text at that position
+// DOUBLE CLICK = new text at position
 function handleCanvasClick(e) {
   if(e.target.id !== 'editor-canvas') return;
-  // Only if not dragging and not clicking on existing element
   if(App.isDragging || App.isResizing || App.isRotating) return;
 
   const canvas = document.getElementById('editor-canvas');
   const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
-
-  // Create text element at click position
   const canvasWidth = parseInt(canvas.style.width) || 800;
+
   const el = {
     id: 'el_' + (++App.elementCounter),
-    type: 'text', x: Math.max(20, x - 100), y: Math.max(20, y - 20),
-    width: Math.min(600, canvasWidth - 40), height: 60,
-    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    type: 'text', x: Math.max(20, x - 100), y: Math.max(20, y - 10),
+    width: Math.min(600, canvasWidth - 40), height: 40,
+    rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     content: '<p></p>',
     styles: {fontFamily:'Assistant', fontSize:'18px', color:'#1f2937', textAlign:'right', fontWeight:'400', lineHeight:'1.6'},
-    borderRadius: '0px', borderWidth: '0px', borderColor: 'transparent', borderStyle: 'solid'
+    borderRadius: '0px', borderWidth: '0px', borderColor: 'transparent', borderStyle: 'solid',
+    bgColor: 'transparent'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
   selectElement(el);
 
-  // Focus and place cursor
   setTimeout(() => {
     const contentDiv = document.querySelector('#el-' + el.id + ' .element-content');
     if(contentDiv) {
       contentDiv.focus();
-      // Place cursor at end
       const range = document.createRange();
       const sel = window.getSelection();
-      if(contentDiv.lastChild) {
-        range.setStart(contentDiv.lastChild, contentDiv.lastChild.textContent.length);
-        range.collapse(true);
-        sel.removeAllRanges();
-        sel.addRange(range);
-      }
+      const p = contentDiv.querySelector('p') || contentDiv;
+      range.setStart(p, 0);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
     }
   }, 50);
 
@@ -1664,11 +1898,260 @@ function handleCanvasClick(e) {
   pushHistory();
 }
 
+// ==================== TEXT SELECTION AI POPUP ====================
+let selectedTextRange = null;
+function checkTextSelection() {
+  const sel = window.getSelection();
+  if(!sel.rangeCount || sel.isCollapsed) { hideTextSelectionPopup(); return; }
+  const range = sel.getRangeAt(0);
+  const rect = range.getBoundingClientRect();
+  if(rect.width === 0) { hideTextSelectionPopup(); return; }
+
+  selectedTextRange = range;
+  const popup = document.getElementById('text-selection-popup');
+  popup.style.left = (rect.left + rect.width/2 - 80) + 'px';
+  popup.style.top = (rect.top - 40) + 'px';
+  popup.classList.add('show');
+}
+function hideTextSelectionPopup() {
+  document.getElementById('text-selection-popup').classList.remove('show');
+  selectedTextRange = null;
+}
+
+// ==================== AI TRANSLATE SELECTION ====================
+async function aiTranslateSelection() {
+  if(!selectedTextRange || !App.aiModels['translate'].installed) {
+    showToast('מודל התרגום לא מותקן','error');
+    return;
+  }
+  const text = selectedTextRange.toString();
+  if(!text.trim()) return;
+  hideTextSelectionPopup();
+  showToast('מתרגם...','info');
+
+  try {
+    const pipeline = App.aiModels['translate'].pipeline;
+    const translator = await pipeline('translation', 'Xenova/nllb-200-distilled-600M');
+    const isHebrew = /[֐-׿]/.test(text);
+    const srcLang = isHebrew ? 'heb_Hebr' : 'eng_Latn';
+    const tgtLang = isHebrew ? 'eng_Latn' : 'heb_Hebr';
+    const result = await translator(text, { src_lang: srcLang, tgt_lang: tgtLang });
+    const translated = result[0]?.translation_text || text;
+
+    selectedTextRange.deleteContents();
+    selectedTextRange.insertNode(document.createTextNode(translated));
+    if(App.selectedElement && App.selectedElement.type==='text') {
+      const content = document.querySelector('#el-' + App.selectedElement.id + ' .element-content');
+      if(content) App.selectedElement.content = content.innerHTML;
+    }
+    markDirty();
+    showToast('תורגם בהצלחה!','success');
+  } catch(e) {
+    showToast('שגיאה בתרגום: ' + e.message,'error');
+  }
+}
+
+// ==================== AI REWRITE SELECTION ====================
+async function aiRewriteSelection() {
+  if(!selectedTextRange || !App.aiModels['rewrite'].installed) {
+    showToast('מודל השכתוב לא מותקן','error');
+    return;
+  }
+  const text = selectedTextRange.toString();
+  if(!text.trim()) return;
+  hideTextSelectionPopup();
+
+  const style = prompt('בחר סגנון:
+1. יותר רשמי
+2. פחות רשמי
+3. יותר קצר
+4. יותר ארוך
+5. יותר קליל
+6. יותר ילדותי', '1');
+  if(!style) return;
+
+  const styles = {
+    '1': 'הפוך לרשמי יותר',
+    '2': 'הפוך לבלתי רשמי',
+    '3': 'קצר את הטקסט',
+    '4': 'הארך את הטקסט',
+    '5': 'הפוך לקליל יותר',
+    '6': 'הפוך לילדותי יותר'
+  };
+  const promptText = styles[style] || styles['1'];
+
+  showToast('משכתב...','info');
+  try {
+    const pipeline = App.aiModels['rewrite'].pipeline;
+    const generator = await pipeline('text-generation', 'Xenova/Llama-3.2-1B-Instruct', { dtype: 'q4' });
+    const messages = [
+      { role: 'system', content: 'אתה עוזר כתיבה. תשתמש בעברית.' },
+      { role: 'user', content: `${promptText}: "${text}"` }
+    ];
+    const result = await generator(messages, { max_new_tokens: 128, temperature: 0.7 });
+    const rewritten = result[0]?.generated_text?.pop()?.content || text;
+
+    selectedTextRange.deleteContents();
+    selectedTextRange.insertNode(document.createTextNode(rewritten));
+    if(App.selectedElement && App.selectedElement.type==='text') {
+      const content = document.querySelector('#el-' + App.selectedElement.id + ' .element-content');
+      if(content) App.selectedElement.content = content.innerHTML;
+    }
+    markDirty();
+    showToast('שוכתב בהצלחה!','success');
+  } catch(e) {
+    showToast('שגיאה בשכתוב: ' + e.message,'error');
+  }
+}
+
+// ==================== AI TRANSLATE FULL POST ====================
+async function translateFullPost() {
+  if(!App.aiModels['translate'].installed) { showToast('מודל התרגום לא מותקן','error'); return; }
+  showToast('מתרגם פוסט שלם...','info');
+  try {
+    const pipeline = App.aiModels['translate'].pipeline;
+    const translator = await pipeline('translation', 'Xenova/nllb-200-distilled-600M');
+
+    for(const el of App.currentPost.elements) {
+      if(el.type !== 'text') continue;
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = el.content;
+      const text = tempDiv.textContent || '';
+      if(!text.trim()) continue;
+
+      const isHebrew = /[֐-׿]/.test(text);
+      const srcLang = isHebrew ? 'heb_Hebr' : 'eng_Latn';
+      const tgtLang = isHebrew ? 'eng_Latn' : 'heb_Hebr';
+      const result = await translator(text, { src_lang: srcLang, tgt_lang: tgtLang });
+      const translated = result[0]?.translation_text || text;
+
+      // Replace text content while preserving HTML structure
+      el.content = '<p>' + translated.replace(/
+/g, '</p><p>') + '</p>';
+    }
+    renderCanvas();
+    markDirty();
+    pushHistory();
+    showToast('הפוסש תורגם בהצלחה!','success');
+  } catch(e) {
+    showToast('שגיאה בתרגום: ' + e.message,'error');
+  }
+}
+
+// ==================== AI CHAT PANEL ====================
+function toggleAiPanel() {
+  document.getElementById('ai-panel').classList.toggle('open');
+}
+function updateAiPanelModels() {
+  const sel = document.getElementById('ai-model-select');
+  let html = '';
+  if(App.aiModels['rewrite'].installed) html += '<option value="rewrite">Llama שכתוב</option>';
+  sel.innerHTML = html || '<option>אין מודלים מותקנים</option>';
+}
+async function sendAiChat() {
+  const input = document.getElementById('ai-chat-input');
+  const msg = input.value.trim();
+  if(!msg) return;
+  if(!App.aiModels['rewrite'].installed) { showToast('מודל AI לא מותקן','error'); return; }
+
+  const container = document.getElementById('ai-chat-messages');
+  container.innerHTML += `<div class="text-right"><div class="inline-block bg-accent-600 text-white rounded-lg px-3 py-2 text-sm mb-2">${msg}</div></div>`;
+  input.value = '';
+
+  try {
+    const pipeline = App.aiModels['rewrite'].pipeline;
+    const generator = await pipeline('text-generation', 'Xenova/Llama-3.2-1B-Instruct', { dtype: 'q4' });
+    const messages = [
+      { role: 'system', content: 'אתה עוזר יצירתי. תענה בעברית.' },
+      { role: 'user', content: msg }
+    ];
+    const result = await generator(messages, { max_new_tokens: 256, temperature: 0.8 });
+    const reply = result[0]?.generated_text?.pop()?.content || 'לא הצלחתי לענות';
+    container.innerHTML += `<div class="text-left"><div class="inline-block bg-dark-800 text-gray-200 rounded-lg px-3 py-2 text-sm mb-2 border border-gray-700">${reply}</div></div>`;
+  } catch(e) {
+    container.innerHTML += `<div class="text-left"><div class="inline-block bg-red-900/50 text-red-200 rounded-lg px-3 py-2 text-sm mb-2">שגיאה: ${e.message}</div></div>`;
+  }
+  container.scrollTop = container.scrollHeight;
+}
+
+// ==================== BACKGROUND REMOVAL ====================
+function startBgRemoval() {
+  if(!App.selectedElement || App.selectedElement.type !== 'image') return;
+  if(!App.aiModels['bg-removal'].installed) { showToast('מודל הסרת רקע לא מותקן','error'); return; }
+
+  document.getElementById('bg-removal-preview').classList.add('hidden');
+  document.getElementById('bg-removal-actions').classList.add('hidden');
+  document.getElementById('bg-removal-progress').classList.remove('hidden');
+  document.getElementById('bg-removal-bar').style.width = '0%';
+  document.getElementById('bg-removal-modal').classList.add('active');
+
+  processBgRemoval();
+}
+function closeBgRemoval() {
+  document.getElementById('bg-removal-modal').classList.remove('active');
+}
+let bgRemovalResult = null;
+async function processBgRemoval() {
+  try {
+    const el = App.selectedElement;
+    const { removeBackground } = App.aiModels['bg-removal'].module;
+
+    document.getElementById('bg-removal-bar').style.width = '30%';
+
+    // Convert data URL to blob if needed
+    let imageSrc = el.src;
+    if(imageSrc.startsWith('data:')) {
+      const blob = dataURItoBlob(imageSrc);
+      imageSrc = URL.createObjectURL(blob);
+    }
+
+    document.getElementById('bg-removal-bar').style.width = '60%';
+
+    const blob = await removeBackground(imageSrc);
+    const url = URL.createObjectURL(blob);
+    bgRemovalResult = url;
+
+    document.getElementById('bg-removal-bar').style.width = '100%';
+    document.getElementById('bg-removal-preview').src = url;
+    document.getElementById('bg-removal-preview').classList.remove('hidden');
+    document.getElementById('bg-removal-progress').classList.add('hidden');
+    document.getElementById('bg-removal-actions').classList.remove('hidden');
+
+  } catch(e) {
+    document.getElementById('bg-removal-progress').classList.add('hidden');
+    showToast('שגיאה בהסרת רקע: ' + e.message,'error');
+    closeBgRemoval();
+  }
+}
+function bgRemovalDownload() {
+  if(!bgRemovalResult) return;
+  const a = document.createElement('a');
+  a.href = bgRemovalResult;
+  a.download = 'no-bg.png';
+  a.click();
+}
+function bgRemovalReplace() {
+  if(!bgRemovalResult || !App.selectedElement) return;
+  App.selectedElement.src = bgRemovalResult;
+  const img = document.querySelector('#el-' + App.selectedElement.id + ' img');
+  if(img) img.src = bgRemovalResult;
+  markDirty();
+  pushHistory();
+  closeBgRemoval();
+  showToast('התמונה הוחלפה ללא רקע','success');
+}
+function bgRemovalImport() {
+  if(!bgRemovalResult) return;
+  addImageElement(bgRemovalResult);
+  closeBgRemoval();
+  showToast('תמונה חדשה נוספה ללא רקע','success');
+}
+
 // ==================== TOOLS ====================
 function setTool(tool, evt) {
   App.currentTool = tool;
   document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
-  var targetBtn = evt ? evt.currentTarget : (event ? event.currentTarget : null);
+  var targetBtn = evt ? evt.currentTarget : null;
   if(targetBtn) targetBtn.classList.add('active');
   if(tool==='text') addTextElement();
   if(tool==='image') document.getElementById('image-upload-trigger').click();
@@ -1679,36 +2162,33 @@ function setTool(tool, evt) {
     setTimeout(()=>{
       App.currentTool = 'select';
       document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
-      document.querySelector('.tool-btn[onclick*="setTool(\'select\')"]').classList.add('active');
+      document.querySelector('.tool-btn[onclick*="setTool('select')"]').classList.add('active');
     }, 100);
   }
 }
 
 function addTextElement() {
-  let startY = 40;
-  let startX = 50;
-  let maxWidth = 700;
   const canvas = document.getElementById('editor-canvas');
   const canvasWidth = parseInt(canvas.style.width) || 800;
+  let startY = 40;
+  let startX = 50;
 
-  const textElements = App.currentPost.elements.filter(e => e.type === 'text');
+  const textElements = App.currentPost.elements.filter(e => e.type === 'text' && !e.textWrap);
   if(textElements.length > 0) {
     const lastText = textElements[textElements.length - 1];
     startY = lastText.y + lastText.height + 20;
     startX = lastText.x;
-    maxWidth = lastText.width;
-  } else {
-    startX = 50;
-    maxWidth = canvasWidth - 100;
   }
 
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'text', x: startX, y: startY,
-    width: maxWidth, height: 60, rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    width: Math.min(600, canvasWidth - 100), height: 40,
+    rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     content: '<p>התחל לכתוב כאן...</p>',
     styles: {fontFamily:'Assistant', fontSize:'18px', color:'#1f2937', textAlign:'right', fontWeight:'400', lineHeight:'1.6'},
-    borderRadius: '0px', borderWidth: '0px', borderColor: 'transparent', borderStyle: 'solid'
+    borderRadius: '0px', borderWidth: '0px', borderColor: 'transparent', borderStyle: 'solid',
+    bgColor: 'transparent'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -1724,9 +2204,10 @@ function addImageElement(src) {
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'image', x: 100, y: 100, width: 300, height: 200,
-    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     src: src, styles: {borderRadius:'0', objectFit:'cover'},
-    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+    bgColor: 'transparent'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -1739,9 +2220,10 @@ function addShape(shapeType, x, y) {
     id: 'el_' + (++App.elementCounter),
     type: 'shape', shapeType: shapeType || 'rect',
     x: x || 150, y: y || 150, width: 150, height: 150,
-    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     styles: {backgroundColor:'#8b5cf6', borderRadius:'0'},
-    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+    bgColor: 'transparent'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -1755,9 +2237,10 @@ function addEmbedElement() {
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'embed', x: 100, y: 100, width: 600, height: 400,
-    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     src: url, styles: {},
-    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+    bgColor: 'transparent'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -1769,10 +2252,11 @@ function addHtmlElement() {
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'html', x: 100, y: 100, width: 400, height: 200,
-    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     content: '<div style="padding:20px;"><h3>כותרת HTML</h3><p>תוכן כאן...</p></div>',
     styles: {},
-    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+    bgColor: 'transparent'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -1787,9 +2271,10 @@ function addVideoElement() {
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'video', x: 100, y: 100, width: 560, height: 315,
-    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     src: embedUrl, styles: {},
-    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+    bgColor: 'transparent'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -1801,9 +2286,10 @@ function addWpLogo() {
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'wp-logo', x: 100, y: 100, width: 120, height: 120,
-    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     styles: {},
-    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+    bgColor: 'transparent'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -1815,9 +2301,10 @@ function addSiteLogo() {
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'site-logo', x: 100, y: 100, width: 120, height: 120,
-    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     styles: {},
-    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+    bgColor: 'transparent'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -1829,10 +2316,11 @@ function addIconifyElement(svgContent, iconName) {
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'iconify', x: 100, y: 100, width: 80, height: 80,
-    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     svgContent: svgContent, iconName: iconName,
     styles: {},
-    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+    bgColor: 'transparent'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -1844,10 +2332,11 @@ function addBrandLogoElement(src, brandName) {
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'brand-logo', x: 100, y: 100, width: 120, height: 120,
-    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     src: src, brandName: brandName,
     styles: {},
-    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+    bgColor: 'transparent'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -1856,18 +2345,9 @@ function addBrandLogoElement(src, brandName) {
   pushHistory();
 }
 function convertToEmbedUrl(url) {
-  if(url.includes('youtube.com/watch?v=')) {
-    const id = url.split('v=')[1].split('&')[0];
-    return 'https://www.youtube.com/embed/' + id;
-  }
-  if(url.includes('youtu.be/')) {
-    const id = url.split('youtu.be/')[1].split('?')[0];
-    return 'https://www.youtube.com/embed/' + id;
-  }
-  if(url.includes('vimeo.com/')) {
-    const id = url.split('vimeo.com/')[1].split('?')[0];
-    return 'https://player.vimeo.com/video/' + id;
-  }
+  if(url.includes('youtube.com/watch?v=')) { const id = url.split('v=')[1].split('&')[0]; return 'https://www.youtube.com/embed/' + id; }
+  if(url.includes('youtu.be/')) { const id = url.split('youtu.be/')[1].split('?')[0]; return 'https://www.youtube.com/embed/' + id; }
+  if(url.includes('vimeo.com/')) { const id = url.split('vimeo.com/')[1].split('?')[0]; return 'https://player.vimeo.com/video/' + id; }
   return url;
 }
 function deleteSelected() {
@@ -1889,29 +2369,21 @@ function moveLayer(direction) {
   const others = App.currentPost.elements.filter(e => e.id !== el.id);
 
   if(direction === 'up') {
-    // Move above the next higher element
     const higher = others.filter(e => (e.zIndex || 1) >= (el.zIndex || 1));
     if(higher.length > 0) {
       const minHigher = Math.min(...higher.map(e => e.zIndex || 1));
       el.zIndex = minHigher + 1;
-    } else {
-      el.zIndex = (el.zIndex || 1) + 1;
-    }
+    } else { el.zIndex = (el.zIndex || 1) + 1; }
   } else if(direction === 'down') {
-    // Move below the next lower element
     const lower = others.filter(e => (e.zIndex || 1) <= (el.zIndex || 1));
     if(lower.length > 0) {
       const maxLower = Math.max(...lower.map(e => e.zIndex || 1));
       el.zIndex = Math.max(1, maxLower - 1);
-    } else {
-      el.zIndex = Math.max(1, (el.zIndex || 1) - 1);
-    }
+    } else { el.zIndex = Math.max(1, (el.zIndex || 1) - 1); }
   } else if(direction === 'top') {
-    // Move to absolute top (above everything)
     const maxZ = Math.max(...others.map(e => e.zIndex || 1), 0);
     el.zIndex = maxZ + 10;
   } else if(direction === 'bottom') {
-    // Move to absolute bottom (below everything)
     const minZ = Math.min(...others.map(e => e.zIndex || 1), 999999);
     el.zIndex = Math.max(1, minZ - 10);
   }
@@ -1926,6 +2398,7 @@ function clearCanvas() {
   if(!confirm('לנקות את הלוח? כל התוכן יימחק.')) return;
   App.currentPost.elements = [];
   App.elementCounter = 0;
+  App.nextZIndex = 1;
   renderCanvas();
   markDirty();
   pushHistory();
@@ -1945,8 +2418,17 @@ function showPostProps() {
 function updatePropsPanel() {
   if(!App.selectedElement) return;
   const el = App.selectedElement;
-  document.getElementById('prop-x').value = Math.round(el.x);
-  document.getElementById('prop-y').value = Math.round(el.y);
+
+  if(!el.textWrap) {
+    document.getElementById('prop-x').value = Math.round(el.x);
+    document.getElementById('prop-y').value = Math.round(el.y);
+    document.getElementById('prop-x').parentElement.style.display = 'block';
+    document.getElementById('prop-y').parentElement.style.display = 'block';
+  } else {
+    document.getElementById('prop-x').parentElement.style.display = 'none';
+    document.getElementById('prop-y').parentElement.style.display = 'none';
+  }
+
   document.getElementById('prop-w').value = Math.round(el.width);
   document.getElementById('prop-h').value = Math.round(el.height);
   document.getElementById('prop-rot').value = Math.round(el.rotation||0);
@@ -1956,6 +2438,8 @@ function updatePropsPanel() {
   document.getElementById('prop-border-width').value = parseInt(el.borderWidth || 0);
   document.getElementById('prop-border-color').value = el.borderColor || '#000000';
   document.getElementById('prop-border-style').value = el.borderStyle || 'solid';
+  document.getElementById('prop-bg-color').value = rgbToHex(el.bgColor || '#ffffff');
+  document.getElementById('prop-wrap').checked = !!el.textWrap;
 
   document.getElementById('text-props').style.display = el.type==='text' ? 'block' : 'none';
   document.getElementById('image-props').style.display = el.type==='image' ? 'block' : 'none';
@@ -1967,12 +2451,13 @@ function updatePropsPanel() {
   if(el.type==='text') {
     document.getElementById('prop-fontsize').value = parseInt(el.styles?.fontSize || 18);
     document.getElementById('prop-color').value = rgbToHex(el.styles?.color || '#1f2937');
-    document.getElementById('prop-bg').value = rgbToHex(el.styles?.backgroundColor || '#ffffff');
+    document.getElementById('prop-text-bg').value = rgbToHex(el.styles?.backgroundColor || '#ffffff');
     document.getElementById('prop-weight').value = el.styles?.fontWeight || '400';
     document.getElementById('prop-lineheight').value = el.styles?.lineHeight || '1.5';
   } else if(el.type==='image') {
     document.getElementById('prop-fit').value = el.styles?.objectFit || 'cover';
     document.getElementById('prop-filter').value = el.styles?.filter || '';
+    document.getElementById('prop-img-bg').value = rgbToHex(el.bgColor || '#ffffff');
   } else if(el.type==='shape') {
     document.getElementById('shape-color').value = rgbToHex(el.styles?.backgroundColor || '#8b5cf6');
     document.getElementById('shape-gradient').value = el.styles?.gradient ? el.styles.gradient.replace('grad-','grad-') : '';
@@ -1983,10 +2468,15 @@ function updatePropsPanel() {
   } else if(el.type==='video') {
     document.getElementById('video-url').value = el.src || '';
   }
+
+  // Show bg removal button if applicable
+  const bgBtn = document.getElementById('btn-bg-removal');
+  if(bgBtn) bgBtn.classList.toggle('hidden', !(el.type==='image' && App.aiModels['bg-removal'].installed));
 }
 function updateProp(prop, value) {
   if(!App.selectedElement) return;
   const el = App.selectedElement;
+  if(el.textWrap) return; // Can't move flow elements
   const div = document.getElementById('el-' + el.id);
   if(prop==='x') { el.x = parseInt(value); div.style.left = value + 'px'; }
   if(prop==='y') { el.y = parseInt(value); div.style.top = value + 'px'; }
@@ -2002,16 +2492,29 @@ function updateCommonStyle(prop, value) {
   el[prop] = value;
   const div = document.getElementById('el-' + el.id);
   if(div) div.style[prop] = value;
-
-  // For images, also apply borderRadius to the img element
   if(el.type === 'image' && prop === 'borderRadius') {
     const img = div.querySelector('img');
     if(img) img.style.borderRadius = value;
     if(!el.styles) el.styles = {};
     el.styles.borderRadius = value;
   }
-
   markDirty();
+}
+function updateElementBgColor(value) {
+  if(!App.selectedElement) return;
+  const el = App.selectedElement;
+  el.bgColor = value;
+  const div = document.getElementById('el-' + el.id);
+  if(div) div.style.backgroundColor = value;
+  if(el.type === 'image') {
+    const content = div.querySelector('.element-content');
+    if(content) content.style.backgroundColor = value;
+  }
+  markDirty();
+}
+function updateImageBgColor(value) {
+  if(!App.selectedElement || App.selectedElement.type !== 'image') return;
+  updateElementBgColor(value);
 }
 function updateStyle(prop, value) {
   if(!App.selectedElement || App.selectedElement.type !== 'text') return;
@@ -2030,31 +2533,6 @@ function updateImageStyle(prop, value) {
   el.styles[prop] = value;
   const img = document.querySelector('#el-' + App.selectedElement.id + ' img');
   if(img) img.style[prop] = value;
-  markDirty();
-}
-function updateImageTextWrap(value) {
-  if(!App.selectedElement || App.selectedElement.type !== 'image') return;
-  const el = App.selectedElement;
-  el.textWrap = value;
-  const div = document.getElementById('el-' + el.id);
-  if(div) {
-    if(value === 'left') {
-      div.style.cssFloat = 'left';
-      div.style.marginLeft = '0';
-      div.style.marginRight = '20px';
-      div.style.position = 'relative';
-    } else if(value === 'right') {
-      div.style.cssFloat = 'right';
-      div.style.marginLeft = '20px';
-      div.style.marginRight = '0';
-      div.style.position = 'relative';
-    } else {
-      div.style.cssFloat = 'none';
-      div.style.marginLeft = '0';
-      div.style.marginRight = '0';
-      div.style.position = 'absolute';
-    }
-  }
   markDirty();
 }
 function updateShapeStyle(prop, value) {
@@ -2088,10 +2566,6 @@ function updateShapeGradient(gradClass) {
     content.style.background = gradients[gradClass];
   }
   markDirty();
-}
-function updateShapeTextWrap(value) {
-  // Same logic as image text wrap
-  updateImageTextWrap(value);
 }
 function updateEmbedUrl(url) {
   if(!App.selectedElement || App.selectedElement.type !== 'embed') return;
@@ -2133,6 +2607,28 @@ function toggleSnap() {
   App.settings.snapGrid = document.getElementById('prop-snap').checked ? 10 : 0;
 }
 
+// ==================== TEXT WRAP TOGGLE ====================
+function toggleTextWrap(checked) {
+  if(!App.selectedElement) return;
+  const el = App.selectedElement;
+  el.textWrap = checked;
+  const div = document.getElementById('el-' + el.id);
+  if(div) {
+    if(checked) {
+      div.classList.add('flow-mode');
+      div.style.left = 'auto';
+      div.style.top = 'auto';
+    } else {
+      div.classList.remove('flow-mode');
+      div.style.left = el.x + 'px';
+      div.style.top = el.y + 'px';
+    }
+  }
+  markDirty();
+  pushHistory();
+  updatePropsPanel();
+}
+
 // ==================== INLINE TOOLBAR ====================
 function showInlineToolbar() {
   const sel = window.getSelection();
@@ -2149,7 +2645,7 @@ function hideInlineToolbar() {
   document.getElementById('inline-toolbar').classList.remove('show');
 }
 
-// ==================== DRAG & DROP FROM SIDEBAR ====================
+// ==================== DRAG & DROP ====================
 function dragElementStart(e, type, subtype) {
   e.dataTransfer.setData('elementType', type);
   e.dataTransfer.setData('elementSubtype', subtype || '');
@@ -2181,16 +2677,16 @@ function handleDrop(e) {
     const url = e.dataTransfer.getData('imageUrl');
     if(url) addImageElement(url);
   }
-
   document.querySelectorAll('.element-thumb.dragging').forEach(el=>el.classList.remove('dragging'));
 }
 function addWpLogoAt(x, y) {
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'wp-logo', x: x-60, y: y-60, width: 120, height: 120,
-    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     styles: {},
-    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+    bgColor: 'transparent'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -2202,9 +2698,10 @@ function addSiteLogoAt(x, y) {
   const el = {
     id: 'el_' + (++App.elementCounter),
     type: 'site-logo', x: x-60, y: y-60, width: 120, height: 120,
-    rotation: 0, opacity: 100, zIndex: App.elementCounter,
+    rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
     styles: {},
-    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+    borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+    bgColor: 'transparent'
   };
   App.currentPost.elements.push(el);
   createElementDOM(el);
@@ -2218,9 +2715,10 @@ function handleImageFile(file, x, y) {
     const el = {
       id: 'el_' + (++App.elementCounter),
       type: 'image', x: (x||100)-150, y: (y||100)-100, width: 300, height: 200,
-      rotation: 0, opacity: 100, zIndex: App.elementCounter,
+      rotation: 0, opacity: 100, zIndex: App.nextZIndex++,
       src: reader.result, styles: {borderRadius:'0', objectFit:'cover'},
-      borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+      borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+      bgColor: 'transparent'
     };
     App.currentPost.elements.push(el);
     createElementDOM(el);
@@ -2365,52 +2863,39 @@ function openCropModal(el) {
     let w = img.width, h = img.height;
     if(w > maxW) { h = h * maxW / w; w = maxW; }
     if(h > maxH) { w = w * maxH / h; h = maxH; }
-
     underlay.width = w; underlay.height = h;
     overlay.width = w; overlay.height = h;
-
     const uCtx = underlay.getContext('2d');
     uCtx.drawImage(img, 0, 0, w, h);
-
     App.cropState.scaleX = img.width / w;
     App.cropState.scaleY = img.height / h;
     App.cropState.img = img;
-
     App.cropState.cropW = w * 0.8;
     App.cropState.cropH = h * 0.8;
     App.cropState.cropX = (w - App.cropState.cropW) / 2;
     App.cropState.cropY = (h - App.cropState.cropH) / 2;
     drawCropOverlay();
   };
-  img.onerror = ()=>{
-    showToast('לא ניתן לטעון את התמונה לחיתוך (CORS)','error');
-    closeCrop();
-  };
+  img.onerror = ()=>{ showToast('לא ניתן לטעון את התמונה לחיתוך (CORS)','error'); closeCrop(); };
   img.src = el.src;
   modal.classList.remove('hidden');
 }
-function openCropModalForSelected() {
-  openCropModal(App.selectedElement);
-}
+function openCropModalForSelected() { openCropModal(App.selectedElement); }
 function drawCropOverlay() {
   const st = App.cropState;
   if(!st.ctx) return;
   const ctx = st.ctx;
   const w = st.overlay.width, h = st.overlay.height;
-
   ctx.clearRect(0, 0, w, h);
   ctx.fillStyle = 'rgba(0,0,0,0.6)';
   ctx.fillRect(0, 0, w, h);
   ctx.clearRect(st.cropX, st.cropY, st.cropW, st.cropH);
-
   const uCtx = st.underlay.getContext('2d');
   const imageData = uCtx.getImageData(st.cropX, st.cropY, st.cropW, st.cropH);
   ctx.putImageData(imageData, st.cropX, st.cropY);
-
   ctx.strokeStyle = '#f59e0b';
   ctx.lineWidth = 2;
   ctx.strokeRect(st.cropX, st.cropY, st.cropW, st.cropH);
-
   const handles = [
     [st.cropX, st.cropY], [st.cropX+st.cropW/2, st.cropY], [st.cropX+st.cropW, st.cropY],
     [st.cropX, st.cropY+st.cropH/2], [st.cropX+st.cropW, st.cropY+st.cropH/2],
@@ -2418,7 +2903,6 @@ function drawCropOverlay() {
   ];
   ctx.fillStyle = '#f59e0b';
   handles.forEach(([hx,hy])=>{ ctx.fillRect(hx-5, hy-5, 10, 10); });
-
   ctx.strokeStyle = 'rgba(255,255,255,0.3)';
   ctx.lineWidth = 1;
   ctx.setLineDash([5, 5]);
@@ -2447,7 +2931,6 @@ function getCropHandle(x, y) {
 setTimeout(()=>{
   const overlay = document.getElementById('crop-overlay-canvas');
   if(!overlay) return;
-
   overlay.addEventListener('mousedown', (e)=>{
     if(!App.cropState.active) return;
     const rect = overlay.getBoundingClientRect();
@@ -2461,7 +2944,6 @@ setTimeout(()=>{
       e.preventDefault();
     }
   });
-
   overlay.addEventListener('mousemove', (e)=>{
     if(!App.cropState.active || !App.cropState.dragging) return;
     const rect = overlay.getBoundingClientRect();
@@ -2473,7 +2955,6 @@ setTimeout(()=>{
     const handle = App.cropState.handle;
     const canvasW = App.cropState.overlay.width;
     const canvasH = App.cropState.overlay.height;
-
     if(handle === 'move') {
       App.cropState.cropX = Math.max(0, Math.min(canvasW - App.cropState.cropW, ds.cropX + dx));
       App.cropState.cropY = Math.max(0, Math.min(canvasH - App.cropState.cropH, ds.cropY + dy));
@@ -2485,7 +2966,6 @@ setTimeout(()=>{
     }
     drawCropOverlay();
   });
-
   overlay.addEventListener('mouseup', ()=>{ App.cropState.dragging = false; App.cropState.handle = null; });
   overlay.addEventListener('mouseleave', ()=>{ App.cropState.dragging = false; App.cropState.handle = null; });
 }, 100);
@@ -2528,9 +3008,7 @@ function replaceSelectedImage() {
   input.click();
 }
 
-// Note: remove.bg feature removed - CORS blocks browser requests
-
-// ==================== PEXELS (Commercial-Free) ====================
+// ==================== PEXELS ====================
 async function searchPexels() {
   const query = document.getElementById('pexels-search').value.trim();
   if(!query) return;
@@ -2635,7 +3113,7 @@ async function deletePost(id) {
   catch(e) { showToast(e.message,'error'); }
 }
 async function unpublishPost(id) {
-  if(!confirm('לבטל את הפרסום של הפוסט? הוא יועבר לטיוטות.')) return;
+  if(!confirm('לבטל את הפרסום של הפוסט?')) return;
   showToast('מבטל פרסום...','info');
   try {
     await wpFetch('/posts/'+id, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status:'draft'})});
@@ -2670,6 +3148,7 @@ async function editWPPost(id) {
       const num = parseInt(e.id.replace('el_',''));
       return Math.max(max, isNaN(num)?0:num);
     }, 0);
+    App.nextZIndex = Math.max(...App.currentPost.elements.map(e=>e.zIndex||0), 0) + 1;
 
     document.getElementById('post-title').value = App.currentPost.title;
     updatePostStatus(App.currentPost.status);
@@ -2687,6 +3166,7 @@ async function editWPPost(id) {
     App.historyIndex = -1;
     pushHistory();
     showToast('הפוסט נטען לעריכה','success');
+    document.getElementById('btn-translate-post').classList.toggle('hidden', !App.aiModels['translate'].installed);
   } catch(e) { showToast(e.message,'error'); }
 }
 
@@ -2707,7 +3187,8 @@ function parseHTMLToElements(html) {
           rotation: 0, opacity: 100, zIndex: counter,
           content: '<p>' + escapeHtml(node.textContent) + '</p>',
           styles: {fontFamily:'Assistant', fontSize:'18px', color:'#1f2937', textAlign:'right', fontWeight:'400', lineHeight:'1.6'},
-          borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+          borderRadius: '0px', borderWidth: '0px', borderColor: 'transparent', borderStyle: 'solid',
+          bgColor: 'transparent'
         });
         currentY += 60;
       }
@@ -2724,7 +3205,8 @@ function parseHTMLToElements(html) {
         rotation: 0, opacity: 100, zIndex: counter,
         src: node.src,
         styles: {objectFit:'cover', borderRadius:'0'},
-        borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+        borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+        bgColor: 'transparent'
       });
       currentY += 320;
     } else if(tag==='iframe') {
@@ -2733,7 +3215,8 @@ function parseHTMLToElements(html) {
         type: 'embed', x: 50, y: currentY, width: 700, height: 400,
         rotation: 0, opacity: 100, zIndex: counter,
         src: node.src, styles: {},
-        borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+        borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+        bgColor: 'transparent'
       });
       currentY += 420;
     } else if(['p','h1','h2','h3','h4','h5','h6','div','blockquote','pre','section','article'].includes(tag)) {
@@ -2755,7 +3238,8 @@ function parseHTMLToElements(html) {
           backgroundColor: 'transparent',
           lineHeight: '1.6'
         },
-        borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+        borderRadius: '0px', borderWidth: '0px', borderColor: 'transparent', borderStyle: 'solid',
+        bgColor: 'transparent'
       });
       currentY += height + 20;
     } else if(tag==='figure') {
@@ -2769,7 +3253,8 @@ function parseHTMLToElements(html) {
           rotation: 0, opacity: 100, zIndex: counter,
           src: img.src,
           styles: {objectFit:'cover', borderRadius:'0'},
-          borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+          borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid',
+          bgColor: 'transparent'
         });
         currentY += 320;
       }
@@ -2781,7 +3266,8 @@ function parseHTMLToElements(html) {
           rotation: 0, opacity: 100, zIndex: counter,
           content: '<p style="text-align:center;color:#666;font-size:14px;">' + caption.innerHTML + '</p>',
           styles: {fontFamily:'Assistant', fontSize:'14px', color:'#666', textAlign:'center', lineHeight:'1.6'},
-          borderRadius: '0px', borderWidth: '0px', borderColor: '#000000', borderStyle: 'solid'
+          borderRadius: '0px', borderWidth: '0px', borderColor: 'transparent', borderStyle: 'solid',
+          bgColor: 'transparent'
         });
         currentY += 50;
       }
@@ -2837,6 +3323,7 @@ function saveDraftQuiet() {
   App.dirty = false;
   document.getElementById('save-status').textContent = 'נשמר מקומית';
   loadDraftsList();
+  loadHomeDrafts();
 }
 function loadDraftsList() {
   const list = document.getElementById('drafts-list');
@@ -2864,6 +3351,7 @@ function loadDraft(id) {
     const num = parseInt(e.id.replace('el_',''));
     return Math.max(max, isNaN(num)?0:num);
   }, 0);
+  App.nextZIndex = Math.max(...App.currentPost.elements.map(e=>e.zIndex||0), 0) + 1;
   document.getElementById('post-title').value = App.currentPost.title || '';
   updatePostStatus(App.currentPost.status || 'draft');
   if(App.currentPost.featuredImage) {
@@ -2878,12 +3366,14 @@ function loadDraft(id) {
   App.historyIndex = -1;
   pushHistory();
   showToast('טיוטה נטענה','success');
+  document.getElementById('btn-translate-post').classList.toggle('hidden', !App.aiModels['translate'].installed);
 }
 function deleteDraft(id) {
   if(!confirm('למחוק את הטיוטה?')) return;
   App.data.drafts[App.currentSite.url] = (App.data.drafts[App.currentSite.url] || []).filter(d=>d.id!==id);
   saveDB();
   loadDraftsList();
+  loadHomeDrafts();
   if(App.currentPost.id===id) newPost();
 }
 
@@ -2924,6 +3414,7 @@ async function publishPost() {
       App.data.drafts[App.currentSite.url] = App.data.drafts[App.currentSite.url].filter(d=>d.id!==App.currentPost.id);
       saveDB();
       loadDraftsList();
+      loadHomeDrafts();
     }
     showToast('הפוסט פורסם בהצלחה!','success');
   } catch(e) { showToast('שגיאה בפרסום: ' + e.message,'error'); }
@@ -2937,96 +3428,73 @@ async function publishDraft(draftId) {
   await publishPost();
 }
 
-// Generate clean HTML for WordPress
-function generateExactHTML() {
-  const post = App.currentPost;
-  let bgStyle = '';
-  const pageW = post.pageWidth || 800;
-  if(post.background) {
-    const bg = post.background;
-    const opacity = (bg.opacity !== undefined ? bg.opacity : 100) / 100;
-    if(bg.type==='color') bgStyle = 'background-color:'+bg.value+';';
-    else if(bg.type==='gradient') {
-      const gradients = {
-        'grad-1': 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        'grad-2': 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-        'grad-3': 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-        'grad-4': 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-        'grad-5': 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-        'grad-6': 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
-      };
-      bgStyle = 'background:'+(gradients[bg.value]||bg.value)+';';
-    }
-    else if(bg.type==='image') {
-      bgStyle = 'background-image:url('+bg.value+');background-size:'+(bg.imageSize||'cover')+';background-repeat:'+(bg.imageRepeat||'no-repeat')+';background-position:'+(bg.imagePosition||'center')+';';
-    }
-    if(opacity < 1) bgStyle += 'opacity:'+opacity+';';
+
+function renderElementHTML(el) {
+  const rot = el.rotation ? 'transform:rotate('+el.rotation+'deg);transform-origin:center center;' : '';
+  const op = el.opacity && el.opacity!==100 ? 'opacity:'+(el.opacity/100)+';' : '';
+  const br = el.borderRadius && el.borderRadius!=='0px' ? 'border-radius:'+el.borderRadius+';' : '';
+  const bw = el.borderWidth && el.borderWidth!=='0px' ? 'border-width:'+el.borderWidth+';' : '';
+  const bc = el.borderColor && el.borderColor!=='#000000' ? 'border-color:'+el.borderColor+';' : '';
+  const bs = el.borderStyle && el.borderStyle!=='solid' ? 'border-style:'+el.borderStyle+';' : '';
+  const border = (bw || bc || bs) ? 'border:'+(el.borderWidth||'0px')+' '+(el.borderStyle||'solid')+' '+(el.borderColor||'transparent')+';' : '';
+  const bg = el.bgColor && el.bgColor!=='transparent' ? 'background-color:'+el.bgColor+';' : '';
+
+  let style = '';
+  if(el.textWrap) {
+    style = 'float:left;margin:10px;' + rot + op + br + border + bg;
+  } else {
+    style = 'position:absolute;left:'+el.x+'px;top:'+el.y+'px;width:'+el.width+'px;height:'+el.height+'px;' + rot + op + br + border + bg + 'overflow:hidden;z-index:'+(el.zIndex||1)+';';
   }
 
-  let html = '<div style="position:relative;width:100%;max-width:'+pageW+'px;min-height:1000px;margin:0 auto;'+bgStyle+'overflow:hidden;box-sizing:border-box;">';
-
-  const sorted = [...post.elements].sort((a,b)=>(a.zIndex||0)-(b.zIndex||0));
-  sorted.forEach(el=>{
-    const rot = el.rotation ? 'transform:rotate('+el.rotation+'deg);transform-origin:center center;' : '';
-    const op = el.opacity && el.opacity!==100 ? 'opacity:'+(el.opacity/100)+';' : '';
-    const br = el.borderRadius && el.borderRadius!=='0px' ? 'border-radius:'+el.borderRadius+';' : '';
-    const bw = el.borderWidth && el.borderWidth!=='0px' ? 'border-width:'+el.borderWidth+';' : '';
-    const bc = el.borderColor && el.borderColor!=='#000000' ? 'border-color:'+el.borderColor+';' : '';
-    const bs = el.borderStyle && el.borderStyle!=='solid' ? 'border-style:'+el.borderStyle+';' : '';
-    const border = (bw || bc || bs) ? 'border:'+(el.borderWidth||'0px')+' '+(el.borderStyle||'solid')+' '+(el.borderColor||'transparent')+';' : '';
-
-    html += '<div style="position:absolute;left:'+el.x+'px;top:'+el.y+'px;width:'+el.width+'px;height:'+el.height+'px;'+rot+op+br+border+'overflow:hidden;z-index:'+(el.zIndex||1)+';">';
-
-    if(el.type==='text') {
-      const s = el.styles||{};
-      html += '<div style="width:100%;height:auto;overflow:visible;font-family:'+(s.fontFamily||'Assistant')+',sans-serif;font-size:'+(s.fontSize||'18px')+';color:'+(s.color||'#1f2937')+';background:'+(s.backgroundColor||'transparent')+';text-align:'+(s.textAlign||'right')+';font-weight:'+(s.fontWeight||'400')+';padding:12px;direction:rtl;line-height:'+(s.lineHeight||'1.6')+';box-sizing:border-box;word-wrap:break-word;">'+(el.content||'')+'</div>';
-    } else if(el.type==='image') {
-      const s = el.styles||{};
-      html += '<img src="'+el.src+'" style="width:100%;height:100%;object-fit:'+(s.objectFit||'cover')+';border-radius:'+(s.borderRadius||'0')+';'+(s.filter?s.filter:'')+'display:block;">';
-    } else if(el.type==='shape') {
-      const s = el.styles||{};
-      const bg = s.gradient || s.backgroundColor || '#8b5cf6';
-      if(el.shapeType==='heart') {
-        html += '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="' + (s.backgroundColor || '#ec4899') + '"></path></svg>';
-      } else if(el.shapeType==='moon') {
-        html += '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="' + (s.backgroundColor || '#f59e0b') + '"></path></svg>';
-      } else if(el.shapeType==='line-h') {
-        html += '<div style="width:100%;height:4px;background:'+(s.backgroundColor||'#94a3b8')+';border-radius:2px;"></div>';
-      } else if(el.shapeType==='line-v') {
-        html += '<div style="width:4px;height:100%;background:'+(s.backgroundColor||'#94a3b8')+';border-radius:2px;"></div>';
-      } else {
-        let clip = '';
-        if(el.shapeType==='circle') clip = 'border-radius:50%;';
-        if(el.shapeType==='star') clip = 'clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);';
-        if(el.shapeType==='triangle') clip = 'clip-path:polygon(50% 0%,0% 100%,100% 100%);';
-        if(el.shapeType==='diamond') clip = 'clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);';
-        if(el.shapeType==='arrow-right') clip = 'clip-path:polygon(0% 20%,60% 20%,60% 0%,100% 50%,60% 100%,60% 80%,0% 80%);';
-        if(el.shapeType==='half-circle') clip = 'border-radius:50% 50% 0 0 / 100% 100% 0 0;height:50%;';
-        if(el.shapeType==='oval') clip = 'border-radius:50%;';
-        if(el.shapeType==='pentagon') clip = 'clip-path:polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);';
-        if(el.shapeType==='hexagon') clip = 'clip-path:polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);';
-        html += '<div style="width:100%;height:100%;background:'+bg+';border-radius:'+(s.borderRadius||'0')+';'+clip+'"></div>';
-      }
-    } else if(el.type==='embed') {
-      html += '<iframe src="'+el.src+'" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>';
-    } else if(el.type==='html') {
-      html += '<div style="width:100%;height:100%;overflow:auto;">'+(el.content||'')+'</div>';
-    } else if(el.type==='video') {
-      html += '<iframe src="'+el.src+'" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>';
-    } else if(el.type==='wp-logo') {
-      html += '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:80px;color:#21759b;"><i class="fab fa-wordpress"></i></div>';
-    } else if(el.type==='site-logo') {
-      html += '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><img src="'+(App.siteLogoUrl||'')+'" style="max-width:100%;max-height:100%;object-fit:contain;"></div>';
-    } else if(el.type==='iconify') {
-      html += '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">' + (el.svgContent || '') + '</div>';
-    } else if(el.type==='brand-logo') {
-      html += '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><img src="'+(el.src||'')+'" style="max-width:100%;max-height:100%;object-fit:contain;"></div>';
+  let inner = '';
+  if(el.type==='text') {
+    const s = el.styles||{};
+    inner = '<div style="width:100%;height:auto;overflow:visible;font-family:'+(s.fontFamily||'Assistant')+',sans-serif;font-size:'+(s.fontSize||'18px')+';color:'+(s.color||'#1f2937')+';background:'+(s.backgroundColor||'transparent')+';text-align:'+(s.textAlign||'right')+';font-weight:'+(s.fontWeight||'400')+';padding:4px;direction:rtl;line-height:'+(s.lineHeight||'1.6')+';box-sizing:border-box;word-wrap:break-word;">'+(el.content||'')+'</div>';
+  } else if(el.type==='image') {
+    const s = el.styles||{};
+    inner = '<img src="'+el.src+'" style="width:100%;height:100%;object-fit:'+(s.objectFit||'cover')+';border-radius:'+(s.borderRadius||'0')+';'+(s.filter?s.filter:'')+'display:block;">';
+  } else if(el.type==='shape') {
+    const s = el.styles||{};
+    const shapeBg = s.gradient || s.backgroundColor || '#8b5cf6';
+    if(el.shapeType==='heart') {
+      inner = '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="' + (s.backgroundColor || '#ec4899') + '"></path></svg>';
+    } else if(el.shapeType==='moon') {
+      inner = '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="' + (s.backgroundColor || '#f59e0b') + '"></path></svg>';
+    } else if(el.shapeType==='line-h') {
+      inner = '<div style="width:100%;height:4px;background:'+(s.backgroundColor||'#94a3b8')+';border-radius:2px;"></div>';
+    } else if(el.shapeType==='line-v') {
+      inner = '<div style="width:4px;height:100%;background:'+(s.backgroundColor||'#94a3b8')+';border-radius:2px;"></div>';
+    } else {
+      let clip = '';
+      if(el.shapeType==='circle') clip = 'border-radius:50%;';
+      if(el.shapeType==='star') clip = 'clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);';
+      if(el.shapeType==='triangle') clip = 'clip-path:polygon(50% 0%,0% 100%,100% 100%);';
+      if(el.shapeType==='diamond') clip = 'clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);';
+      if(el.shapeType==='arrow-right') clip = 'clip-path:polygon(0% 20%,60% 20%,60% 0%,100% 50%,60% 100%,60% 80%,0% 80%);';
+      if(el.shapeType==='half-circle') clip = 'border-radius:50% 50% 0 0 / 100% 100% 0 0;height:50%;';
+      if(el.shapeType==='oval') clip = 'border-radius:50%;';
+      if(el.shapeType==='pentagon') clip = 'clip-path:polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);';
+      if(el.shapeType==='hexagon') clip = 'clip-path:polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);';
+      inner = '<div style="width:100%;height:100%;background:'+shapeBg+';border-radius:'+(s.borderRadius||'0')+';'+clip+'"></div>';
     }
-    html += '</div>';
-  });
-  html += '</div>';
-  return html;
+  } else if(el.type==='embed') {
+    inner = '<iframe src="'+el.src+'" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>';
+  } else if(el.type==='html') {
+    inner = '<div style="width:100%;height:100%;overflow:auto;">'+(el.content||'')+'</div>';
+  } else if(el.type==='video') {
+    inner = '<iframe src="'+el.src+'" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>';
+  } else if(el.type==='wp-logo') {
+    inner = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:80px;color:#21759b;"><i class="fab fa-wordpress"></i></div>';
+  } else if(el.type==='site-logo') {
+    inner = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><img src="'+(App.siteLogoUrl||'')+'" style="max-width:100%;max-height:100%;object-fit:contain;"></div>';
+  } else if(el.type==='iconify') {
+    inner = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">' + (el.svgContent || '') + '</div>';
+  } else if(el.type==='brand-logo') {
+    inner = '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><img src="'+(el.src||'')+'" style="max-width:100%;max-height:100%;object-fit:contain;"></div>';
+  }
+  return '<div style="'+style+'">'+inner+'</div>';
 }
+
 function dataURItoBlob(dataURI) {
   const byteString = atob(dataURI.split(',')[1]);
   const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
@@ -3037,10 +3505,10 @@ function dataURItoBlob(dataURI) {
 }
 
 function togglePreview() {
-  previewMode = !previewMode;
+  App.previewMode = !App.previewMode;
   const canvas = document.getElementById('editor-canvas');
   const sidebar = document.getElementById('right-sidebar');
-  if(previewMode) {
+  if(App.previewMode) {
     canvas.style.pointerEvents = 'none';
     document.querySelectorAll('.resize-handle, .rotate-handle').forEach(e=>e.style.display = 'none');
     document.querySelectorAll('.canvas-element').forEach(e=>e.classList.remove('selected'));
@@ -3084,20 +3552,7 @@ function handleImport(e) {
   reader.readAsText(file);
 }
 
-document.addEventListener('keydown', (e)=>{
-  if((e.key==='Delete' || e.key==='Backspace') && App.selectedElement) {
-    const active = document.activeElement;
-    if(!active || !active.isContentEditable) { deleteSelected(); pushHistory(); }
-  }
-  if(e.ctrlKey && e.key==='s') { e.preventDefault(); saveDraftManual(); }
-  if(e.key==='Escape') { deselectAll(); closePanel(); hideInlineToolbar(); }
-  if(e.ctrlKey && e.key==='z' && !e.shiftKey) { e.preventDefault(); undo(); }
-  if(e.ctrlKey && e.shiftKey && e.key==='z') { e.preventDefault(); redo(); }
-  if(e.ctrlKey && e.key==='y') { e.preventDefault(); redo(); }
-});
-
-
-// ==================== ICONIFY API (Free SVG Icons) ====================
+const iconifyCache = {};
 async function searchIconify() {
   const query = document.getElementById('iconify-search').value.trim();
   if(!query) return;
@@ -3119,7 +3574,6 @@ async function searchIconify() {
       } catch(e) { return null; }
     });
     const icons = (await Promise.all(iconPromises)).filter(i => i !== null);
-
     container.innerHTML = icons.map(icon => `
       <div class="iconify-result" draggable="true" ondragstart="dragElementStart(event,'iconify','${icon.name}')" onclick="addIconifyFromCache('${icon.name}')" title="${icon.name}">
         ${icon.svg}
@@ -3134,14 +3588,12 @@ function addIconifyFromCache(iconName) {
   if(svg) addIconifyElement(svg, iconName);
 }
 
-// ==================== BRAND SEARCH API (Logos) ====================
 async function searchBrandLogos() {
   const query = document.getElementById('brand-search-input').value.trim();
   if(!query) return;
   const container = document.getElementById('brand-logo-results');
   container.innerHTML = '<div class="text-center text-gray-500 py-4">טוען לוגואים...</div>';
   try {
-    // Try Brand Search API first
     const res = await fetch('https://api.brandfetch.io/v2/search/' + encodeURIComponent(query), {
       headers: {'Authorization': 'Bearer ' + BRAND_SEARCH_KEY}
     });
@@ -3161,7 +3613,6 @@ async function searchBrandLogos() {
         return;
       }
     }
-    // Fallback: try simple logo fetch from Clearbit
     const fallbackUrl = 'https://logo.clearbit.com/' + encodeURIComponent(query);
     container.innerHTML = `
       <div class="brand-logo-result" onclick="addBrandLogoElement('${fallbackUrl}', '${query}')">
@@ -3175,58 +3626,38 @@ async function searchBrandLogos() {
   }
 }
 
+document.addEventListener('keydown', (e)=>{
+  if((e.key==='Delete' || e.key==='Backspace') && App.selectedElement) {
+    const active = document.activeElement;
+    if(!active || !active.isContentEditable) { deleteSelected(); pushHistory(); }
+  }
+  if(e.ctrlKey && e.key==='s') { e.preventDefault(); saveDraftManual(); }
+  if(e.key==='Escape') { deselectAll(); closePanel(); hideInlineToolbar(); hideTextSelectionPopup(); }
+  if(e.ctrlKey && e.key==='z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  if(e.ctrlKey && e.shiftKey && e.key==='z') { e.preventDefault(); redo(); }
+  if(e.ctrlKey && e.key==='y') { e.preventDefault(); redo(); }
+});
+
 async function init() {
-  console.log('[INIT] === STARTING ===');
-  try {
-    console.log('[INIT] Step 1: Firebase...');
-    initFirebase();
-    console.log('[INIT] Step 1: DONE');
-  } catch(e) {
-    console.log('[INIT] Step 1 ERROR:', e.message);
-  }
-
-  console.log('[INIT] Step 2: Loading DB...');
-  try {
-    App.data = await loadDB();
-    console.log('[INIT] Step 2: DONE, data=', App.data ? 'exists' : 'null');
-  } catch(e) {
-    console.log('[INIT] Step 2 ERROR:', e.message);
-    App.data = null;
-  }
-
-  console.log('[INIT] Step 3: Validating data...');
+  console.log('[INIT] Starting...');
+  try { initFirebase(); } catch(e) {}
+  try { App.data = await loadDB(); } catch(e) { App.data = null; }
   if(!App.data || !App.data.profiles || !Array.isArray(App.data.profiles)) {
-    console.log('[INIT] Step 3: Invalid data, calling initDB()');
     initDB();
-  } else {
-    console.log('[INIT] Step 3: Data valid');
   }
-
-  console.log('[INIT] Step 4: Showing profiles...');
   showProfiles();
-  console.log('[INIT] === COMPLETE ===');
+  console.log('[INIT] Complete');
 }
-// Wait for DOM to be fully loaded before initializing
+
 document.addEventListener('DOMContentLoaded', function() {
   console.log('[DOM] DOMContentLoaded fired');
-  try {
-    init();
-  } catch(err) {
-    console.error('[INIT] Fatal error during init:', err);
-  }
-
-  // Attach create profile button handler
+  try { init(); } catch(err) { console.error('[INIT] Fatal error:', err); }
   const createBtn = document.getElementById('btn-create-profile');
   if(createBtn) {
-    console.log('[DOM] Attaching create profile button handler');
     createBtn.addEventListener('click', function(e) {
-      console.log('[btn-create-profile] CLICKED!');
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       showCreateProfile();
     });
-  } else {
-    console.log('[DOM] ERROR: btn-create-profile not found!');
   }
 });
 </script>

@@ -196,6 +196,7 @@ tailwind.config = {
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body class="h-screen w-screen overflow-hidden">
 
@@ -1443,21 +1444,21 @@ function renderAiToolsList() {
     <div class="bg-dark-900 rounded-xl p-4 border border-gray-800">
       <div class="flex items-center justify-between mb-2">
         <h4 class="font-bold">הסרת רקע</h4>
-        ${App.aiModels['bg-removal'].installed ? '<span class="text-xs text-green-400">✓ מותקן</span>' : '<button onclick="installAiModel('bg-removal'); closeAiTools();" class="px-3 py-1 rounded-lg bg-accent-600 text-white text-xs">התקנה</button>'}
+        ${App.aiModels['bg-removal'].installed ? '<span class="text-xs text-green-400">✓ מותקן</span>' : '<button onclick="installAiModel(\'bg-removal\'); closeAiTools();" class="px-3 py-1 rounded-lg bg-accent-600 text-white text-xs">התקנה</button>'}
       </div>
       <p class="text-xs text-gray-500">מסיר רקע מתמונות באמצעות AI מקומי</p>
     </div>
     <div class="bg-dark-900 rounded-xl p-4 border border-gray-800">
       <div class="flex items-center justify-between mb-2">
         <h4 class="font-bold">תרגום (NLLB-200)</h4>
-        ${App.aiModels['translate'].installed ? '<span class="text-xs text-green-400">✓ מותקן</span>' : '<button onclick="installAiModel('translate'); closeAiTools();" class="px-3 py-1 rounded-lg bg-accent-600 text-white text-xs">התקנה</button>'}
+        ${App.aiModels['translate'].installed ? '<span class="text-xs text-green-400">✓ מותקן</span>' : '<button onclick="installAiModel(\'translate\'); closeAiTools();" class="px-3 py-1 rounded-lg bg-accent-600 text-white text-xs">התקנה</button>'}
       </div>
       <p class="text-xs text-gray-500">תרגום טקסט בין שפות שונות</p>
     </div>
     <div class="bg-dark-900 rounded-xl p-4 border border-gray-800">
       <div class="flex items-center justify-between mb-2">
         <h4 class="font-bold">שכתוב (Llama-3.2-1B)</h4>
-        ${App.aiModels['rewrite'].installed ? '<span class="text-xs text-green-400">✓ מותקן</span>' : '<button onclick="installAiModel('rewrite'); closeAiTools();" class="px-3 py-1 rounded-lg bg-accent-600 text-white text-xs">התקנה</button>'}
+        ${App.aiModels['rewrite'].installed ? '<span class="text-xs text-green-400">✓ מותקן</span>' : '<button onclick="installAiModel(\'rewrite\'); closeAiTools();" class="px-3 py-1 rounded-lg bg-accent-600 text-white text-xs">התקנה</button>'}
       </div>
       <p class="text-xs text-gray-500">שינוי סגנון כתיבה ב-AI</p>
     </div>
@@ -1961,13 +1962,13 @@ async function aiRewriteSelection() {
   if(!text.trim()) return;
   hideTextSelectionPopup();
 
-  const style = prompt('בחר סגנון:
+  const style = prompt(`בחר סגנון:
 1. יותר רשמי
 2. פחות רשמי
 3. יותר קצר
 4. יותר ארוך
 5. יותר קליל
-6. יותר ילדותי', '1');
+6. יותר ילדותי`, '1');
   if(!style) return;
 
   const styles = {
@@ -2026,8 +2027,7 @@ async function translateFullPost() {
       const translated = result[0]?.translation_text || text;
 
       // Replace text content while preserving HTML structure
-      el.content = '<p>' + translated.replace(/
-/g, '</p><p>') + '</p>';
+      el.content = '<p>' + translated.replace(/\n/g, '</p><p>') + '</p>';
     }
     renderCanvas();
     markDirty();

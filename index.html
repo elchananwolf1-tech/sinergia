@@ -325,9 +325,47 @@ tailwind.config = {
     border-radius: 8px;
     vertical-align: middle;
   }
+
+  /* ===== LOTTIE UI SYSTEM ===== */
+  .ui-lottie-loader{display:inline-flex;align-items:center;justify-content:center;width:54px;height:54px;flex:0 0 auto;filter:drop-shadow(0 8px 18px rgba(139,92,246,.18))}
+  .ui-lottie-loader.sm{width:34px;height:34px}.ui-lottie-loader.lg{width:88px;height:88px}
+  .ui-lottie-loader dotlottie-wc{display:block;width:100%;height:100%}
+  .ui-loading-card{display:flex;align-items:center;justify-content:center;gap:12px;min-height:86px;padding:18px 20px;border:1px solid rgba(148,163,184,.10);border-radius:16px;background:linear-gradient(135deg,rgba(15,23,42,.35),rgba(30,30,46,.6));box-shadow:0 12px 30px rgba(0,0,0,.12)}
+  .ui-loading-card .loading-copy{display:flex;flex-direction:column;gap:3px;text-align:right}
+  .ui-loading-card .loading-title{font-size:13px;font-weight:700;color:#e2e8f0}.ui-loading-card .loading-sub{font-size:10px;color:#64748b}
+  .lottie-hero{display:flex;align-items:center;justify-content:center;min-height:92px;padding:8px;border-radius:20px;background:radial-gradient(circle at 50% 45%,rgba(139,92,246,.13),transparent 62%),rgba(17,17,27,.25);border:1px solid rgba(255,255,255,.05)}
+  .lottie-hero dotlottie-wc{width:120px;height:90px}
+  .ui-status-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(139,92,246,.10);border:1px solid rgba(139,92,246,.18);color:#c4b5fd;font-size:11px;font-weight:700}
+  .ui-status-dot{width:7px;height:7px;border-radius:50%;background:#8b5cf6;box-shadow:0 0 0 4px rgba(139,92,246,.10);animation:pulse-status 1.8s infinite}
+  @keyframes pulse-status{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.35);opacity:1}}
+  .glass-modern{background:linear-gradient(145deg,rgba(30,30,46,.76),rgba(17,17,27,.88));border:1px solid rgba(255,255,255,.08);box-shadow:0 18px 50px rgba(0,0,0,.18)}
+  .ui-hover-lift{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}.ui-hover-lift:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,.18);border-color:rgba(139,92,246,.24)}
+  .empty-illustration{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:28px 16px;text-align:center;color:#64748b}.empty-illustration dotlottie-wc{width:130px;height:100px;opacity:.92}
+  @media (prefers-reduced-motion:reduce){.ui-hover-lift,.ui-status-dot{transition:none;animation:none}.lottie-hero dotlottie-wc,.empty-illustration dotlottie-wc{opacity:.9}}
+
+
+  /* ===== GLOBAL UI POLISH V15 ===== */
+  .glass,.glass-strong,.home-section,.post-card,.site-card{box-shadow:0 12px 36px rgba(0,0,0,.16);border-color:rgba(255,255,255,.08)!important}
+  .glass{background:linear-gradient(145deg,rgba(30,30,46,.72),rgba(17,17,27,.82))}
+  .glass-strong{background:linear-gradient(145deg,rgba(17,17,27,.92),rgba(11,11,18,.96))}
+  .home-section{background:linear-gradient(145deg,rgba(30,30,46,.55),rgba(17,17,27,.7));backdrop-filter:blur(12px)}
+  .post-card,.site-card{position:relative;overflow:hidden}
+  .post-card::before,.site-card::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(139,92,246,.06),transparent 45%,rgba(245,158,11,.05));pointer-events:none}
+  .tool-btn{background:rgba(30,30,46,.48);border:1px solid rgba(255,255,255,.04)}
+  .tool-btn.active{box-shadow:0 0 0 1px rgba(139,92,246,.25),0 8px 22px rgba(139,92,246,.16)}
+  button:not(.tool-btn):not(.inline-toolbar button):not(.text-selection-popup button),select,input[type="text"],input[type="password"],input[type="url"]{transition:box-shadow .18s ease,border-color .18s ease,transform .18s ease}
+  button:hover:not(:disabled){transform:translateY(-1px)}
+  button:active:not(:disabled){transform:translateY(0)}
+  input:focus,select:focus{box-shadow:0 0 0 3px rgba(139,92,246,.12)!important}
+  .ui-loading-card{animation:ui-card-in .24s ease-out}
+  @keyframes ui-card-in{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+  #toast{box-shadow:0 18px 50px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.10)}
+  .modal-overlay{background:rgba(4,7,14,.84)}
+
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js"></script>
 <base target="_blank"/><meta name="referrer" content="no-referrer"/>
 </head>
 <body class="h-screen w-screen overflow-hidden">
@@ -361,9 +399,9 @@ tailwind.config = {
 <div class="absolute bottom-10 right-10 w-96 h-96 bg-primary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style="animation-delay:1s;"></div>
 </div>
 <div class="relative z-10 w-full max-w-lg mx-4">
-<div class="text-center mb-8">
-<div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-accent-500 to-primary-500 flex items-center justify-center shadow-lg animate-pulse-glow">
-<i class="fas fa-pen-nib text-3xl text-white"></i>
+<div class="text-center mb-6">
+<div class="lottie-hero mb-4">
+  <dotlottie-wc src="https://lottie.host/4db68bbd-31f6-4cd8-84eb-189de081159a/IGmMCqhzpt.lottie" speed="1" mode="forward" loop autoplay></dotlottie-wc>
 </div>
 <h1 class="text-3xl font-bold text-white mb-2">EWolf Editor Pro</h1>
 <p class="text-gray-400">עורך וורדפרס מתקדם - רץ מקומית</p>
@@ -531,7 +569,7 @@ tailwind.config = {
 </div>
 <div class="min-w-0">
 <h3 class="font-bold text-sm truncate">EWolf Editor</h3>
-<p class="text-xs text-green-400" id="conn-status">מחובר</p>
+<p class="text-xs text-green-400 flex items-center gap-2" id="conn-status"><span class="ui-status-dot"></span>מחובר</p>
 </div>
 </div>
 </div>
@@ -1098,9 +1136,11 @@ function initDB() {
 
 function showToast(msg, type='info') {
   const toast = document.getElementById('toast');
-  toast.textContent = msg;
+  const icon = type==='success' ? '✓' : type==='error' ? '!' : '•';
+  toast.innerHTML = '<span style="display:inline-flex;align-items:center;gap:8px"><span style="width:22px;height:22px;border-radius:50%;display:inline-grid;place-items:center;background:rgba(255,255,255,.16);font-weight:800">'+icon+'</span><span>'+escapeHtmlSafe(String(msg))+'</span></span>';
   toast.className = 'toast ' + type + ' show';
-  setTimeout(()=>toast.classList.remove('show'), 3000);
+  clearTimeout(window.__ewolfToastTimer);
+  window.__ewolfToastTimer = setTimeout(()=>toast.classList.remove('show'), 3200);
 }
 
 function hideAllScreens() {
@@ -1344,7 +1384,7 @@ async function testAndAddSite() {
   }
 
   resultDiv.className = 'text-sm mb-4 text-yellow-400 whitespace-pre-line';
-  resultDiv.textContent = 'בודק את WordPress REST API...';
+  resultDiv.innerHTML = '<div class="ui-loading-card" style="justify-content:flex-start"><span class="ui-lottie-loader sm"><dotlottie-wc src="https://lottie.host/4db68bbd-31f6-4cd8-84eb-189de081159a/IGmMCqhzpt.lottie" speed="1.15" mode="forward" loop autoplay></dotlottie-wc></span><span class="loading-copy"><span class="loading-title">בודק חיבור לוורדפרס…</span><span class="loading-sub">מאמת REST API ופרטי התחברות</span></span></div>';
   resultDiv.classList.remove('hidden');
 
   try {
@@ -3301,14 +3341,17 @@ async function searchPexels() {
   const query = document.getElementById('pexels-search').value.trim();
   if(!query) return;
   const container = document.getElementById('pexels-results');
-  container.innerHTML = '<div class="col-span-full ui-loading"><i class="fas fa-spinner fa-spin"></i><span>טוען תמונות...</span></div>';
+  container.innerHTML = `<div class="ui-loading-card">
+  <span class="ui-lottie-loader sm"><dotlottie-wc src="https://lottie.host/4db68bbd-31f6-4cd8-84eb-189de081159a/IGmMCqhzpt.lottie" speed="1.15" mode="forward" loop autoplay></dotlottie-wc></span>
+  <span class="loading-copy"><span class="loading-title">טוען תמונות…</span><span class="loading-sub">מחפש תמונות איכותיות</span></span>
+</div>`;
   try {
     const res = await fetch('https://api.pexels.com/v1/search?query=' + encodeURIComponent(query) + '&per_page=24&orientation=all', {
       headers: {Authorization: PEXELS_KEY}
     });
     const data = await res.json();
     if(!data.photos || data.photos.length===0) {
-      container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-4">לא נמצאו תוצאות</div>';
+      container.innerHTML = '<div class="col-span-full empty-illustration"><dotlottie-wc src="https://lottie.host/4db68bbd-31f6-4cd8-84eb-189de081159a/IGmMCqhzpt.lottie" speed="0.7" mode="forward" loop autoplay></dotlottie-wc><span>לא נמצאו תוצאות</span></div>';
       return;
     }
     container.innerHTML = data.photos.map(p=>`
@@ -3316,7 +3359,7 @@ async function searchPexels() {
     `).join('');
     bindDynamicCardEvents();
   } catch(e) {
-    container.innerHTML = '<div class="col-span-full text-center text-red-400 py-4">שגיאה בטעינת תמונות</div>';
+    container.innerHTML = '<div class="col-span-full empty-illustration"><span style="font-size:28px;color:#f87171">!</span><span>שגיאה בטעינת תמונות</span></div>';
   }
 }
 function dragPexelsStart(e, url) {
@@ -4240,7 +4283,10 @@ async function searchIconify() {
   const query = document.getElementById('iconify-search').value.trim();
   if(!query) return;
   const container = document.getElementById('iconify-results');
-  container.innerHTML = '<div class="col-span-full ui-loading"><i class="fas fa-spinner fa-spin"></i><span>טוען אייקונים...</span></div>';
+  container.innerHTML = `<div class="ui-loading-card">
+  <span class="ui-lottie-loader sm"><dotlottie-wc src="https://lottie.host/4db68bbd-31f6-4cd8-84eb-189de081159a/IGmMCqhzpt.lottie" speed="1.15" mode="forward" loop autoplay></dotlottie-wc></span>
+  <span class="loading-copy"><span class="loading-title">טוען אייקונים…</span><span class="loading-sub">מביא אייקונים מהספרייה</span></span>
+</div>`;
   try {
     const res = await fetch('https://api.iconify.design/search?query=' + encodeURIComponent(query) + '&limit=32');
     const data = await res.json();
@@ -4263,7 +4309,7 @@ async function searchIconify() {
       </div>
     `).join('');
   } catch(e) {
-    container.innerHTML = '<div class="col-span-full text-center text-red-400 py-4">שגיאה בטעינת אייקונים</div>';
+    container.innerHTML = '<div class="col-span-full empty-illustration"><span style="font-size:28px;color:#f87171">!</span><span>שגיאה בטעינת אייקונים</span></div>';
   }
 }
 function addIconifyFromCache(iconName) {
@@ -4275,7 +4321,10 @@ async function searchBrandLogos() {
   const query = document.getElementById('brand-search-input').value.trim();
   if(!query) return;
   const container = document.getElementById('brand-logo-results');
-  container.innerHTML = '<div class="ui-loading"><i class="fas fa-spinner fa-spin"></i><span>טוען לוגואים...</span></div>';
+  container.innerHTML = `<div class="ui-loading-card">
+  <span class="ui-lottie-loader sm"><dotlottie-wc src="https://lottie.host/4db68bbd-31f6-4cd8-84eb-189de081159a/IGmMCqhzpt.lottie" speed="1.15" mode="forward" loop autoplay></dotlottie-wc></span>
+  <span class="loading-copy"><span class="loading-title">טוען לוגואים…</span><span class="loading-sub">מחפש לוגואים למותג</span></span>
+</div>`;
   try {
     const res = await fetch('https://api.brandfetch.io/v2/search/' + encodeURIComponent(query), {
       headers: {'Authorization': 'Bearer ' + BRAND_SEARCH_KEY}
